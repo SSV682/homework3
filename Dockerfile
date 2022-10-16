@@ -12,7 +12,6 @@ COPY . /app
 RUN CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH \
     go build -o /bin/app ./cmd/app
 
-
 FROM scratch
 COPY --from=build /app/config /config
 COPY --from=build /bin/app /app

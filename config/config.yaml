@@ -3,18 +3,18 @@ app:
   version: '1.0.0'
 
 http:
-  port: '8000'
+  port: '8080'
 
 logger:
   log_level: 'debug'
   rollbar_env: 'homework-otus'
 
-connection:
-  host: 'localhost'
+conn:
+  host: 'db'
   port: '5432'
-  dbname: 'Homework'
+  dbname: 'homework'
   user: 'postgres'
-  password: 'Password'
+  password: 'password'
 
 timeout:
   duration : '5'

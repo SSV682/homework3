@@ -1,8 +1,8 @@
 package main
 
 import (
-	"homework/config"
-	"homework/internal/app"
+	"homework2/config"
+	"homework2/internal/app"
 	"log"
 )
 

@@ -2,11 +2,11 @@ package app
 
 import (
 	"fmt"
-	"github.com/dimfeld/httptreemux"
-	"homework/config"
-	v1 "homework/internal/controllers/http/v1"
-	"homework/pkg/httpserver"
-	"homework/pkg/logger"
+	"github.com/labstack/echo/v4"
+	"homework2/config"
+	v1 "homework2/internal/controllers/http/v1"
+	"homework2/pkg/httpserver"
+	"homework2/pkg/logger"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,9 +15,10 @@ import (
 func Run(cfg *config.Config) {
 	l := logger.New(cfg.Log.Level)
 
-	router := httptreemux.New()
-	v1.RegisterRouters(router)
-	httpServer := httpserver.New(router, httpserver.Port(cfg.Port))
+	e := echo.New()
+	v1.RegisterRouters(e, l, cfg)
+
+	httpServer := httpserver.New(e, httpserver.Port(cfg.HTTP.Port))
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)

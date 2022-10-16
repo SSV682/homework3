@@ -1,8 +1,34 @@
 version: '3.9'
 services:
+  db:
+    image: postgres
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=homework
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./migrations/20221015205029_migration.up.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - home_net
   app:
     build: .
     container_name: otushw-stan
-    image: ssv682/otus-homework-repo
+    image: ssv682/otus-homework3-repo
     ports:
-      - "8000:8000"
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - home_net
+
+networks:
+  home_net:
+    driver: bridge
+
+volumes:
+  db:
