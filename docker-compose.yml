@@ -1,0 +1,8 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    container_name: otushw-stan
+    image: ssv682/otus-homework-repo
+    ports:
+      - "8000:8000"
