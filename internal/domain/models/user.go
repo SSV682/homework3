@@ -15,5 +15,5 @@ type UserStorageInterface interface {
 	CreateUser(ctx context.Context, user *User) error
 	GetUser(ctx context.Context, id int64) (User, error)
 	DeleteUser(ctx context.Context, id int64) error
-	//UpdateUser(ctx context.Context, id int64, user *User) error
+	UpdateUser(ctx context.Context, id int64, user *User) error
 }

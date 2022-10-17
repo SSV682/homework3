@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS public."Users";
+DROP TABLE IF EXISTS users;

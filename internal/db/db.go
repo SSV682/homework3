@@ -36,6 +36,7 @@ func (pgus *PgUserRepository) CreateUser(ctx context.Context, user *models.User)
 		"email":     user.Email,
 		"phone":     user.Phone,
 	})
+	defer rows.Close()
 	if rows.Next() {
 		rows.Scan(&user.Id)
 	}
@@ -55,6 +56,24 @@ func (pgus *PgUserRepository) DeleteUser(ctx context.Context, id int64) (err err
 }
 
 func (pgus *PgUserRepository) UpdateUser(ctx context.Context, id int64, user *models.User) error {
-	//	TODO
-	return nil
+	user.Id = id
+	query := `
+		UPDATE users
+		SET username=:username,
+		    firstname=:firstname,
+		    lastname=:lastname, 
+		    email=:email, 
+		    phone=:phone
+		WHERE id=:id
+	`
+	rows, err := pgus.db.NamedQueryContext(ctx, query, map[string]interface{}{
+		"username":  user.Username,
+		"firstname": user.Firstname,
+		"lastname":  user.Lastname,
+		"email":     user.Email,
+		"phone":     user.Phone,
+		"id":        id,
+	})
+	defer rows.Close()
+	return err
 }

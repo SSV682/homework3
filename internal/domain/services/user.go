@@ -10,7 +10,7 @@ type UserServiceInterface interface {
 	CreateUser(ctx context.Context, user *models.User) error
 	GetUser(ctx context.Context, id int64) (models.User, error)
 	DeleteUser(ctx context.Context, id int64) error
-	//UpdateUser(ctx context.Context, id string, user *models.User) error
+	UpdateUser(ctx context.Context, id int64, user *models.User) error
 }
 
 type UserService struct {
@@ -53,6 +53,16 @@ func (us *UserService) DeleteUser(ctx context.Context, id int64) error {
 	defer cancel()
 
 	err := us.userStorage.DeleteUser(ctx, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (us *UserService) UpdateUser(ctx context.Context, id int64, user *models.User) error {
+	ctx, cancel := context.WithTimeout(ctx, us.contextTimeout)
+	defer cancel()
+	err := us.userStorage.UpdateUser(ctx, id, user)
 	if err != nil {
 		return err
 	}

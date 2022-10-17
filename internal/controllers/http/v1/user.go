@@ -25,9 +25,11 @@ func NewUserImpl(e *echo.Group, u services.UserServiceInterface, l logger.Interf
 		UserService: u,
 		Logger:      l,
 	}
+
 	e.POST("/user", handler.CreateUser)
 	e.DELETE("/user/:id", handler.DeleteUser)
 	e.GET("/user/:id", handler.GetUserById)
+	e.PUT("/user/:id", handler.UpdateUser)
 
 }
 
@@ -74,6 +76,31 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 		return c.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
 	}
 	return c.NoContent(http.StatusNoContent) //?
+}
+
+func (h *UserHandler) UpdateUser(c echo.Context) error {
+	idU, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, errors.ErrIncorrectParams)
+	}
+
+	var user models.User
+	err = c.Bind(&user)
+	if err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	id := int64(idU)
+
+	if ok, err := isRequestValid(&user); !ok {
+		c.JSON(http.StatusBadRequest, err.Error())
+	}
+	ctx := c.Request().Context()
+	err = h.UserService.UpdateUser(ctx, id, &user)
+	if err != nil {
+		c.JSON(getStatusCode(err), err.Error())
+	}
+
+	return c.JSON(http.StatusOK, user)
 }
 
 func isRequestValid(u *models.User) (bool, error) {
