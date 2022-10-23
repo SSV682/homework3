@@ -23,7 +23,7 @@ spec:
         - name: post-install-job
           env:
             - name: POSTGRES_URI
-              value: {{ printf "postgresql://%s:%s@%s:%d/%s" .Values.postgresql.global.postgresql.auth.username .Values.postgresql.global.postgresql.auth.postgresPassword .Values.postgresql.fullnameOverride ( .Values.postgresql.global.postgresql.service.ports.postgresql | int) .Values.postgresql.global.postgresql.auth.database  | quote }}
+              value: {{ printf "postgresql://%s:%s@%s:%d/%s" .Values.postgresql.global.postgresql.auth.username .Values.postgresql.global.postgresql.auth.postgresPassword .Values.postgresql.fullnameOverride ( .Values.postgresql.global.postgresql.service.ports.postgresql | int64 ) .Values.postgresql.global.postgresql.auth.database  | quote }}
           image: postgres:latest
           command:
             - sh

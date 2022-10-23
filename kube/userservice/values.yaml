@@ -41,7 +41,7 @@ service:
   port: 80
 
 ingress:
-  enabled: false
+  enabled: true
   className: ""
   annotations: {}
     # kubernetes.io/ingress.class: nginx
@@ -87,9 +87,10 @@ postgresql:
   global:
     postgresql:
       auth:
-        postgresPassword: password
-        username: postgres
-        database: homework
+        postgresPassword: "password"
+        password: "password"
+        username: "postgres"
+        database: "homework"
       service:
         ports:
           postgresql: 5432
