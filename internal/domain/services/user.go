@@ -69,4 +69,4 @@ func (us *UserService) UpdateUser(ctx context.Context, id int64, user *models.Us
 	return nil
 }
 
-//func (us *userService) UpdateUser()
+//func (us *user-service) UpdateUser()

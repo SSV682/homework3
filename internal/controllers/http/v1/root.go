@@ -38,5 +38,6 @@ func RegisterRouters(handler *echo.Echo, l logger.Interface, cfg *config.Config)
 	h := handler.Group("/v1")
 	{
 		NewUserImpl(h, us, l)
+		NewHealthImpl(h)
 	}
 }

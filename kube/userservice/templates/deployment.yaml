@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "userService.fullname" . }}
+  name: {{ include "userservice.fullname" . }}
   labels:
-    {{- include "userService.labels" . | nindent 4 }}
+    {{- include "userservice.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "userService.selectorLabels" . | nindent 6 }}
+      {{- include "userservice.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,29 +18,30 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "userService.selectorLabels" . | nindent 8 }}
+        {{- include "userservice.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "userService.serviceAccountName" . }}
+      serviceAccountName: {{ include "userservice.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
         - name: check-db-ready
-          image: postgres:14.5
+          image: postgres:latest
+          ports:
+            - containerPort: {{ .Values.postgresql.global.postgresql.service.ports.postgresql }}
           env:
             - name: POSTGRES_HOST
-              value: {{ include "postgresql.fullname}}
+              value: {{ .Values.postgresql.fullnameOverride | quote }}
             - name: POSTGRES_PORT
-              value: {{ .Values,postgres.service.port | quote }}
-              command:
-                - sh
-                - "-c"
-                - |
-                  until pg_isready -h $POSTGRES_HOST  -p  $POSTGRES_PORT; 
-                  do echo waiting for database; sleep 2; done;
+              value: {{ printf "%d" ( .Values.postgresql.global.postgresql.service.ports.postgresql | int ) | quote }}
+          command:
+            - sh
+            - '-c'
+            - >
+              until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT; do echo waiting for database; sleep 2; done;
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -51,21 +52,17 @@ spec:
             - name: http
               containerPort: 8000
               protocol: TCP
-#          livenessProbe:
-#            httpGet:
-#              path: /
-#              port: http
-#          readinessProbe:
-#            httpGet:
-#              path: /
-#              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /v1/health
+              port: http
           envFrom:
             - secretRef:
-                name: mysecret
+                name: app-secret
             - configMapRef:
-                name: config-app
+                name: app-config
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

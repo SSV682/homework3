@@ -1,8 +1,8 @@
 version: '3.9'
 services:
   db:
-    image: postgres
     container_name: postgres
+    image: postgres:14.5
     restart: always
     ports:
       - "5432:5432"
@@ -18,9 +18,9 @@ services:
   app:
     build: .
     container_name: otushw-stan
-    image: ssv682/otus-homework3-repo
+    image: ssv682/otus-homework3-repo:v0.1
     ports:
-      - "8080:8080"
+      - "8000:8000"
     depends_on:
       - db
     networks:

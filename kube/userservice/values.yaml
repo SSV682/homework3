@@ -1,18 +1,18 @@
-# Default values for userService.
+# Default values for userservice.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: ssv682/otus-homework-repo
+  repository: ssv682/otus-homework3-repo
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "v0.1"
 
 imagePullSecrets: []
 nameOverride: ""
-fullnameOverride: "user-service"
+fullnameOverride: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -81,11 +81,16 @@ tolerations: []
 
 affinity: {}
 
-postgres:
+postgresql:
   enabled: true
-  pgUsername: postgres
-  pgPassword: password
-  pgDatabase: homework
-  fullnameOverride: "db"
-  service:
-    port: "5432"
+  fullnameOverride: postgres
+  global:
+    postgresql:
+      auth:
+        postgresPassword: password
+        username: postgres
+        database: homework
+      service:
+        ports:
+          postgresql: 5432
+

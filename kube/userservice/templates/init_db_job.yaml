@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "userservice.fullname" . }}
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: check-db-ready
+          image: postgres:latest
+          env:
+            - name: POSTGRES_HOST
+              value: {{ .Values.postgresql.fullnameOverride | quote }}
+            - name: POSTGRES_PORT
+              value: {{ printf "%d" ( .Values.postgresql.global.postgresql.service.ports.postgresql | int64 ) | quote }}
+          command:
+            - sh
+            - "-c"
+            - |
+              until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT; do echo waiting for database; sleep 2; done;
+      containers:
+        - name: post-install-job
+          env:
+            - name: POSTGRES_URI
+              value: {{ printf "postgresql://%s:%s@%s:%d/%s" .Values.postgresql.global.postgresql.auth.username .Values.postgresql.global.postgresql.auth.postgresPassword .Values.postgresql.fullnameOverride ( .Values.postgresql.global.postgresql.service.ports.postgresql | int) .Values.postgresql.global.postgresql.auth.database  | quote }}
+          image: postgres:latest
+          command:
+            - sh
+            - "-c"
+            - |
+              psql $POSTGRES_URI <<'EOF'
+                create table if not exists users (
+                  id        serial primary key,
+                  username  varchar(256),
+                  firstname varchar,
+                  lastname  varchar,
+                  email     varchar,
+                  phone     varchar
+                );
+                EOF
+
+  backoffLimit: 0

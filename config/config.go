@@ -16,28 +16,28 @@ type (
 	}
 
 	App struct {
-		Name    string `env-required:"true" yaml:"name"`
-		Version string `env-required:"true" yaml:"version"`
+		Name    string `env:"APP_NAME" env-required:"true" yaml:"name"`
+		Version string `env:"APP_VERSION" env-required:"true" yaml:"version"`
 	}
 
 	HTTP struct {
-		Port string `env-required:"true" yaml:"port"`
+		Port string `env:"APP_PORT" env-required:"true" yaml:"port"`
 	}
 
 	Log struct {
-		Level string `env-required:"true" yaml:"log_level"`
+		Level string `env:"APP_LOGLEVEL" env-required:"true" yaml:"log_level"`
 	}
 
 	Connection struct {
-		Dbname   string `env-required:"true" yaml:"dbname"`
-		User     string `env-required:"true" yaml:"user"`
-		Password string `env-required:"true" yaml:"password"`
-		Host     string `env-required:"true" yaml:"host"`
-		Port     string `env-required:"true" yaml:"port"`
+		Dbname   string `env:"DB_NAME" env-required:"true" yaml:"dbname"`
+		User     string `env:"DB_USER" env-required:"true" yaml:"user"`
+		Password string `env:"DB_PASSWORD" env-required:"true" yaml:"password"`
+		Host     string `env:"DB_HOST" env-required:"true" yaml:"host"`
+		Port     string `env:"DB_PORT" env-required:"true" yaml:"port"`
 	}
 
 	Timeout struct {
-		Duration string `env-required:"true" yaml:"duration"`
+		Duration string `env:"APP_TIMEOUT" env-required:"true" yaml:"duration"`
 	}
 )
 

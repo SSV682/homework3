@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "userService.name" -}}
+{{- define "userservice.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "userService.fullname" -}}
+{{- define "userservice.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "userService.chart" -}}
+{{- define "userservice.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "userService.labels" -}}
-helm.sh/chart: {{ include "userService.chart" . }}
-{{ include "userService.selectorLabels" . }}
+{{- define "userservice.labels" -}}
+helm.sh/chart: {{ include "userservice.chart" . }}
+{{ include "userservice.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,23 +45,18 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "userService.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "userService.name" . }}
+{{- define "userservice.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "userservice.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "userService.serviceAccountName" -}}
+{{- define "userservice.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "userService.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "userservice.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
-
-
-{{- define "postgresql.fullname" -}}
-{{- printf "db" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
