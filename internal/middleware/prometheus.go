@@ -22,31 +22,27 @@ var (
 		prometheus.HistogramOpts{
 			Namespace: "echo",
 			Subsystem: "http",
-			Name:      "http_response_time_seconds",
+			Name:      "response_time_seconds",
 			Help:      "Duration of HTTP requests",
-			Buckets: []float64{
-				0.0005,
-				0.001, // 1ms
-				0.002,
-				0.005,
-				0.01, // 10ms
-				0.02,
-				0.05,
-				0.1, // 100 ms
-				0.2,
-				0.5,
-				1.0, // 1s
-				2.0,
-				5.0,
-				10.0, // 10s
-				15.0,
-				20.0,
-				30.0,
-			},
+			Buckets:   prometheus.DefBuckets,
 		},
 		[]string{"method", "path"},
 	)
+
+	errorRate = promauto.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: "echo",
+			Subsystem: "http",
+			Name:      "error_rate_by_user_service",
+			Help:      "Count of 5xx",
+		},
+	)
 )
+
+func init() {
+	prometheus.Register(totalRequests)
+	prometheus.Register(errorRate)
+}
 
 func PrometheusMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -61,7 +57,10 @@ func PrometheusMiddleware() echo.MiddlewareFunc {
 				ctx.Error(err)
 			}
 			statusCode := ctx.Response().Status
-			totalRequests.WithLabelValues(method, path, strconv.Itoa(statusCode))
+			if statusCode == 500 {
+				errorRate.Inc()
+			}
+			totalRequests.WithLabelValues(method, path, strconv.Itoa(statusCode)).Inc()
 			return err
 		}
 
