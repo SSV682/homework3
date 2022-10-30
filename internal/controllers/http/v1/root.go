@@ -7,14 +7,17 @@ import (
 	"homework2/config"
 	"homework2/internal/db"
 	"homework2/internal/domain/services"
+	myMiddleware "homework2/internal/middleware"
 	"homework2/pkg/logger"
 	"strconv"
 	"time"
 )
 
 func RegisterRouters(handler *echo.Echo, l logger.Interface, cfg *config.Config) {
+
 	handler.Use(middleware.Logger())
 	handler.Use(middleware.Recover())
+	handler.Use(myMiddleware.PrometheusMiddleware())
 
 	dsn := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",
 		cfg.Connection.User,
@@ -40,4 +43,5 @@ func RegisterRouters(handler *echo.Echo, l logger.Interface, cfg *config.Config)
 		NewUserImpl(h, us, l)
 		NewHealthImpl(h)
 	}
+	//h.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 }

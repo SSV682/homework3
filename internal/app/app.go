@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"homework2/config"
 	v1 "homework2/internal/controllers/http/v1"
 	"homework2/pkg/httpserver"
@@ -17,6 +18,7 @@ func Run(cfg *config.Config) {
 
 	e := echo.New()
 	v1.RegisterRouters(e, l, cfg)
+	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
 
 	httpServer := httpserver.New(e, httpserver.Port(cfg.HTTP.Port))
 
