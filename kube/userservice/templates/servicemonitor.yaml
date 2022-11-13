@@ -5,14 +5,14 @@ metadata:
   labels:
     {{- include "userservice.labels" . }}
 spec:
+  jobName: {{ include "userservice.fullname" . }}
   namespaceSelector:
     matchNames:
       - "{{ $.Release.Namespace }}"
-    selector:
-      matchLabels:
-        {{- include "userservice.selectorLabels" . | nindent 6 }}
-    endpoints:
-      - interval: 5s
-        port: http
-        path: '/metrics'
-    jobName: {{ include "userservice.fullname" . }}
+  selector:
+    matchLabels:
+      {{- include "userservice.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - interval: 5s
+      port: http
+      path: '/metrics'

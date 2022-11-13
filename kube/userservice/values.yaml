@@ -43,9 +43,12 @@ service:
 ingress:
   enabled: true
   className: ""
-  annotations: {}
+  annotations: #{}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9113"
+    prometheus.io/scheme: http
   hosts:
     - host: arch.homework
       paths:
