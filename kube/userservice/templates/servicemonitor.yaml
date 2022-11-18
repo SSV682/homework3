@@ -3,9 +3,9 @@ kind: ServiceMonitor
 metadata:
   name: {{ include "userservice.fullname" . }}
   labels:
-    {{- include "userservice.labels" . }}
+    {{- include "userservice.labels" . | nindent 4 }}
 spec:
-  jobName: {{ include "userservice.fullname" . }}
+  jobLabel: {{ include "userservice.fullname" . }}
   namespaceSelector:
     matchNames:
       - "{{ $.Release.Namespace }}"
@@ -15,4 +15,4 @@ spec:
   endpoints:
     - interval: 5s
       port: http
-      path: '/metrics'
+      path: /metrics
