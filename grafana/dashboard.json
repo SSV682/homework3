@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 29,
+  "id": 32,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -63,6 +63,9 @@
       },
       "id": 22,
       "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -71,8 +74,7 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "textMode": "auto"
       },
       "pluginVersion": "9.2.4",
       "targets": [
@@ -89,7 +91,7 @@
         }
       ],
       "title": "Memory usage (gb)",
-      "type": "gauge"
+      "type": "stat"
     },
     {
       "datasource": {
@@ -149,13 +151,13 @@
             "uid": "prometheus"
           },
           "editorMode": "builder",
-          "expr": "sum(echo_http_error_rate_by_user_service)",
+          "expr": "sum(rate(echo_http_error_rate_by_user_service[5m]))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Count of 5xx status code (service)",
+      "title": "Count of 500 status code (service)",
       "type": "stat"
     },
     {
@@ -214,14 +216,14 @@
             "uid": "prometheus"
           },
           "editorMode": "builder",
-          "expr": "(sum(rate(nginx_ingress_controller_requests{status=\"500\"}[1m]))) ",
+          "expr": "sum(rate(nginx_ingress_controller_requests{status=~\"499|500|502\"}[5m]))",
           "hide": false,
           "legendFormat": "__auto",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "Count of 5xx status code (ingress)",
+      "title": "Count of 499 and 500 status code (ingress)",
       "type": "stat"
     },
     {
@@ -579,8 +581,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 7,
+        "h": 7,
+        "w": 6,
         "x": 0,
         "y": 15
       },
@@ -671,9 +673,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 7,
+        "h": 7,
+        "w": 6,
+        "x": 6,
         "y": 15
       },
       "id": 8,
@@ -705,6 +707,71 @@
       ],
       "title": "RPS (ingress)",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 12,
+        "y": 15
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.2.4",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "builder",
+          "expr": "rate(go_memstats_alloc_bytes_total{job=\"postgres-exporter-prometheus-postgres-exporter\"}[1m])",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "postgres",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -764,12 +831,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 9,
-        "x": 15,
+        "h": 7,
+        "w": 6,
+        "x": 18,
         "y": 15
       },
-      "id": 24,
+      "id": 26,
       "options": {
         "legend": {
           "calcs": [],
@@ -789,16 +856,17 @@
             "uid": "prometheus"
           },
           "editorMode": "builder",
-          "expr": "rate(go_gc_duration_seconds_count{job=\"postgres-exporter-prometheus-postgres-exporter\"}[1m])",
+          "expr": "sum(rate(echo_http_response_time_seconds_sum[1m])) / sum(rate(echo_http_response_time_seconds_count[1m]))",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "RPS (postgres)",
+      "title": " Average latency",
       "type": "timeseries"
     }
   ],
+  "refresh": "5s",
   "schemaVersion": 37,
   "style": "dark",
   "tags": [],
@@ -812,7 +880,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "New dashboard Copy",
-  "uid": "MrLJxHO4k",
-  "version": 2,
+  "uid": "MrLJxHO4l",
+  "version": 8,
   "weekStart": ""
 }
