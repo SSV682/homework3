@@ -9,12 +9,25 @@ logger:
   log_level: 'debug'
   rollbar_env: 'homework-otus'
 
-conn:
-  host: 'db'
-  port: '5432'
-  dbname: 'homework'
-  user: 'postgres'
-  password: 'password'
+databases:
+  postgres:
+    conn_config:
+      host: 'db'
+      port: 5432
+      username: postgres    # env: POSTGRES_USER
+      password: password #env: POSTGRES_PASSWORD
+      dbname: homework #env: POSTGRES_DB
+    max_open_conns: 10
+    max_idle_conns: 10
+    conn_max_idle_time: 5m
+
+#
+#conn:
+#  host: 'provider'
+#  port: '5432'
+#  dbname: 'homework'
+#  user: 'postgres'
+#  password: 'password'
 
 timeout:
-  duration : '5'
+  duration : 5

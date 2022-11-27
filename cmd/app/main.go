@@ -1,16 +1,17 @@
 package main
 
 import (
-	"homework2/config"
+	"flag"
 	"homework2/internal/app"
-	"log"
+)
+
+var (
+	configPath = flag.String("config", "./config/config.yaml", "path to config file. default: config.yaml")
 )
 
 func main() {
-	cfg, err := config.NewConfig()
-	if err != nil {
-		log.Fatalf("Config error: %s", err)
-	}
+	flag.Parse()
 
-	app.Run(cfg)
+	application := app.NewApp(*configPath)
+	application.Run()
 }

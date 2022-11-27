@@ -3,7 +3,6 @@ module homework2
 go 1.19
 
 require (
-	github.com/globocom/echo-prometheus v0.1.2
 	github.com/ilyakaznacheev/cleanenv v1.4.0
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jmoiron/sqlx v1.3.5

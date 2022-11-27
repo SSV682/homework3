@@ -1,39 +1,87 @@
 package app
 
 import (
-	"fmt"
+	"context"
 	"github.com/labstack/echo/v4"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"homework2/config"
-	v1 "homework2/internal/controllers/http/v1"
-	"homework2/pkg/httpserver"
-	"homework2/pkg/logger"
+	log "github.com/sirupsen/logrus"
+	"homework2/internal/config"
+	"homework2/internal/handlers"
+	"homework2/internal/provider/sql"
+	"homework2/internal/services/user"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
-func Run(cfg *config.Config) {
-	l := logger.New(cfg.Log.Level)
+type App struct {
+	cfg        *config.Config
+	httpServer *http.Server
+}
 
-	e := echo.New()
-	v1.RegisterRouters(e, l, cfg)
-	e.GET("/metrics", echo.WrapHandler(promhttp.Handler()))
-
-	httpServer := httpserver.New(e, httpserver.Port(cfg.HTTP.Port))
-
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
-
-	select {
-	case s := <-interrupt:
-		l.Info("app - Run - singnal" + s.String())
-	case err := <-httpServer.Notify():
-		l.Error(fmt.Errorf("app - Run- httpServer.Notify:%w", err))
+func NewApp(configPath string) *App {
+	cfg, err := config.ReadConfig(configPath)
+	if err != nil {
+		log.Fatalf("Failed to load configs: %v", err)
 	}
 
-	err := httpServer.Shutdown()
+	pool, err := initDBPool(cfg.Databases.Postgres)
 	if err != nil {
-		l.Error(fmt.Errorf("app - Run- httpServer.Shutdown:%w", err))
+		log.Fatalf("Failed to init database pool: %v", err)
+	}
+
+	handler := echo.New()
+
+	userProv := sql.NewSQLProvider(pool)
+	userService := user.NewUserService(userProv)
+
+	rs := handlers.NewRegisterServices(userService)
+
+	err = handlers.RegisterHandlers(handler, rs)
+	if err != nil {
+		log.Fatalf("Failed to register handlers: %v", err)
+	}
+
+	log.Info("App created")
+
+	return &App{
+		cfg: &cfg,
+		httpServer: &http.Server{
+			Handler:      handler,
+			Addr:         net.JoinHostPort("", cfg.HTTP.Port),
+			ReadTimeout:  5 * time.Second,
+			WriteTimeout: 5 * time.Second,
+		},
+	}
+}
+
+func (a *App) Run() {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		if err := a.httpServer.ListenAndServe(); err != nil {
+			log.Fatalf("Failed listen and serve http server: %v", err)
+		}
+	}()
+
+	log.Info("App has been started")
+	a.waitGracefulShutdown(ctx, cancel)
+}
+
+func (a *App) waitGracefulShutdown(ctx context.Context, cancel context.CancelFunc) {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(
+		quit,
+		syscall.SIGABRT, syscall.SIGQUIT, syscall.SIGHUP, syscall.SIGTERM, os.Interrupt,
+	)
+
+	log.Infof("Caught signal %s. Shutting down...", <-quit)
+
+	cancel()
+
+	if err := a.httpServer.Shutdown(ctx); err != nil {
+		log.Errorf("Failed to shutdown http server: %v", err)
 	}
 }
