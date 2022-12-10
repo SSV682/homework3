@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type healthHeandler struct {
+type handler struct {
 }
 
-func NewHealth() *healthHeandler {
-	return &healthHeandler{}
+func NewHealth() *handler {
+	return &handler{}
 }
 
-func (impl *healthHeandler) Health(c echo.Context) error {
+func (impl *handler) Health(c echo.Context) error {
 	log.Info("Health check")
 	o := Response{
 		Status: "OK",

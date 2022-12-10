@@ -4,10 +4,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"homework2/internal/handlers/health"
-	"homework2/internal/handlers/users"
-	promMiddleware "homework2/internal/middleware"
-	"homework2/internal/services"
+	"user-service/internal/handlers/health"
+	"user-service/internal/handlers/users"
+	promMiddleware "user-service/internal/middleware"
+	"user-service/internal/services"
 )
 
 const (

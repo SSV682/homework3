@@ -1,5 +1,5 @@
 app:
-  name: 'homework-otus'
+  name: 'user-service'
   version: '1.1.0'
 
 http:
@@ -7,7 +7,7 @@ http:
 
 logger:
   log_level: 'debug'
-  rollbar_env: 'homework-otus'
+  rollbar_env: 'user-service'
 
 databases:
   postgres:

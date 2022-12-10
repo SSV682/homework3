@@ -3,22 +3,22 @@ package users
 import (
 	"github.com/labstack/echo/v4"
 	"gopkg.in/go-playground/validator.v9"
-	"homework2/internal/domain/errors"
-	"homework2/internal/domain/models"
-	"homework2/internal/services"
 	"net/http"
 	"strconv"
+	"user-service/internal/domain/errors"
+	"user-service/internal/domain/models"
+	"user-service/internal/services"
 )
 
-type Handler struct {
+type handler struct {
 	service services.UserValueService
 }
 
-func NewHandler(s services.UserValueService) *Handler {
-	return &Handler{service: s}
+func NewHandler(s services.UserValueService) *handler {
+	return &handler{service: s}
 }
 
-func (h *Handler) CreateUser(ctx echo.Context) error {
+func (h *handler) CreateUser(ctx echo.Context) error {
 	var user models.User
 	err := ctx.Bind(&user)
 	if err != nil {
@@ -35,7 +35,7 @@ func (h *Handler) CreateUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, user)
 }
 
-func (h *Handler) GetUser(ctx echo.Context) error {
+func (h *handler) GetUser(ctx echo.Context) error {
 	idU, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		return ctx.JSON(http.StatusNotFound, errors.ErrIncorrectParams)
@@ -49,7 +49,7 @@ func (h *Handler) GetUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, user)
 }
 
-func (h *Handler) DeleteUser(ctx echo.Context) error {
+func (h *handler) DeleteUser(ctx echo.Context) error {
 	idU, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		return ctx.JSON(http.StatusNotFound, errors.ErrIncorrectParams)
@@ -63,7 +63,7 @@ func (h *Handler) DeleteUser(ctx echo.Context) error {
 	return ctx.NoContent(http.StatusNoContent) //?
 }
 
-func (h *Handler) UpdateUser(ctx echo.Context) error {
+func (h *handler) UpdateUser(ctx echo.Context) error {
 	var user models.User
 	idU, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {

@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS users
 (
     id serial NOT NULL,
@@ -6,10 +8,8 @@ CREATE TABLE IF NOT EXISTS users
     lastname varchar,
     email varchar,
     phone varchar,
+    password varchar,
     CONSTRAINT "users_pk" PRIMARY KEY (id)
-    )
+    );
 
-    TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public.users
-    OWNER to postgres;
+COMMIT;

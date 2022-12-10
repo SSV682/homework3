@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"homework2/internal/app"
+	"user-service/internal/app"
 )
 
 var (

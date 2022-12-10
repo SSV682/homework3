@@ -4,8 +4,8 @@ import (
 	"context"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
-	"homework2/internal/domain/models"
-	"homework2/internal/provider"
+	"user-service/internal/domain/models"
+	"user-service/internal/provider"
 )
 
 type sqlProvider struct {

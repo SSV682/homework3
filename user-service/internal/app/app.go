@@ -4,16 +4,16 @@ import (
 	"context"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"homework2/internal/config"
-	"homework2/internal/handlers"
-	"homework2/internal/provider/sql"
-	"homework2/internal/services/user"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+	"user-service/internal/config"
+	"user-service/internal/handlers"
+	"user-service/internal/provider/sql"
+	"user-service/internal/services/user"
 )
 
 type App struct {

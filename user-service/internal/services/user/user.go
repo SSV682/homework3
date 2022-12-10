@@ -2,8 +2,8 @@ package user
 
 import (
 	"context"
-	"homework2/internal/domain/models"
-	"homework2/internal/services"
+	"user-service/internal/domain/models"
+	"user-service/internal/services"
 )
 
 type userService struct {

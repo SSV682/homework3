@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"homework2/internal/domain/models"
+	"user-service/internal/domain/models"
 )
 
 type UserValueService interface {

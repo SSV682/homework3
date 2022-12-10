@@ -9,8 +9,7 @@ ENV OS linux
 ENV ARCH amd64
 COPY --from=base /go/pkg /go/pkg
 COPY . /app
-RUN CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH \
-    go build -o /bin/app ./cmd/app
+RUN CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH go build -o /bin/app ./cmd/app
 
 FROM scratch
 COPY --from=build /app/config /config

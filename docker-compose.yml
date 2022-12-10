@@ -16,9 +16,9 @@ services:
     networks:
       - home_net
   app:
-    build: .
-    container_name: otushw-stan
-    image: ssv682/otus-homework3-repo:v0.3
+    build: ./user-service
+    container_name: user-service
+    image: ssv682/user-service:v0.3
     ports:
       - "8000:8000"
     depends_on:
@@ -36,7 +36,7 @@ services:
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
     ports:
-      - 9090:9090
+      - "9090:9090"
     networks:
       - home_net
     depends_on:

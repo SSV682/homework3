@@ -7,4 +7,5 @@ type User struct {
 	Lastname  string
 	Email     string //`validate:"email"`
 	Phone     string
+	Password  string
 }
