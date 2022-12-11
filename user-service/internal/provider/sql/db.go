@@ -7,7 +7,6 @@ import (
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"user-service/internal/domain/models"
-	"user-service/internal/provider"
 )
 
 const (
@@ -39,8 +38,6 @@ var (
 type sqlProvider struct {
 	pool *sqlx.DB
 }
-
-var _ provider.UserProvider = &sqlProvider{}
 
 func NewSQLProvider(pool *sqlx.DB) *sqlProvider {
 	return &sqlProvider{pool: pool}

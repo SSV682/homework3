@@ -2,17 +2,20 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"user-service/internal/domain/models"
-	"user-service/internal/services"
+	"user-service/internal/provider"
 )
 
 type userService struct {
-	sqlProv services.UserValueService
+	sqlProv   provider.SqlUserProvider
+	tokenProv provider.TokenProvider
 }
 
-func NewUserService(s services.UserValueService) *userService {
+func NewUserService(s provider.SqlUserProvider, t provider.TokenProvider) *userService {
 	return &userService{
-		sqlProv: s,
+		sqlProv:   s,
+		tokenProv: t,
 	}
 }
 
@@ -24,26 +27,48 @@ func (s *userService) CreateUser(ctx context.Context, user *models.User) (int64,
 	return i, nil
 }
 
-func (s *userService) GetUser(ctx context.Context, id int64) (user models.User, err error) {
-	user, err = s.sqlProv.GetUser(ctx, id)
+func (s *userService) GetUser(ctx context.Context, token string) (models.User, error) {
+	id, err := s.getIDFromClaims(token)
 	if err != nil {
-		return
+		return models.User{}, fmt.Errorf("get user doesnt have id: %v", err)
 	}
-	return
+
+	user, err := s.sqlProv.GetUser(ctx, id)
+	if err != nil {
+		return models.User{}, fmt.Errorf("get user by id %d: %v", id, err)
+	}
+	return user, nil
 }
 
-func (s *userService) DeleteUser(ctx context.Context, id int64) error {
-	err := s.sqlProv.DeleteUser(ctx, id)
+func (s *userService) DeleteUser(ctx context.Context, token string) error {
+	id, err := s.getIDFromClaims(token)
 	if err != nil {
+		return fmt.Errorf("get user : %v", err)
+	}
+
+	if err = s.sqlProv.DeleteUser(ctx, id); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *userService) UpdateUser(ctx context.Context, id int64, user *models.User) error {
-	err := s.sqlProv.UpdateUser(ctx, id, user)
+func (s *userService) UpdateUser(ctx context.Context, token string, user *models.User) error {
+	id, err := s.getIDFromClaims(token)
 	if err != nil {
+		return fmt.Errorf("get user : %v", err)
+	}
+
+	if err = s.sqlProv.UpdateUser(ctx, id, user); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *userService) getIDFromClaims(token string) (int64, error) {
+	claims, err := s.tokenProv.ParseToken(token)
+	if err != nil {
+		return 0, fmt.Errorf("get id from claims: %v", err)
+	}
+
+	return claims.ID, nil
 }

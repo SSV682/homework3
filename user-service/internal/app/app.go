@@ -13,6 +13,7 @@ import (
 	"user-service/internal/config"
 	"user-service/internal/handlers"
 	"user-service/internal/provider/sql"
+	"user-service/internal/provider/token"
 	"user-service/internal/services/user"
 )
 
@@ -34,8 +35,9 @@ func NewApp(configPath string) *App {
 
 	handler := echo.New()
 
-	userProv := sql.NewSQLProvider(pool)
-	userService := user.NewUserService(userProv)
+	sqlProv := sql.NewSQLProvider(pool)
+	tokenProv := token.NewJWTProvider()
+	userService := user.NewUserService(sqlProv, tokenProv)
 
 	rs := handlers.NewRegisterServices(userService)
 

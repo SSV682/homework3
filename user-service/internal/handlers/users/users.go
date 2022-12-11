@@ -5,17 +5,16 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
-	"strconv"
-	"user-service/internal/domain/errors"
+	"strings"
 	"user-service/internal/domain/models"
 	"user-service/internal/services"
 )
 
 type handler struct {
-	service services.UserValueService
+	service services.UserService
 }
 
-func NewHandler(s services.UserValueService) *handler {
+func NewHandler(s services.UserService) *handler {
 	return &handler{service: s}
 }
 
@@ -32,47 +31,42 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 	cct := ctx.Request().Context()
 	i, err := h.service.CreateUser(cct, &user)
 	if err != nil {
-		return ctx.JSON(getStatusCode(err), err.Error())
+		return ctx.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return ctx.JSON(http.StatusCreated, i)
 }
 
 func (h *handler) GetUser(ctx echo.Context) error {
-	idU, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		return ctx.JSON(http.StatusNotFound, errors.ErrIncorrectParams)
-	}
+	token := ctx.Request().Header.Get("Authorization")
+	jwtString := strings.Split(token, "Bearer ")[1]
 
 	ccx := ctx.Request().Context()
-	user, err := h.service.GetUser(ccx, int64(idU))
+	user, err := h.service.GetUser(ccx, jwtString)
 	if err != nil {
-		return ctx.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 	return ctx.JSON(http.StatusOK, user)
 }
 
 func (h *handler) DeleteUser(ctx echo.Context) error {
-	idU, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		return ctx.JSON(http.StatusNotFound, errors.ErrIncorrectParams)
-	}
+	token := ctx.Request().Header.Get("Authorization")
+	jwtString := strings.Split(token, "Bearer ")[1]
 
 	ccx := ctx.Request().Context()
-	err = h.service.DeleteUser(ccx, int64(idU))
+	err := h.service.DeleteUser(ccx, jwtString)
 	if err != nil {
-		return ctx.JSON(getStatusCode(err), ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 	return ctx.NoContent(http.StatusNoContent) //?
 }
 
 func (h *handler) UpdateUser(ctx echo.Context) error {
 	var user models.User
-	idU, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		return ctx.JSON(http.StatusNotFound, errors.ErrIncorrectParams)
-	}
+	token := ctx.Request().Header.Get("Authorization")
+	jwtString := strings.Split(token, "Bearer ")[1]
 
-	err = ctx.Bind(&user)
+	ccx := ctx.Request().Context()
+	err := ctx.Bind(&user)
 	if err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -80,10 +74,9 @@ func (h *handler) UpdateUser(ctx echo.Context) error {
 	if ok, err := isRequestValid(&user); !ok {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 	}
-	ccx := ctx.Request().Context()
-	err = h.service.UpdateUser(ccx, int64(idU), &user)
+	err = h.service.UpdateUser(ccx, jwtString, &user)
 	if err != nil {
-		ctx.JSON(getStatusCode(err), err.Error())
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	return ctx.JSON(http.StatusOK, user)
@@ -98,16 +91,16 @@ func isRequestValid(u *models.User) (bool, error) {
 	return true, nil
 }
 
-func getStatusCode(err error) int {
-	if err != nil {
-		return http.StatusOK
-	}
-	switch err {
-	case errors.ErrConflict:
-		return http.StatusInternalServerError
-	case errors.ErrNonExistentId:
-		return http.StatusNotFound
-	default:
-		return http.StatusInternalServerError
-	}
-}
+//func getStatusCode(err error) int {
+//	if err != nil {
+//		return http.StatusOK
+//	}
+//	switch err {
+//	case errors.ErrConflict:
+//		return http.StatusInternalServerError
+//	case errors.ErrNonExistentId:
+//		return http.StatusNotFound
+//	default:
+//		return http.StatusInternalServerError
+//	}
+//}

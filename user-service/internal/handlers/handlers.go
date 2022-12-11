@@ -11,10 +11,9 @@ import (
 )
 
 const (
-	metricsEndpointName   = "/metrics"
-	healthEndpointName    = "/health"
-	usersEndpointName     = "/user"
-	usersByIDEndpointName = usersEndpointName + "/:id"
+	metricsEndpointName = "/metrics"
+	healthEndpointName  = "/health"
+	usersEndpointName   = "/user"
 )
 
 const (
@@ -22,10 +21,10 @@ const (
 )
 
 type RegisterServices struct {
-	s services.UserValueService
+	s services.UserService
 }
 
-func NewRegisterServices(service services.UserValueService) *RegisterServices {
+func NewRegisterServices(service services.UserService) *RegisterServices {
 	return &RegisterServices{s: service}
 }
 
@@ -44,10 +43,10 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 	api := e.Group("/api")
 	stableGroups := api.Group(VersionApi)
 
-	stableGroups.GET(usersByIDEndpointName, h.GetUser)
+	stableGroups.GET(usersEndpointName, h.GetUser)
 	stableGroups.POST(usersEndpointName, h.CreateUser)
-	stableGroups.PUT(usersByIDEndpointName, h.UpdateUser)
-	stableGroups.DELETE(usersByIDEndpointName, h.DeleteUser)
+	stableGroups.PATCH(usersEndpointName, h.UpdateUser)
+	stableGroups.DELETE(usersEndpointName, h.DeleteUser)
 
 	return nil
 }
