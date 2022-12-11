@@ -46,5 +46,8 @@ func (s *userService) CheckUser(ctx context.Context, token string) (bool, error)
 		return false, fmt.Errorf(ErrorCheckUserByID, err)
 	}
 
+	//if claims.Expire.Unix() < time.Now().Unix() {
+	//	return false, nil
+	//}
 	return true, nil
 }

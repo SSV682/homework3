@@ -36,7 +36,7 @@ func NewApp(configPath string) *App {
 	handler := echo.New()
 
 	userProv := sql.NewSQLBusinessRulesProvider(pool)
-	tokenProv := token.Prov
+	tokenProv := token.NewJWTProvider()
 	userService := user.NewUserService(userProv, tokenProv)
 
 	rs := handlers.NewRegisterServices(userService)

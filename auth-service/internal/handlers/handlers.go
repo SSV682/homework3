@@ -42,7 +42,7 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 	api := e.Group("/api")
 	stableGroups := api.Group(VersionApi)
 
-	//stableGroups.POST(authEndpointName, h.CheckUser)
+	stableGroups.POST(authEndpointName, h.CheckUser)
 	stableGroups.POST(loginEndpointName, h.LoginUser)
 
 	return nil

@@ -2,8 +2,8 @@ package auth
 
 import (
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 	"user-service/internal/domain/errors"
 	"user-service/internal/services"
 )
@@ -29,7 +29,6 @@ func (h *handler) LoginUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	log.Infof("%v", user)
 	cct := ctx.Request().Context()
 	token, err := h.service.LoginUser(cct, user.Username, user.Password)
 	if err != nil {
@@ -39,22 +38,19 @@ func (h *handler) LoginUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, token)
 }
 
-//func (h *handler) CheckUser(ctx echo.Context) error {
-//	var user User
-//
-//	err := ctx.Bind(&user)
-//	if err != nil {
-//		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
-//	}
-//
-//	cct := ctx.Request().Context()
-//	token, err := h.service.LoginUser(cct, user.Username, user.Password)
-//	if err != nil {
-//		return ctx.JSON(getStatusCode(err), err.Error())
-//	}
-//
-//	return ctx.JSON(http.StatusCreated, token)
-//}
+func (h *handler) CheckUser(ctx echo.Context) error {
+	token := ctx.Request().Header.Get("Authorization")
+	jwtString := strings.Split(token, "Bearer ")[1]
+	cct := ctx.Request().Context()
+	ok, err := h.service.CheckUser(cct, jwtString)
+	if err != nil {
+		return ctx.JSON(http.StatusUnauthorized, err.Error())
+	}
+	if ok {
+		return ctx.JSON(http.StatusOK, "ok")
+	}
+	return ctx.JSON(http.StatusUnauthorized, "invalid token")
+}
 
 func getStatusCode(err error) int {
 	if err != nil {
