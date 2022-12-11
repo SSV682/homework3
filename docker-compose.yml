@@ -15,12 +15,24 @@ services:
       - ./migrations/db/20221015205029_migration.up.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - home_net
-  app:
+
+  userService:
     build: ./user-service
     container_name: user-service
     image: ssv682/user-service:v0.3
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - home_net
+
+  authService:
+    build: ./auth-service
+    container_name: auth-service
+    image: ssv682/auth-service:v0.1
+    ports:
+      - "8001:8000"
     depends_on:
       - db
     networks:
@@ -40,7 +52,7 @@ services:
     networks:
       - home_net
     depends_on:
-      - app
+      - userService
 
   grafana:
     image: grafana/grafana
@@ -49,7 +61,7 @@ services:
     networks:
       - home_net
     depends_on:
-      - app
+      - userService
 
 networks:
   home_net:

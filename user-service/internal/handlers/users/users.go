@@ -2,6 +2,7 @@ package users
 
 import (
 	"github.com/labstack/echo/v4"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 	"strconv"
@@ -21,6 +22,7 @@ func NewHandler(s services.UserValueService) *handler {
 func (h *handler) CreateUser(ctx echo.Context) error {
 	var user models.User
 	err := ctx.Bind(&user)
+	log.Infof("%v", user)
 	if err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -28,11 +30,11 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, err.Error())
 	}
 	cct := ctx.Request().Context()
-	err = h.service.CreateUser(cct, &user)
+	i, err := h.service.CreateUser(cct, &user)
 	if err != nil {
 		return ctx.JSON(getStatusCode(err), err.Error())
 	}
-	return ctx.JSON(http.StatusCreated, user)
+	return ctx.JSON(http.StatusCreated, i)
 }
 
 func (h *handler) GetUser(ctx echo.Context) error {

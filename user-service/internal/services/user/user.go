@@ -16,12 +16,12 @@ func NewUserService(s services.UserValueService) *userService {
 	}
 }
 
-func (s *userService) CreateUser(ctx context.Context, user *models.User) error {
-	err := s.sqlProv.CreateUser(ctx, user)
+func (s *userService) CreateUser(ctx context.Context, user *models.User) (int64, error) {
+	i, err := s.sqlProv.CreateUser(ctx, user)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return i, nil
 }
 
 func (s *userService) GetUser(ctx context.Context, id int64) (user models.User, err error) {
