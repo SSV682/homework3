@@ -36,10 +36,10 @@ type ConnConfig struct {
 	Network string `yaml:"network"`
 
 	// Addr the database server host.
-	Host string `yaml:"host" env-required:"true"`
+	Host string `yaml:"host" env:"HOST" env-required:"true"`
 
 	// Port the database server port.
-	Port string `yaml:"port" env-required:"true"`
+	Port string `yaml:"port" env:"PORT" env-required:"true"`
 
 	// Username to authenticate the current connection.
 	Username string `yaml:"username" env:"USER"`

@@ -31,12 +31,13 @@ spec:
             - |
               psql $POSTGRES_URI <<'EOF'
                 create table if not exists users (
-                  id        serial primary key,
-                  username  varchar(256),
-                  firstname varchar,
-                  lastname  varchar,
-                  email     varchar,
-                  phone     varchar
+                  id serial PRIMARY KEY NOT NULL,
+                  username varchar(255) UNIQUE NOT NULL,
+                  firstname varchar NOT NULL,
+                  lastname varchar NOT NULL,
+                  email varchar NOT NULL,
+                  phone varchar NOT NULL,
+                  \"password\" varchar NOT NULL
                 );
                 EOF
 

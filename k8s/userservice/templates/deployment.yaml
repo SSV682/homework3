@@ -54,13 +54,13 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /v1/health
+              path: /api/v1/health
               port: http
           envFrom:
             - secretRef:
-                name: app-secret
+                name: user-service-secrets
             - configMapRef:
-                name: app-config
+                name: user-service-configmap
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
