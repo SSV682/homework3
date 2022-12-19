@@ -34,7 +34,7 @@ service:
   port: 8090
 
 ingress:
-  enabled: true
+  enabled: false
   className: ""
   annotations: {}
   hosts:

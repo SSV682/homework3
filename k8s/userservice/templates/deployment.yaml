@@ -54,7 +54,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /api/v1/health
+              path: /health
               port: http
           envFrom:
             - secretRef:

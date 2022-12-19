@@ -27,7 +27,8 @@ const (
 )
 
 const (
-	usersTable = "users"
+	defaultSchema = "user_service"
+	usersTable    = defaultSchema + "." + "users"
 )
 
 type sqlUserProvider struct {

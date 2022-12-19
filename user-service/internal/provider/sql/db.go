@@ -11,7 +11,7 @@ import (
 
 const (
 	buildQuery   = "build query: %v"
-	executeQuery = "execute query: %v"
+	executeQuery = "execute query: %v , %s, %v"
 )
 
 const (
@@ -27,12 +27,15 @@ const (
 )
 
 const (
-	usersTable = "users"
+	defaultSchema = "user_service"
+	usersTable    = defaultSchema + "." + "users"
 )
 
 var (
 	queryBuilder       = sqrl.NewSelectBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
 	queryInsertBuilder = sqrl.NewInsertBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
+	queryUpdateBuilder = sqrl.NewUpdateBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
+	queryDeleteBuilder = sqrl.NewUpdateBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
 )
 
 type sqlProvider struct {
@@ -59,43 +62,72 @@ func (s *sqlProvider) CreateUser(ctx context.Context, user *models.User) (int64,
 
 	err = s.pool.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf(executeQuery, err)
+		return 0, fmt.Errorf(executeQuery, err, query, s.pool)
 	}
 
 	return id, err
 }
 
-func (s *sqlProvider) GetUser(ctx context.Context, id int64) (user models.User, err error) {
-	user = models.User{}
-	err = s.pool.QueryRowContext(ctx, `SELECT id, username, firstname, lastname, email, phone, password FROM users WHERE id = $1;`, id).Scan(&user.Id, &user.Username, &user.Firstname, &user.Lastname, &user.Email, &user.Phone, &user.Password)
-	return
+func (s *sqlProvider) GetUser(ctx context.Context, id int64) (models.User, error) {
+	var user models.User
+
+	q := queryBuilder.
+		Select(allColumns).
+		From(usersTable).
+		Where(sqrl.Eq{idColumn: id})
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return user, fmt.Errorf(buildQuery, err)
+	}
+
+	err = s.pool.GetContext(ctx, &user, query, args...)
+	if err != nil {
+		return user, fmt.Errorf(executeQuery, err, query, s.pool)
+	}
+
+	return user, nil
 }
 
-func (s *sqlProvider) DeleteUser(ctx context.Context, id int64) (err error) {
-	_, err = s.pool.ExecContext(ctx, `DELETE FROM users WHERE id = $1;`, id)
-	return
+func (s *sqlProvider) DeleteUser(ctx context.Context, id int64) error {
+	q := queryDeleteBuilder.
+		From(usersTable).
+		Where(sqrl.Eq{idColumn: id})
 
+	query, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf(buildQuery, err)
+	}
+
+	_, err = s.pool.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf(executeQuery, err, query, s.pool)
+	}
+
+	return nil
 }
 
 func (s *sqlProvider) UpdateUser(ctx context.Context, id int64, user *models.User) error {
-	user.Id = id
-	query := `
-		UPDATE users
-		SET username=:username,
-		    firstname=:firstname,
-		    lastname=:lastname, 
-		    email=:email, 
-		    phone=:phone
-		WHERE id=:id
-	`
-	rows, err := s.pool.NamedQueryContext(ctx, query, map[string]interface{}{
-		"username":  user.Username,
-		"firstname": user.Firstname,
-		"lastname":  user.Lastname,
-		"email":     user.Email,
-		"phone":     user.Phone,
-		"id":        id,
-	})
-	defer rows.Close()
-	return err
+
+	q := queryUpdateBuilder.
+		Update(usersTable).
+		Set(usernameColumn, user.Username).
+		Set(firstNameColumn, user.Firstname).
+		Set(lastNameColumn, user.Lastname).
+		Set(emailColumn, user.Email).
+		Set(phoneColumn, user.Phone).
+		Set(passwordColumn, user.Password).
+		Where(sqrl.Eq{idColumn: id})
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf(buildQuery, err)
+	}
+
+	_, err = s.pool.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf(executeQuery, err, query, s.pool)
+	}
+
+	return nil
 }

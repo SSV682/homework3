@@ -9,18 +9,17 @@ import (
 )
 
 const (
-	driverName   = "pgx"
-	databaseName = "postgres"
+	driverName = "pgx"
 )
 
 func initDBPool(cfg config.SQLConfig) (*sqlx.DB, error) {
 	dataSource := fmt.Sprintf(
-		"user=%s password=%s host=%s port=%s database=%s",
+		"user=%s password=%s host=%s port=%s database=%s sslmode=disable",
 		cfg.Username,
 		cfg.Password,
 		cfg.Host,
 		cfg.Port,
-		databaseName,
+		cfg.Name,
 	)
 
 	pool, err := sqlx.Open(driverName, dataSource)
