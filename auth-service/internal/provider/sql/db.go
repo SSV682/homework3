@@ -17,13 +17,14 @@ const (
 )
 
 const (
-	idColumn        = "id"
-	usernameColumn  = "username"
-	firstNameColumn = "firstname"
-	lastNameColumn  = "lastname"
-	emailColumn     = "email"
-	phoneColumn     = "phone"
-	passwordColumn  = "password"
+	idColumn           = "id"
+	usernameColumn     = "username"
+	firstNameColumn    = "firstname"
+	lastNameColumn     = "lastname"
+	emailColumn        = "email"
+	phoneColumn        = "phone"
+	passwordColumn     = "password"
+	allExceptIDColumns = usernameColumn + ", " + firstNameColumn + ", " + lastNameColumn + ", " + emailColumn + ", " + phoneColumn + ", " + passwordColumn
 )
 
 const (
@@ -44,7 +45,8 @@ func NewSQLBusinessRulesProvider(pool *sqlx.DB) *sqlUserProvider {
 }
 
 var (
-	queryBuilder = sqrl.NewSelectBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
+	queryBuilder       = sqrl.NewSelectBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
+	queryInsertBuilder = sqrl.NewInsertBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
 )
 
 func (s *sqlUserProvider) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
@@ -111,4 +113,26 @@ func (s *sqlUserProvider) GetUserByID(ctx context.Context, id int64) (*models.Us
 	default:
 		return nil, errors.New("username isn't unique")
 	}
+}
+
+func (s *sqlUserProvider) CreateUser(ctx context.Context, user *models.User) (int64, error) {
+	q := queryInsertBuilder.
+		Insert(usersTable).
+		Columns(allExceptIDColumns).
+		Values(user.Username, user.Firstname, user.Lastname, user.Email, user.Phone, user.Password).
+		Returning(idColumn)
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return 0, fmt.Errorf(buildQuery, err)
+	}
+
+	var id int64
+
+	err = s.pool.QueryRowContext(ctx, query, args...).Scan(&id)
+	if err != nil {
+		return 0, fmt.Errorf(executeQuery, err)
+	}
+
+	return id, err
 }

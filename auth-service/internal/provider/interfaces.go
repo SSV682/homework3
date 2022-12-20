@@ -8,6 +8,7 @@ import (
 type UserProvider interface {
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetUserByID(ctx context.Context, id int64) (*models.User, error)
+	CreateUser(ctx context.Context, user *models.User) (int64, error)
 }
 
 type TokenProvider interface {

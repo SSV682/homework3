@@ -2,9 +2,11 @@ package auth
 
 import (
 	"github.com/labstack/echo/v4"
+	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 	"strings"
 	"user-service/internal/domain/errors"
+	"user-service/internal/domain/models"
 	"user-service/internal/services"
 )
 
@@ -52,6 +54,23 @@ func (h *handler) CheckUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusUnauthorized, "invalid token")
 }
 
+func (h *handler) SignUp(ctx echo.Context) error {
+	var user models.User
+	err := ctx.Bind(&user)
+	if err != nil {
+		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	if ok, err := isRequestValid(&user); !ok {
+		return ctx.JSON(http.StatusBadRequest, err.Error())
+	}
+	cct := ctx.Request().Context()
+	i, err := h.service.SignUpUser(cct, &user)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err.Error())
+	}
+	return ctx.JSON(http.StatusCreated, i)
+}
+
 func getStatusCode(err error) int {
 	if err != nil {
 		return http.StatusOK
@@ -64,4 +83,13 @@ func getStatusCode(err error) int {
 	default:
 		return http.StatusInternalServerError
 	}
+}
+
+func isRequestValid(u *models.User) (bool, error) {
+	validate := validator.New()
+	err := validate.Struct(u)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
