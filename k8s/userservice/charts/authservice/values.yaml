@@ -31,7 +31,7 @@ podSecurityContext: {}
 securityContext: {}
 service:
   type: ClusterIP
-  port: 8090
+  port: 80
 
 ingress:
   enabled: false

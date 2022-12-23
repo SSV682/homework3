@@ -44,7 +44,7 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 	stableGroups := api.Group(VersionApi)
 
 	stableGroups.GET(usersEndpointName, h.GetUser)
-	stableGroups.POST(usersEndpointName, h.CreateUser)
+	//stableGroups.POST(usersEndpointName, h.CreateUser)
 	stableGroups.PATCH(usersEndpointName, h.UpdateUser)
 	stableGroups.DELETE(usersEndpointName, h.DeleteUser)
 
