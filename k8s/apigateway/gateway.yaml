@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
-  name: ingress
+  name: userservice-gateway
 spec:
   selector:
     istio: ingressgateway
@@ -12,3 +12,74 @@ spec:
         protocol: HTTP
       hosts:
         - "arch.homework"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: userservice-vs
+spec:
+  hosts:
+    - "arch.homework"
+  gateways:
+    - userservice-gateway
+  http: # Обратите внимание на порядок маршрутов, маршрут / идет последним, иначе все запросы будут идти именно в него
+    - match:
+        - uri:
+            exact: "/user"
+      rewrite:
+        uri: "/api/v1/user"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice.userservice.svc.cluster.local
+    - name: "auth-whitelisted" # Указываем имя для применения EnvoyFilter
+      match:
+        - uri:
+            prefix: "/"
+      rewrite:
+        uri: "/api/v1/"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice-authservice.userservice.svc.cluster.local
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: "auth-ap"
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods: ["POST"]
+            paths: ["/signup*"] # Разрешаем доступ к /auth всем запросам
+    - to:
+      - operation:
+          methods: ["POST"]
+          paths: [ "/auth*" ] # Разрешаем доступ к /auth всем запросам
+    - to:
+        - operation:
+            methods: [ "POST" ]
+            paths: [ "/login*" ] # Разрешаем доступ к /auth всем запросам
+    - to:
+        - operation:
+            methods: ["GET", "DELETE", "PATCH"]
+            paths: ["/user*"]
+#      when:
+#        - key: request.auth.claims[id_user] # Разрешаем доступ к /admin запросам, с JWT токеном внутри которого есть группа admin
+#          values: ["*"]
+    - from:
+        - source:
+            requestPrincipals: [ "*" ] # Запрещаем доступ к остальным ресурсам для запросов без JWT
+      to:
+        - operation:
+            notPaths: ["/auth*", "/signup*","/login*", "/user*"]
+
+---

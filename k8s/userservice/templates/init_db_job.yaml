@@ -4,13 +4,17 @@ metadata:
   name: {{ include "userservice.fullname" . }}
 spec:
   template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
       initContainers:
         - name: check-db-ready
           image: postgres:latest
           env:
             - name: POSTGRES_HOST
+#              value: postgres.userservice.svc.cluster.local
               value: {{ .Values.postgresql.fullnameOverride | quote }}
             - name: POSTGRES_PORT
               value: {{ printf "%d" ( .Values.postgresql.global.postgresql.service.ports.postgresql | int64 ) | quote }}
@@ -18,7 +22,9 @@ spec:
             - sh
             - "-c"
             - |
-              until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT; do echo waiting for database; sleep 2; done;
+              sleep 20;
+              until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT;do echo \"Waiting for Sidecar...\"; sleep 5; done;
+              echo \"Sidecar available. Running the command ... \";
       containers:
         - name: post-install-job
           env:
@@ -29,11 +35,13 @@ spec:
             - sh
             - "-c"
             - |
+              sleep 10;
+              
               psql $POSTGRES_URI <<'EOF'
 
               BEGIN;
 
-              DROP TABLE user_service.users;
+              DROP TABLE IF EXISTS user_service.users;
 
               DROP SCHEMA IF EXISTS user_service CASCADE;
 

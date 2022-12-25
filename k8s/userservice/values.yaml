@@ -98,7 +98,5 @@ postgresql:
         ports:
           postgresql: 5432
 
-#authservice:
-
 
 
