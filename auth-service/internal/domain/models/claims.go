@@ -3,6 +3,6 @@ package models
 import "time"
 
 type Claims struct {
-	ID     int64
+	ID     string
 	Expire time.Time
 }

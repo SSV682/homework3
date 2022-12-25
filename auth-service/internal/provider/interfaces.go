@@ -7,11 +7,11 @@ import (
 
 type UserProvider interface {
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
-	GetUserByID(ctx context.Context, id int64) (*models.User, error)
-	CreateUser(ctx context.Context, user *models.User) (int64, error)
+	GetUserByID(ctx context.Context, id string) (*models.User, error)
+	CreateUser(ctx context.Context, user *models.User) (string, error)
 }
 
 type TokenProvider interface {
 	ParseToken(tokenString string) (models.Claims, error)
-	CreateToken(userID int64) (string, error)
+	CreateToken(userID string) (string, error)
 }

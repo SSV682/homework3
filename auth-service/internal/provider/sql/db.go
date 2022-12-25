@@ -82,7 +82,7 @@ func (s *sqlUserProvider) GetUserByUsername(ctx context.Context, username string
 	}
 }
 
-func (s *sqlUserProvider) GetUserByID(ctx context.Context, id int64) (*models.User, error) {
+func (s *sqlUserProvider) GetUserByID(ctx context.Context, id string) (*models.User, error) {
 	q := queryBuilder.
 		Select(idColumn,
 			usernameColumn,
@@ -115,7 +115,7 @@ func (s *sqlUserProvider) GetUserByID(ctx context.Context, id int64) (*models.Us
 	}
 }
 
-func (s *sqlUserProvider) CreateUser(ctx context.Context, user *models.User) (int64, error) {
+func (s *sqlUserProvider) CreateUser(ctx context.Context, user *models.User) (string, error) {
 	q := queryInsertBuilder.
 		Insert(usersTable).
 		Columns(allExceptIDColumns).
@@ -124,14 +124,14 @@ func (s *sqlUserProvider) CreateUser(ctx context.Context, user *models.User) (in
 
 	query, args, err := q.ToSql()
 	if err != nil {
-		return 0, fmt.Errorf(buildQuery, err)
+		return "", fmt.Errorf(buildQuery, err)
 	}
 
-	var id int64
+	var id string
 
 	err = s.pool.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf(executeQuery, err)
+		return "", fmt.Errorf(executeQuery, err)
 	}
 
 	return id, err

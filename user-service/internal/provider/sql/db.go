@@ -46,7 +46,7 @@ func NewSQLProvider(pool *sqlx.DB) *sqlProvider {
 	return &sqlProvider{pool: pool}
 }
 
-func (s *sqlProvider) CreateUser(ctx context.Context, user *models.User) (int64, error) {
+func (s *sqlProvider) CreateUser(ctx context.Context, user *models.User) (string, error) {
 	q := queryInsertBuilder.
 		Insert(usersTable).
 		Columns(allExceptIDColumns).
@@ -55,20 +55,20 @@ func (s *sqlProvider) CreateUser(ctx context.Context, user *models.User) (int64,
 
 	query, args, err := q.ToSql()
 	if err != nil {
-		return 0, fmt.Errorf(buildQuery, err)
+		return "", fmt.Errorf(buildQuery, err)
 	}
 
-	var id int64
+	var id string
 
 	err = s.pool.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf(executeQuery, err, query, s.pool)
+		return "", fmt.Errorf(executeQuery, err, query, s.pool)
 	}
 
 	return id, err
 }
 
-func (s *sqlProvider) GetUser(ctx context.Context, id int64) (models.User, error) {
+func (s *sqlProvider) GetUser(ctx context.Context, id string) (models.User, error) {
 	var user models.User
 
 	q := queryBuilder.
@@ -89,7 +89,7 @@ func (s *sqlProvider) GetUser(ctx context.Context, id int64) (models.User, error
 	return user, nil
 }
 
-func (s *sqlProvider) DeleteUser(ctx context.Context, id int64) error {
+func (s *sqlProvider) DeleteUser(ctx context.Context, id string) error {
 	q := queryDeleteBuilder.
 		From(usersTable).
 		Where(sqrl.Eq{idColumn: id})
@@ -107,7 +107,7 @@ func (s *sqlProvider) DeleteUser(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (s *sqlProvider) UpdateUser(ctx context.Context, id int64, user *models.User) error {
+func (s *sqlProvider) UpdateUser(ctx context.Context, id string, user *models.User) error {
 
 	q := queryUpdateBuilder.
 		Update(usersTable).

@@ -48,7 +48,7 @@ spec:
               CREATE SCHEMA user_service;
 
                 create table if not exists user_service.users (
-                  id serial PRIMARY KEY NOT NULL,
+                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                   username varchar(255) UNIQUE NOT NULL,
                   firstname varchar NOT NULL,
                   lastname varchar NOT NULL,
@@ -60,3 +60,5 @@ spec:
                 COMMIT;
 
   backoffLimit: 0
+
+{{/*  id serial PRIMARY KEY NOT NULL,*/}}

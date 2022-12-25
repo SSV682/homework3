@@ -7,11 +7,11 @@ import (
 
 type Claims struct {
 	jwt.RegisteredClaims
-	Exp    int64 `json:"exp"`
-	IDUser int64 `json:"id_user"`
+	Exp    int64  `json:"exp"`
+	IDUser string `json:"id_user"`
 }
 
-func NewClaims(id int64) Claims {
+func NewClaims(id string) Claims {
 	exp := time.Now().Add(24 * time.Hour).Unix()
 
 	return Claims{

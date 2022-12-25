@@ -7,6 +7,6 @@ import (
 
 type AuthService interface {
 	CheckUser(ctx context.Context, token string) (bool, error)
-	SignUpUser(ctx context.Context, user *models.User) (int64, error)
+	SignUpUser(ctx context.Context, user *models.User) (string, error)
 	LoginUser(ctx context.Context, username, password string) (*string, error)
 }

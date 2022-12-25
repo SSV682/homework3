@@ -19,10 +19,10 @@ func NewUserService(s provider.SqlUserProvider, t provider.TokenProvider) *userS
 	}
 }
 
-func (s *userService) CreateUser(ctx context.Context, user *models.User) (int64, error) {
+func (s *userService) CreateUser(ctx context.Context, user *models.User) (string, error) {
 	i, err := s.sqlProv.CreateUser(ctx, user)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	return i, nil
 }
@@ -64,10 +64,10 @@ func (s *userService) UpdateUser(ctx context.Context, token string, user *models
 	return nil
 }
 
-func (s *userService) getIDFromClaims(token string) (int64, error) {
+func (s *userService) getIDFromClaims(token string) (string, error) {
 	claims, err := s.tokenProv.ParseToken(token)
 	if err != nil {
-		return 0, fmt.Errorf("get id from claims: %v", err)
+		return "", fmt.Errorf("get id from claims: %v", err)
 	}
 
 	return claims.ID, nil

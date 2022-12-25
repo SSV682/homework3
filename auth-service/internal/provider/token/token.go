@@ -33,7 +33,7 @@ func NewJWTProvider() *tokenProvider {
 	}
 }
 
-func (t *tokenProvider) CreateToken(userID int64) (string, error) {
+func (t *tokenProvider) CreateToken(userID string) (string, error) {
 	claims := NewClaims(userID)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

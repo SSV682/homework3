@@ -53,10 +53,10 @@ func (s *userService) CheckUser(ctx context.Context, token string) (bool, error)
 	return true, nil
 }
 
-func (s *userService) SignUpUser(ctx context.Context, user *models.User) (int64, error) {
+func (s *userService) SignUpUser(ctx context.Context, user *models.User) (string, error) {
 	i, err := s.sqlProv.CreateUser(ctx, user)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	return i, nil
 }

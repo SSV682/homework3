@@ -1,7 +1,7 @@
 package models
 
 type User struct {
-	Id        int64
+	Id        string
 	Username  string //`validate:"string,max=256"`
 	Firstname string
 	Lastname  string
