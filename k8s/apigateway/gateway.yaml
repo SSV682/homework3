@@ -72,9 +72,9 @@ spec:
         - operation:
             methods: ["GET", "DELETE", "PATCH"]
             paths: ["/user*"]
-#      when:
-#        - key: request.auth.claims[id_user] # Разрешаем доступ к /admin запросам, с JWT токеном внутри которого есть группа admin
-#          values: ["*"]
+      when:
+        - key: request.auth.claims[id_user] # Разрешаем доступ к /admin запросам, с JWT токеном внутри которого есть группа admin
+          values: ["*"]
     - from:
         - source:
             requestPrincipals: [ "*" ] # Запрещаем доступ к остальным ресурсам для запросов без JWT
