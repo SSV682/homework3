@@ -16,7 +16,7 @@ databases:
       port: 5432
       username: postgres    # env: POSTGRES_USER
       password: password #env: POSTGRES_PASSWORD
-      dbname: homework #env: POSTGRES_DB
+      dbname: postgres #env: POSTGRES_DB
     max_open_conns: 10
     max_idle_conns: 10
     conn_max_idle_time: 5m

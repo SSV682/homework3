@@ -43,13 +43,15 @@ func (s *userService) CheckUser(ctx context.Context, token string) (bool, error)
 		return false, fmt.Errorf(ErrorParseToken, err)
 	}
 
-	if _, err := s.sqlProv.GetUserByID(ctx, claims.ID); err != nil {
+	userID, found := claims["id_user"]
+	if !found {
+		return false, fmt.Errorf("failed cast user_id")
+	}
+
+	if _, err := s.sqlProv.GetUserByID(ctx, userID.(string)); err != nil {
 		return false, fmt.Errorf(ErrorCheckUserByID, err)
 	}
 
-	//if claims.Expire.Unix() < time.Now().Unix() {
-	//	return false, nil
-	//}
 	return true, nil
 }
 

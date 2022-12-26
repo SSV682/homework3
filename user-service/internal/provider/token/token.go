@@ -3,9 +3,8 @@ package token
 import (
 	"crypto/rsa"
 	"fmt"
-	"github.com/golang-jwt/jwt"
-	"time"
-	"user-service/internal/domain/models"
+	"github.com/golang-jwt/jwt/v4"
+	log "github.com/sirupsen/logrus"
 )
 
 type tokenProvider struct {
@@ -15,6 +14,10 @@ type tokenProvider struct {
 
 const (
 	SecretKey = "AlexKraken"
+	PublicKey = "-----BEGIN PUBLIC KEY-----\n" +
+		"MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAMlxrcVZp+r6OZLC0smL/eUobx9T5dotNu6jD3I2sj7alyKM6YlvKgvL0MgyfYlyl6Ly32XxtvfA1vwnxvdmHxkCAwEAAQ==" +
+		"\n-----END PUBLIC KEY-----"
+	KID = "zXew0UJ1h6Q4CCcd_9wxMzvcp5cEBifH0KWrCz2Kyxc"
 )
 
 const (
@@ -33,20 +36,27 @@ func NewJWTProvider() *tokenProvider {
 	}
 }
 
-func (t *tokenProvider) ParseToken(tokenString string) (models.Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(t.secretKey), nil
-	})
+func (t *tokenProvider) ParseToken(tokenString string) (jwt.MapClaims, error) {
+	key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(PublicKey))
 	if err != nil {
-		return models.Claims{}, fmt.Errorf(ErrorParseWithClaims, err)
+		return nil, fmt.Errorf("validate parse key: %w", err)
 	}
 
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-		return models.Claims{
-			ID:     claims.IDUser,
-			Expire: time.Unix(claims.Exp, 0),
-		}, nil
+	token, err := jwt.Parse(tokenString, func(jwtToken *jwt.Token) (interface{}, error) {
+		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
+		}
+
+		return key, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+
+	log.Info(token.Claims)
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
 	} else {
-		return models.Claims{}, fmt.Errorf(ErrorInvalidToken, err)
+		return nil, fmt.Errorf(ErrorInvalidToken, err)
 	}
 }

@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"github.com/golang-jwt/jwt/v4"
 
 	"user-service/internal/domain/models"
 )
@@ -14,5 +15,5 @@ type SqlUserProvider interface {
 }
 
 type TokenProvider interface {
-	ParseToken(tokenString string) (models.Claims, error)
+	ParseToken(tokenString string) (jwt.MapClaims, error)
 }

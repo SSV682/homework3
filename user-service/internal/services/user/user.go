@@ -69,6 +69,9 @@ func (s *userService) getIDFromClaims(token string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("get id from claims: %v", err)
 	}
-
-	return claims.ID, nil
+	if ID, found := claims["id_user"]; found {
+		return ID.(string), nil
+	} else {
+		return "", fmt.Errorf("failed cast user_id")
+	}
 }

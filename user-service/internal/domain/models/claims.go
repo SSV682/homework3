@@ -1,8 +1,8 @@
 package models
 
-import "time"
+import "github.com/golang-jwt/jwt/v4"
 
 type Claims struct {
-	ID     string
-	Expire time.Time
+	ID string
+	jwt.RegisteredClaims
 }
