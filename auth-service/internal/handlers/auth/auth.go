@@ -4,7 +4,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
-	"strings"
 	"user-service/internal/domain/errors"
 	"user-service/internal/domain/models"
 	"user-service/internal/services"
@@ -25,10 +24,9 @@ func (h *handler) LoginUser(ctx echo.Context) error {
 		String("username", &user.Username).
 		String("password", &user.Password).
 		BindError()
-	//err := ctx.Bind(&user)
-	//(&DefaultBinder{}).
+
 	if err != nil {
-		return ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+		return ctx.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	cct := ctx.Request().Context()
@@ -41,17 +39,21 @@ func (h *handler) LoginUser(ctx echo.Context) error {
 }
 
 func (h *handler) CheckUser(ctx echo.Context) error {
-	token := ctx.Request().Header.Get("Authorization")
-	jwtString := strings.Split(token, "Bearer ")[1]
+	var token Token
+	err := ctx.Bind(&token)
+	if err != nil {
+		//TODO: implement
+	}
+
 	cct := ctx.Request().Context()
-	ok, err := h.service.CheckUser(cct, jwtString)
+	claims, err := h.service.CheckUser(cct, token.Token)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, err.Error())
 	}
-	if ok {
-		return ctx.JSON(http.StatusOK, "ok")
+	response := &UserResponse{
+		UserID: claims.ID,
 	}
-	return ctx.JSON(http.StatusUnauthorized, "invalid token")
+	return ctx.JSON(http.StatusOK, response)
 }
 
 func (h *handler) SignUp(ctx echo.Context) error {
@@ -69,6 +71,14 @@ func (h *handler) SignUp(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, err.Error())
 	}
 	return ctx.JSON(http.StatusCreated, i)
+}
+
+func (h *handler) Keys(ctx echo.Context) error {
+	keys, err := h.service.GetKeys()
+	if err != nil {
+
+	}
+	return ctx.JSON(http.StatusOK, keys)
 }
 
 func getStatusCode(err error) int {

@@ -65,13 +65,13 @@ func (s *userService) UpdateUser(ctx context.Context, token string, user *models
 }
 
 func (s *userService) getIDFromClaims(token string) (string, error) {
-	claims, err := s.tokenProv.ParseToken(token)
-	if err != nil {
-		return "", fmt.Errorf("get id from claims: %v", err)
-	}
-	if ID, found := claims["id_user"]; found {
-		return ID.(string), nil
-	} else {
-		return "", fmt.Errorf("failed cast user_id")
-	}
+	//claims, err := s.tokenProv.ParseToken(token)
+	//if err != nil {
+	//	return "", fmt.Errorf("get id from claims: %v", err)
+	//}
+	//if ID, found := claims["id_user"]; found {
+	//	return ID.(string), nil
+	//} else {
+	return "", fmt.Errorf("failed cast user_id")
+	//}
 }

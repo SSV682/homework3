@@ -39,7 +39,9 @@ func NewApp(configPath string) *App {
 	tokenProv := token.NewJWTProvider()
 	userService := user.NewUserService(sqlProv, tokenProv)
 
-	rs := handlers.NewRegisterServices(userService)
+	url := "http://" + cfg.AuthService.Host + ":" + cfg.AuthService.Port + cfg.AuthService.Endpoint
+
+	rs := handlers.NewRegisterServices(userService, url)
 
 	err = handlers.RegisterHandlers(handler, rs)
 	if err != nil {

@@ -3,6 +3,9 @@ package user
 import (
 	"context"
 	"fmt"
+	"github.com/lestrrat-go/jwx/v2/jwk"
+	log "github.com/sirupsen/logrus"
+	"user-service/internal/domain/errors"
 	"user-service/internal/domain/models"
 	"user-service/internal/provider"
 )
@@ -26,7 +29,7 @@ func (s *userService) LoginUser(ctx context.Context, username, password string) 
 	}
 
 	if user.Password == password {
-		token, err := s.tokenProv.CreateToken(user.Id)
+		token, err := s.tokenProv.CreateToken(user.ID)
 		if err != nil {
 			return nil, fmt.Errorf(ErrorCreateToken, err)
 		}
@@ -37,22 +40,25 @@ func (s *userService) LoginUser(ctx context.Context, username, password string) 
 	return nil, fmt.Errorf(ErrorWrongPass, err)
 }
 
-func (s *userService) CheckUser(ctx context.Context, token string) (bool, error) {
-	claims, err := s.tokenProv.ParseToken(token)
+func (s *userService) CheckUser(ctx context.Context, payload string) (*models.ClaimsDTO, error) {
+	token, err := s.tokenProv.ParseToken(payload)
 	if err != nil {
-		return false, fmt.Errorf(ErrorParseToken, err)
+		log.Errorf(ErrorParseToken, err)
+		return nil, errors.ErrFailedToken
 	}
 
-	userID, found := claims["id_user"]
+	userID, found := token.Get("id_user")
 	if !found {
-		return false, fmt.Errorf("failed cast user_id")
+		log.Errorf("failed cast user_id")
+		return nil, errors.ErrFailedToken
 	}
 
 	if _, err := s.sqlProv.GetUserByID(ctx, userID.(string)); err != nil {
-		return false, fmt.Errorf(ErrorCheckUserByID, err)
+		log.Errorf(ErrorCheckUser, err)
+		return nil, errors.ErrInternalError
 	}
 
-	return true, nil
+	return &models.ClaimsDTO{ID: userID.(string)}, nil
 }
 
 func (s *userService) SignUpUser(ctx context.Context, user *models.User) (string, error) {
@@ -61,4 +67,15 @@ func (s *userService) SignUpUser(ctx context.Context, user *models.User) (string
 		return "", err
 	}
 	return i, nil
+}
+
+func (s *userService) GetKeys() (jwk.Set, error) {
+	set, err := s.tokenProv.GetKeys()
+	//json, err := json.MarshalIndent(set, "", " ")
+	if err != nil {
+		log.Printf("failed to marshal key set into JSON: %s", err)
+
+	}
+
+	return set, nil
 }

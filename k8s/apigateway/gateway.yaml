@@ -73,8 +73,8 @@ spec:
             methods: ["GET", "DELETE", "PATCH"]
             paths: ["/user*"]
       when:
-        - key: request.auth.claims[id_user] # Разрешаем доступ к /admin запросам, с JWT токеном внутри которого есть группа admin
-          values: ["*"]
+        - key: request.auth.claims[iss] # Разрешаем доступ к /admin запросам, с JWT токеном внутри которого есть группа admin
+          values: ["http://userservice-authservice.userservice.svc.cluster.local"]
     - from:
         - source:
             requestPrincipals: [ "*" ] # Запрещаем доступ к остальным ресурсам для запросов без JWT

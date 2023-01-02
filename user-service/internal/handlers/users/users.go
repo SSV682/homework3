@@ -1,6 +1,7 @@
 package users
 
 import (
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
@@ -12,6 +13,11 @@ import (
 
 type handler struct {
 	service services.UserService
+}
+
+type jwtCustomClaims struct {
+	UserID string `json:"user_id"`
+	jwt.RegisteredClaims
 }
 
 func NewHandler(s services.UserService) *handler {
@@ -37,15 +43,18 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 }
 
 func (h *handler) GetUser(ctx echo.Context) error {
-	token := ctx.Request().Header.Get("Authorization")
-	jwtString := strings.Split(token, "Bearer ")[1]
+	user := ctx.Get("user").(*jwt.Token)
+	claims := user.Claims.(*jwtCustomClaims)
+	userID := claims.UserID
+	//token := ctx.Request().Header.Get("Authorization")
+	//jwtString := strings.Split(token, "Bearer ")[1]
 
-	ccx := ctx.Request().Context()
-	user, err := h.service.GetUser(ccx, jwtString)
-	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
-	}
-	return ctx.JSON(http.StatusOK, user)
+	//ccx := ctx.Request().Context()
+	//user, err := h.service.GetUser(ccx, jwtString)
+	//if err != nil {
+	//	return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+	//}
+	return ctx.JSON(http.StatusOK, userID)
 }
 
 func (h *handler) DeleteUser(ctx echo.Context) error {

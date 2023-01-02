@@ -1,13 +1,12 @@
 package errors
 
-type UserError string
-
-func (ee UserError) Error() string {
-	return string(ee)
-}
+import "errors"
 
 var (
-	ErrNonExistentId   = UserError("non-existent id")
-	ErrIncorrectParams = UserError("incorrect params")
-	ErrConflict        = UserError("conflict")
+	ErrNonExistentId    = errors.New("non-existent id")
+	ErrIncorrectParams  = errors.New("incorrect params")
+	ErrFailedToken      = errors.New("failed token")
+	ErrConflict         = errors.New("conflict")
+	ErrInternalError    = errors.New("internal server error")
+	ErrUnauthorizedUser = errors.New("unauthorized user")
 )

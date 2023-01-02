@@ -2,7 +2,9 @@ package provider
 
 import (
 	"context"
-	"github.com/golang-jwt/jwt/v4"
+	//"github.com/golang-jwt/jwt/v4"
+	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"user-service/internal/domain/models"
 )
 
@@ -13,6 +15,7 @@ type UserProvider interface {
 }
 
 type TokenProvider interface {
-	ParseToken(tokenString string) (jwt.MapClaims, error)
+	ParseToken(tokenString string) (jwt.Token, error)
 	CreateToken(userID string) (string, error)
+	GetKeys() (jwk.Set, error)
 }

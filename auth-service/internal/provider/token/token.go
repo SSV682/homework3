@@ -1,33 +1,26 @@
 package token
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha1"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	log "github.com/sirupsen/logrus"
+	"github.com/google/uuid"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jws"
+	"github.com/lestrrat-go/jwx/v2/jwt"
+	"time"
 )
 
 type tokenProvider struct {
-	verifyKey *rsa.PublicKey
-	secretKey string
+	privateSet jwk.Set
+	publicSet  jwk.Set
+	privateKey *rsa.PrivateKey
+	publicKey  *rsa.PublicKey
 }
-
-const (
-	SecretKey  = "AlexKraken"
-	PrivateKey = "-----BEGIN RSA PRIVATE KEY-----\n" +
-		"MIIBOwIBAAJBAMlxrcVZp+r6OZLC0smL/eUobx9T5dotNu6jD3I2sj7alyKM6Ylv" +
-		"KgvL0MgyfYlyl6Ly32XxtvfA1vwnxvdmHxkCAwEAAQJAPq7R/Mv2NWchjSp0fuTB" +
-		"35HiaiQoLOjO5Bj3UHn2oxnB7Nb0zpHZmfGwvYh+nz3vC5B5t6y5NRPsKLF0JWsW" +
-		"kQIhAPjLqh10XfdUGajqGlJh+9Hjzv53mPOlQWYr7yezEJlFAiEAz0b+sfPEe4rA" +
-		"WE7bpaPpITD+Bt2FDXb2rofEq0g1ycUCIARW0P24hNcGcXgftRvQt6qedYK8pT9C" +
-		"l5RnmcEwf06dAiEAkWHbXNd8taZRWN8ewmRgLQ6e7hPLsfEB/tJtiDGiwH0CIQCz" +
-		"UY/9L/HG/X28D5oKLgySx5YI/jYcVoLhomx7GCxSZQ==" +
-		"\n-----END RSA PRIVATE KEY-----"
-	PublicKey = "-----BEGIN PUBLIC KEY-----\n" +
-		"MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAMlxrcVZp+r6OZLC0smL/eUobx9T5dotNu6jD3I2sj7alyKM6YlvKgvL0MgyfYlyl6Ly32XxtvfA1vwnxvdmHxkCAwEAAQ==" +
-		"\n-----END PUBLIC KEY-----"
-	KID = "zXew0UJ1h6Q4CCcd_9wxMzvcp5cEBifH0KWrCz2Kyxc"
-)
 
 const (
 	ErrorParseWithClaims = "parse with claims: %v"
@@ -35,58 +28,77 @@ const (
 )
 
 func NewJWTProvider() *tokenProvider {
-	key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(SecretKey))
-	if err != nil {
+	raw, err := rsa.GenerateKey(rand.Reader, 2048)
 
+	hasher := sha1.New()
+	hasher.Write([]byte(time.Now().String()))
+	kid := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+	privateJWK, err := jwk.FromRaw(raw)
+	if err != nil {
+		fmt.Printf("failed to create asymmetric key: %s\n", err)
 	}
+	//if _, ok := privateJWK.(jwk.RSAPrivateKey); !ok {
+	//	fmt.Printf("expected jwk.SymmetricKey, got %T\n", jwkKey)
+	//}
+
+	privateJWK.Set(jwk.KeyIDKey, kid)
+	privateJWK.Set(jwk.AlgorithmKey, jwa.RS256)
+
+	privateSet := jwk.NewSet()
+	privateSet.AddKey(privateJWK)
+
 	return &tokenProvider{
-		verifyKey: key,
-		secretKey: SecretKey,
+		privateSet: privateSet,
+		privateKey: raw,
+		publicKey:  &raw.PublicKey,
 	}
 }
 
 func (t *tokenProvider) CreateToken(userID string) (string, error) {
-	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(PrivateKey))
+	tok, err := jwt.NewBuilder().
+		Issuer("http://userservice-authservice.userservice.svc.cluster.local").
+		IssuedAt(time.Now()).
+		NotBefore(time.Now()).
+		Expiration(time.Now().Add(24*time.Hour)).
+		JwtID(uuid.New().String()).
+		Claim("id_user", userID).
+		Build()
 	if err != nil {
-		return "", fmt.Errorf("create: parse key: %w", err)
+		return "", fmt.Errorf("doesnt build token: %v", err)
+	}
+	buf, err := json.MarshalIndent(tok, "", " ")
+	if err != nil {
+		return "", fmt.Errorf("failed to generate JSON: %s", err)
 	}
 
-	claims := NewClaims(userID)
+	key, _ := t.privateSet.Key(0)
 
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-
-	headers := jwtToken.Header
-	headers["kid"] = KID
-	jwtToken.Header = headers
-
-	jwtSignedB64, err := jwtToken.SignedString(key)
+	signed, err := jws.Sign(buf, jws.WithKey(jwa.RS256, key))
 	if err != nil {
-		return "", fmt.Errorf("doesnt signed token: %v", err)
+		return "", fmt.Errorf("doesnt sign token: %v", err)
 	}
-	return jwtSignedB64, nil
+	return string(signed), nil
 }
 
-func (t *tokenProvider) ParseToken(tokenString string) (jwt.MapClaims, error) {
-	key, err := jwt.ParseRSAPublicKeyFromPEM([]byte(PublicKey))
+func (t *tokenProvider) ParseToken(tokenString string) (jwt.Token, error) {
+	set, err := t.GetKeys()
 	if err != nil {
-		return nil, fmt.Errorf("validate parse key: %w", err)
+		return nil, fmt.Errorf("failed to verify JWS: %s\n", err)
 	}
 
-	token, err := jwt.Parse(tokenString, func(jwtToken *jwt.Token) (interface{}, error) {
-		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unexpected method: %s", jwtToken.Header["alg"])
-		}
-
-		return key, nil
-	})
+	verifiedToken, err := jwt.Parse([]byte(tokenString), jwt.WithValidate(true), jwt.WithKeySet(set))
 	if err != nil {
-		return nil, fmt.Errorf("validate: %w", err)
+		return nil, fmt.Errorf("failed to verify JWS: %s\n", err)
 	}
 
-	log.Info(token.Claims)
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims, nil
-	} else {
-		return nil, fmt.Errorf(ErrorInvalidToken, err)
+	return verifiedToken, nil
+}
+
+func (t *tokenProvider) GetKeys() (jwk.Set, error) {
+	set, err := jwk.PublicSetOf(t.privateSet)
+	if err != nil {
+		return nil, fmt.Errorf("cant get set: %s", err)
 	}
+	return set, nil
 }

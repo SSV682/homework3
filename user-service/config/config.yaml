@@ -31,3 +31,9 @@ databases:
 
 timeout:
   duration : 5
+
+auth_service:
+  host: 'authService'
+  port: 8001
+  endpoint: "/api/v1/keys"
+
