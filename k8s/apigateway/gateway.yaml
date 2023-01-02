@@ -48,7 +48,7 @@ spec:
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: "auth-ap"
+  name: userservice-ap
   namespace: istio-system
 spec:
   selector:
@@ -82,4 +82,21 @@ spec:
         - operation:
             notPaths: ["/auth*", "/signup*","/login*", "/user*"]
 
+---
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: userservice-ra
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  jwtRules: # Включаем фильтр для анализа JWT токена
+    - issuer: "http://userservice-authservice.userservice.svc.cluster.local"
+      jwksUri: "http://userservice-authservice.userservice.svc.cluster.local/api/v1/keys"
+      forwardOriginalToken: true
+      outputPayloadToHeader: "x-jwt-token"
+      fromHeaders:
+        - name: "Authorization"
 ---
