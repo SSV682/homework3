@@ -26,6 +26,8 @@ services:
       - db
     networks:
       - home_net
+    links:
+      - authService
 
   authService:
     build: ./auth-service

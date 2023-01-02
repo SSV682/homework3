@@ -6,7 +6,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
-	"strings"
 	"user-service/internal/domain/models"
 	"user-service/internal/services"
 )
@@ -43,26 +42,21 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 }
 
 func (h *handler) GetUser(ctx echo.Context) error {
-	user := ctx.Get("user").(*jwt.Token)
-	claims := user.Claims.(*jwtCustomClaims)
-	userID := claims.UserID
-	//token := ctx.Request().Header.Get("Authorization")
-	//jwtString := strings.Split(token, "Bearer ")[1]
+	userID := ctx.Get("userID").(string)
 
-	//ccx := ctx.Request().Context()
-	//user, err := h.service.GetUser(ccx, jwtString)
-	//if err != nil {
-	//	return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
-	//}
-	return ctx.JSON(http.StatusOK, userID)
+	ccx := ctx.Request().Context()
+	user, err := h.service.GetUser(ccx, userID)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+	}
+	return ctx.JSON(http.StatusOK, user)
 }
 
 func (h *handler) DeleteUser(ctx echo.Context) error {
-	token := ctx.Request().Header.Get("Authorization")
-	jwtString := strings.Split(token, "Bearer ")[1]
+	userID := ctx.Get("userID").(string)
 
 	ccx := ctx.Request().Context()
-	err := h.service.DeleteUser(ccx, jwtString)
+	err := h.service.DeleteUser(ccx, userID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
@@ -71,8 +65,8 @@ func (h *handler) DeleteUser(ctx echo.Context) error {
 
 func (h *handler) UpdateUser(ctx echo.Context) error {
 	var user models.User
-	token := ctx.Request().Header.Get("Authorization")
-	jwtString := strings.Split(token, "Bearer ")[1]
+
+	userID := ctx.Get("userID").(string)
 
 	ccx := ctx.Request().Context()
 	err := ctx.Bind(&user)
@@ -83,7 +77,7 @@ func (h *handler) UpdateUser(ctx echo.Context) error {
 	if ok, err := isRequestValid(&user); !ok {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 	}
-	err = h.service.UpdateUser(ccx, jwtString, &user)
+	err = h.service.UpdateUser(ccx, userID, &user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 	}
@@ -99,17 +93,3 @@ func isRequestValid(u *models.User) (bool, error) {
 	}
 	return true, nil
 }
-
-//func getStatusCode(err error) int {
-//	if err != nil {
-//		return http.StatusOK
-//	}
-//	switch err {
-//	case errors.ErrConflict:
-//		return http.StatusInternalServerError
-//	case errors.ErrNonExistentId:
-//		return http.StatusNotFound
-//	default:
-//		return http.StatusInternalServerError
-//	}
-//}

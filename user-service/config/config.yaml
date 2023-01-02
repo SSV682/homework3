@@ -21,19 +21,11 @@ databases:
     max_idle_conns: 10
     conn_max_idle_time: 5m
 
-#
-#conn:
-#  host: 'provider'
-#  port: '5432'
-#  dbname: 'homework'
-#  user: 'postgres'
-#  password: 'password'
-
 timeout:
   duration : 5
 
 auth_service:
   host: 'authService'
-  port: 8001
+  port: 8000
   endpoint: "/api/v1/keys"
 

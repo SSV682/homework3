@@ -8,14 +8,12 @@ import (
 )
 
 type userService struct {
-	sqlProv   provider.SqlUserProvider
-	tokenProv provider.TokenProvider
+	sqlProv provider.SqlUserProvider
 }
 
-func NewUserService(s provider.SqlUserProvider, t provider.TokenProvider) *userService {
+func NewUserService(s provider.SqlUserProvider) *userService {
 	return &userService{
-		sqlProv:   s,
-		tokenProv: t,
+		sqlProv: s,
 	}
 }
 
@@ -27,51 +25,24 @@ func (s *userService) CreateUser(ctx context.Context, user *models.User) (string
 	return i, nil
 }
 
-func (s *userService) GetUser(ctx context.Context, token string) (models.User, error) {
-	id, err := s.getIDFromClaims(token)
+func (s *userService) GetUser(ctx context.Context, userID string) (models.User, error) {
+	user, err := s.sqlProv.GetUser(ctx, userID)
 	if err != nil {
-		return models.User{}, fmt.Errorf("get user doesnt have id: %v", err)
-	}
-
-	user, err := s.sqlProv.GetUser(ctx, id)
-	if err != nil {
-		return models.User{}, fmt.Errorf("get user by id %d: %v", id, err)
+		return models.User{}, fmt.Errorf("get user by id %s: %v", userID, err)
 	}
 	return user, nil
 }
 
-func (s *userService) DeleteUser(ctx context.Context, token string) error {
-	id, err := s.getIDFromClaims(token)
-	if err != nil {
-		return fmt.Errorf("get user : %v", err)
-	}
-
-	if err = s.sqlProv.DeleteUser(ctx, id); err != nil {
+func (s *userService) DeleteUser(ctx context.Context, userID string) error {
+	if err := s.sqlProv.DeleteUser(ctx, userID); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *userService) UpdateUser(ctx context.Context, token string, user *models.User) error {
-	id, err := s.getIDFromClaims(token)
-	if err != nil {
-		return fmt.Errorf("get user : %v", err)
-	}
-
-	if err = s.sqlProv.UpdateUser(ctx, id, user); err != nil {
+func (s *userService) UpdateUser(ctx context.Context, userID string, user *models.User) error {
+	if err := s.sqlProv.UpdateUser(ctx, userID, user); err != nil {
 		return err
 	}
 	return nil
-}
-
-func (s *userService) getIDFromClaims(token string) (string, error) {
-	//claims, err := s.tokenProv.ParseToken(token)
-	//if err != nil {
-	//	return "", fmt.Errorf("get id from claims: %v", err)
-	//}
-	//if ID, found := claims["id_user"]; found {
-	//	return ID.(string), nil
-	//} else {
-	return "", fmt.Errorf("failed cast user_id")
-	//}
 }
