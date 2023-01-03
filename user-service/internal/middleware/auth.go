@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v2/jwk"
@@ -16,7 +17,12 @@ func AuthMiddleware(jwkURL string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			if payload := ctx.Request().Header.Get("x-jwt-token"); payload != "" {
+				data, err := base64.StdEncoding.DecodeString(payload)
+				if err != nil {
+					log.Fatal("error:", err)
+				}
 				log.Infof("payload: %v", payload)
+				log.Infof("payload data: %v", data)
 			}
 
 			header := ctx.Request().Header.Get("Authorization")

@@ -99,4 +99,5 @@ spec:
       outputPayloadToHeader: "x-jwt-token"
       fromHeaders:
         - name: "Authorization"
+          prefix: "Bearer "
 ---
