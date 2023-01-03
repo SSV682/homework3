@@ -38,7 +38,13 @@ func NewApp(configPath string) *App {
 	//tokenProv := token.NewJWTProvider()
 	userService := user.NewUserService(sqlProv)
 
-	url := "http://" + cfg.AuthService.Host + ":" + cfg.AuthService.Port + cfg.AuthService.Endpoint
+	var url string
+	if cfg.AuthService.Port != "" {
+		url = "http://" + cfg.AuthService.Host + ":" + cfg.AuthService.Port + cfg.AuthService.Endpoint
+	} else {
+		url = "http://" + cfg.AuthService.Host + cfg.AuthService.Endpoint
+	}
+
 	//url := "http://" + cfg.AuthService.Host + ":" + cfg.AuthService.Port + cfg.AuthService.Endpoint
 
 	rs := handlers.NewRegisterServices(userService, url)

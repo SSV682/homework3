@@ -12,3 +12,8 @@ data:
   POSTGRES_PORT: {{ .Values.postgresql.global.postgresql.service.ports.postgresql | quote}}
   POSTGRES_NAME: {{ .Values.postgresql.global.postgresql.auth.database | quote}}
   POSTGRES_USER: {{ .Values.postgresql.global.postgresql.auth.username | quote}}
+  AUTH_HOST: {{ .Values.authservice.host | quote }}
+  AUTH_PORT: {{ .Values.authservice.port | quote }}
+  AUTH_ENDPOINT: {{ .Values.authservice.endpoint | quote }}
+
+

@@ -98,5 +98,10 @@ postgresql:
         ports:
           postgresql: 5432
 
+authservice:
+  host: "userservice-authservice.userservice.svc.cluster.local"
+  port: ""
+  endpoint: "/api/v1/keys"
+
 
 
