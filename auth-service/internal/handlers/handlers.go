@@ -14,8 +14,8 @@ const (
 	healthEndpointName  = "/health"
 	authEndpointName    = "/auth"
 	loginEndpointName   = "/login"
-	signUpEndpointName  = "/signup"
-	keysEndpointName    = "/keys"
+	//signUpEndpointName  = "/signup"
+	keysEndpointName = "/keys"
 )
 
 const (
@@ -46,7 +46,7 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 
 	stableGroups.POST(authEndpointName, h.CheckUser)
 	stableGroups.POST(loginEndpointName, h.LoginUser)
-	stableGroups.POST(signUpEndpointName, h.SignUp)
+	//stableGroups.POST(signUpEndpointName, h.SignUp)
 	stableGroups.GET(keysEndpointName, h.Keys)
 
 	return nil

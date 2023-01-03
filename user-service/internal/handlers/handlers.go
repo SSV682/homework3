@@ -14,6 +14,7 @@ const (
 	metricsEndpointName = "/metrics"
 	healthEndpointName  = "/health"
 	usersEndpointName   = "/user"
+	signUpEndpointName  = "/signup"
 )
 
 const (
@@ -21,12 +22,11 @@ const (
 )
 
 type RegisterServices struct {
-	s       services.UserService
-	authURL string
+	s services.UserService
 }
 
-func NewRegisterServices(service services.UserService, url string) *RegisterServices {
-	return &RegisterServices{s: service, authURL: url}
+func NewRegisterServices(service services.UserService) *RegisterServices {
+	return &RegisterServices{s: service}
 }
 
 func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
@@ -43,11 +43,13 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 	api := e.Group("/api")
 	stableGroups := api.Group(VersionApi)
 	{
-		stableGroups.Use(customMiddleware.AuthMiddleware(rs.authURL))
+		stableGroups.Use(customMiddleware.AuthMiddleware())
 		stableGroups.GET(usersEndpointName, h.GetUser)
-		//stableGroups.POST(usersEndpointName, h.CreateUser)
 		stableGroups.PATCH(usersEndpointName, h.UpdateUser)
 		stableGroups.DELETE(usersEndpointName, h.DeleteUser)
+
+		stableGroups.POST(signUpEndpointName, h.CreateUser)
+
 	}
 	return nil
 }

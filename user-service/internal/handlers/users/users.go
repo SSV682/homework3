@@ -1,7 +1,6 @@
 package users
 
 import (
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/go-playground/validator.v9"
@@ -10,13 +9,12 @@ import (
 	"user-service/internal/services"
 )
 
+const (
+	userIDContextField = "userID"
+)
+
 type handler struct {
 	service services.UserService
-}
-
-type jwtCustomClaims struct {
-	UserID string `json:"user_id"`
-	jwt.RegisteredClaims
 }
 
 func NewHandler(s services.UserService) *handler {
@@ -42,7 +40,7 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 }
 
 func (h *handler) GetUser(ctx echo.Context) error {
-	userID := ctx.Get("userID").(string)
+	userID := ctx.Get(userIDContextField).(string)
 
 	ccx := ctx.Request().Context()
 	user, err := h.service.GetUser(ccx, userID)
@@ -53,7 +51,7 @@ func (h *handler) GetUser(ctx echo.Context) error {
 }
 
 func (h *handler) DeleteUser(ctx echo.Context) error {
-	userID := ctx.Get("userID").(string)
+	userID := ctx.Get(userIDContextField).(string)
 
 	ccx := ctx.Request().Context()
 	err := h.service.DeleteUser(ccx, userID)
@@ -66,7 +64,7 @@ func (h *handler) DeleteUser(ctx echo.Context) error {
 func (h *handler) UpdateUser(ctx echo.Context) error {
 	var user models.User
 
-	userID := ctx.Get("userID").(string)
+	userID := ctx.Get(userIDContextField).(string)
 
 	ccx := ctx.Request().Context()
 	err := ctx.Bind(&user)

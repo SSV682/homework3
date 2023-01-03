@@ -33,6 +33,17 @@ spec:
             port:
               number: 80
             host: userservice.userservice.svc.cluster.local
+    - name: "user-whitelisted"
+      match:
+        - uri:
+            exact: "/signup"
+      rewrite:
+        uri: "/api/v1/signup"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice.userservice.svc.cluster.local
     - name: "auth-whitelisted" # Указываем имя для применения EnvoyFilter
       match:
         - uri:
@@ -44,6 +55,7 @@ spec:
             port:
               number: 80
             host: userservice-authservice.userservice.svc.cluster.local
+
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -59,15 +71,15 @@ spec:
     - to:
         - operation:
             methods: ["POST"]
-            paths: ["/signup*"] # Разрешаем доступ к /auth всем запросам
+            paths: ["/signup*"]
     - to:
       - operation:
           methods: ["POST"]
-          paths: [ "/auth*" ] # Разрешаем доступ к /auth всем запросам
+          paths: [ "/auth*" ]
     - to:
         - operation:
             methods: [ "POST" ]
-            paths: [ "/login*" ] # Разрешаем доступ к /auth всем запросам
+            paths: [ "/login*" ]
     - to:
         - operation:
             methods: ["GET", "DELETE", "PATCH"]
