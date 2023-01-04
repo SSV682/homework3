@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"user-service/internal/domain/models"
@@ -48,7 +49,7 @@ func (h *handler) GetUser(ctx echo.Context) error {
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
 	}
 
 	ccx := ctx.Request().Context()
@@ -91,7 +92,7 @@ func (h *handler) UpdateUser(ctx echo.Context) error {
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
 	}
 
 	ccx := ctx.Request().Context()

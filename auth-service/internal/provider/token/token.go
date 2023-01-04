@@ -44,6 +44,7 @@ func NewJWTProvider() *tokenProvider {
 
 	privateJWK.Set(jwk.KeyIDKey, kid)
 	privateJWK.Set(jwk.AlgorithmKey, jwa.RS256)
+	privateJWK.Set(jws.TypeKey, "JWT")
 
 	privateSet := jwk.NewSet()
 	privateSet.AddKey(privateJWK)
@@ -67,6 +68,7 @@ func (t *tokenProvider) CreateToken(userID string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("doesnt build token: %v", err)
 	}
+
 	buf, err := json.MarshalIndent(tok, "", " ")
 	if err != nil {
 		return "", fmt.Errorf("failed to generate JSON: %s", err)

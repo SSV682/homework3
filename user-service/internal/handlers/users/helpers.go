@@ -20,6 +20,7 @@ func getUserID(payload string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("couldnt decode payload: %s", err)
 		}
+
 		var claims CustomClaims
 
 		err = json.Unmarshal(data, &claims)
@@ -27,7 +28,9 @@ func getUserID(payload string) (string, error) {
 			return "", fmt.Errorf("couldnt unmarshal payload: %s", err)
 		}
 
-		return "", err
+		if claims.IDUser != "" {
+			return claims.IDUser, nil
+		}
 	}
 	return "", fmt.Errorf("payload is empty")
 }
