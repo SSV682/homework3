@@ -41,9 +41,9 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 }
 
 func (h *handler) GetUser(ctx echo.Context) error {
-	payload, ok := ctx.Get(tokenHeaderName).(string)
-	if !ok {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
+	payload := ctx.Request().Header.Get(tokenHeaderName)
+	if payload == "" {
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
 	}
 
 	userID, err := getUserID(payload)
@@ -62,9 +62,9 @@ func (h *handler) GetUser(ctx echo.Context) error {
 }
 
 func (h *handler) DeleteUser(ctx echo.Context) error {
-	payload, ok := ctx.Get(tokenHeaderName).(string)
-	if !ok {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
+	payload := ctx.Request().Header.Get(tokenHeaderName)
+	if payload == "" {
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
 	}
 
 	userID, err := getUserID(payload)
@@ -84,9 +84,9 @@ func (h *handler) DeleteUser(ctx echo.Context) error {
 func (h *handler) UpdateUser(ctx echo.Context) error {
 	var user models.User
 
-	payload, ok := ctx.Get(tokenHeaderName).(string)
-	if !ok {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
+	payload := ctx.Request().Header.Get(tokenHeaderName)
+	if payload == "" {
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
 	}
 
 	userID, err := getUserID(payload)
