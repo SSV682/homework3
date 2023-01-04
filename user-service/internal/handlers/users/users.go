@@ -7,6 +7,10 @@ import (
 	"user-service/internal/services"
 )
 
+const (
+	tokenHeaderName = "x-jwt-token"
+)
+
 type handler struct {
 	service services.UserService
 }
@@ -37,14 +41,14 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 }
 
 func (h *handler) GetUser(ctx echo.Context) error {
-	payload, ok := ctx.Get("x-auth-token").(string)
+	payload, ok := ctx.Get(tokenHeaderName).(string)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
 	}
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
 	}
 
 	ccx := ctx.Request().Context()
@@ -58,14 +62,14 @@ func (h *handler) GetUser(ctx echo.Context) error {
 }
 
 func (h *handler) DeleteUser(ctx echo.Context) error {
-	payload, ok := ctx.Get("x-auth-token").(string)
+	payload, ok := ctx.Get(tokenHeaderName).(string)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
 	}
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
 	}
 
 	ccx := ctx.Request().Context()
@@ -80,14 +84,14 @@ func (h *handler) DeleteUser(ctx echo.Context) error {
 func (h *handler) UpdateUser(ctx echo.Context) error {
 	var user models.User
 
-	payload, ok := ctx.Get("x-auth-token").(string)
+	payload, ok := ctx.Get(tokenHeaderName).(string)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-auth-token"})
 	}
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: err.Error()})
 	}
 
 	ccx := ctx.Request().Context()
@@ -97,11 +101,11 @@ func (h *handler) UpdateUser(ctx echo.Context) error {
 	}
 
 	if ok, err := isRequestValid(&user); !ok {
-		ctx.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
 	}
 	err = h.service.UpdateUser(ccx, userID, &user)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
 	return ctx.JSON(http.StatusOK, user)
