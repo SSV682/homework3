@@ -17,9 +17,9 @@ import (
 
 type tokenProvider struct {
 	privateSet jwk.Set
-	publicSet  jwk.Set
-	privateKey *rsa.PrivateKey
-	publicKey  *rsa.PublicKey
+	//publicSet  jwk.Set
+	//privateKey *rsa.PrivateKey
+	//publicKey  *rsa.PublicKey
 }
 
 const (
@@ -44,15 +44,14 @@ func NewJWTProvider() *tokenProvider {
 
 	privateJWK.Set(jwk.KeyIDKey, kid)
 	privateJWK.Set(jwk.AlgorithmKey, jwa.RS256)
-	privateJWK.Set(jws.TypeKey, "JWT")
 
 	privateSet := jwk.NewSet()
 	privateSet.AddKey(privateJWK)
 
 	return &tokenProvider{
 		privateSet: privateSet,
-		privateKey: raw,
-		publicKey:  &raw.PublicKey,
+		//privateKey: raw,
+		//publicKey:  &raw.PublicKey,
 	}
 }
 
@@ -76,7 +75,9 @@ func (t *tokenProvider) CreateToken(userID string) (string, error) {
 
 	key, _ := t.privateSet.Key(0)
 
-	signed, err := jws.Sign(buf, jws.WithKey(jwa.RS256, key))
+	headers := jws.NewHeaders()
+	headers.Set(jws.TypeKey, "JWT")
+	signed, err := jws.Sign(buf, jws.WithKey(jwa.RS256, key, jws.WithProtectedHeaders(headers)))
 	if err != nil {
 		return "", fmt.Errorf("doesnt sign token: %v", err)
 	}

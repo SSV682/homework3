@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 	"user-service/internal/domain/errors"
 	"user-service/internal/domain/models"
 	"user-service/internal/provider"
@@ -27,8 +28,7 @@ func (s *userService) LoginUser(ctx context.Context, username, password string) 
 	if err != nil {
 		return nil, fmt.Errorf(ErrorCheckUser, err)
 	}
-
-	if user.Password == password {
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err == nil {
 		token, err := s.tokenProv.CreateToken(user.ID)
 		if err != nil {
 			return nil, fmt.Errorf(ErrorCreateToken, err)

@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"user-service/internal/domain/models"
 	"user-service/internal/provider"
 )
@@ -18,6 +19,13 @@ func NewUserService(s provider.SqlUserProvider) *userService {
 }
 
 func (s *userService) CreateUser(ctx context.Context, user *models.User) (string, error) {
+	password := user.Password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", fmt.Errorf("password hashing failed:  %s", err)
+	}
+	user.Password = string(hashedPassword)
+
 	i, err := s.sqlProv.CreateUser(ctx, user)
 	if err != nil {
 		return "", err
