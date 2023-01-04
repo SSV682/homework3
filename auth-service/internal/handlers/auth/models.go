@@ -1,6 +1,6 @@
 package auth
 
-type ResponseError struct {
+type Response struct {
 	Message string `json:"message"`
 }
 
@@ -11,15 +11,6 @@ type User struct {
 
 type Token struct {
 	Token string `param:"token" query:"token" json:"token" validate:"required"`
-}
-
-type Key struct {
-	ID        string `json:"id"`
-	PublicKey string `json:"public_key"`
-}
-
-type Keys struct {
-	Keys []Key `json:"keys"`
 }
 
 type UserResponse struct {

@@ -38,16 +38,15 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 	hh := health.NewHealth()
 
 	e.GET(metricsEndpointName, echo.WrapHandler(promhttp.Handler()))
-
 	e.GET(healthEndpointName, hh.Health)
 
 	api := e.Group("/api")
 	stableGroups := api.Group(VersionApi)
-
-	stableGroups.POST(authEndpointName, h.CheckUser)
-	stableGroups.POST(loginEndpointName, h.LoginUser)
-	//stableGroups.POST(signUpEndpointName, h.SignUp)
-	stableGroups.GET(keysEndpointName, h.Keys)
+	{
+		stableGroups.POST(authEndpointName, h.CheckUser)
+		stableGroups.POST(loginEndpointName, h.LoginUser)
+		stableGroups.GET(keysEndpointName, h.Keys)
+	}
 
 	return nil
 }

@@ -61,17 +61,8 @@ func (s *userService) CheckUser(ctx context.Context, payload string) (*models.Cl
 	return &models.ClaimsDTO{ID: userID.(string)}, nil
 }
 
-func (s *userService) SignUpUser(ctx context.Context, user *models.User) (string, error) {
-	i, err := s.sqlProv.CreateUser(ctx, user)
-	if err != nil {
-		return "", err
-	}
-	return i, nil
-}
-
 func (s *userService) GetKeys() (jwk.Set, error) {
 	set, err := s.tokenProv.GetKeys()
-	//json, err := json.MarshalIndent(set, "", " ")
 	if err != nil {
 		log.Printf("failed to marshal key set into JSON: %s", err)
 
