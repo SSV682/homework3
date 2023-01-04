@@ -43,12 +43,10 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 	api := e.Group("/api")
 	stableGroups := api.Group(VersionApi)
 	{
-		stableGroups.Use(customMiddleware.AuthMiddleware())
+		stableGroups.POST(signUpEndpointName, h.CreateUser)
 		stableGroups.GET(usersEndpointName, h.GetUser)
 		stableGroups.PATCH(usersEndpointName, h.UpdateUser)
 		stableGroups.DELETE(usersEndpointName, h.DeleteUser)
-
-		stableGroups.POST(signUpEndpointName, h.CreateUser)
 
 	}
 	return nil
