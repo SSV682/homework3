@@ -34,7 +34,7 @@ func (h *handler) LoginUser(ctx echo.Context) error {
 		return ctx.JSON(getStatusCode(err), Response{Message: err.Error()})
 	}
 
-	return ctx.JSON(http.StatusOK, token)
+	return ctx.JSON(http.StatusOK, TokenResponse{AccessToken: *token})
 }
 
 func (h *handler) CheckUser(ctx echo.Context) error {

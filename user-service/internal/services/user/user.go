@@ -24,6 +24,7 @@ func (s *userService) CreateUser(ctx context.Context, user *models.User) (string
 	if err != nil {
 		return "", fmt.Errorf("password hashing failed:  %s", err)
 	}
+
 	user.Password = string(hashedPassword)
 
 	i, err := s.sqlProv.CreateUser(ctx, user)
@@ -49,6 +50,14 @@ func (s *userService) DeleteUser(ctx context.Context, userID string) error {
 }
 
 func (s *userService) UpdateUser(ctx context.Context, userID string, user *models.User) error {
+	password := user.Password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("password hashing failed:  %s", err)
+	}
+
+	user.Password = string(hashedPassword)
+
 	if err := s.sqlProv.UpdateUser(ctx, userID, user); err != nil {
 		return err
 	}
