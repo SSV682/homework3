@@ -181,3 +181,6 @@ kubectl get svc istio-ingressgateway -n istio-system
 ```shell
 sudo nano /etc/hosts
 ```
+<img width="695" alt="schema1" src="https://user-images.githubusercontent.com/16625234/210849244-cd803a43-6b19-44bd-8d66-8aad2a04db0c.png">
+
+
