@@ -1,4 +1,4 @@
-# OTUS course homework  "Microservice architecture" 
+# OTUS Course homework  "Microservice architecture" 
 
 ## Зависимости
 
@@ -9,6 +9,7 @@
 - [Istioctl 1.16.0] (https://github.com/istio/istio/releases/tag/1.16.0)
 - [Metallb 0.13.7] (https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml)
 
+Некоторые операции будут совершаться с помощью утилиты `kubectl`
 
 ```shell
 minikube start \
