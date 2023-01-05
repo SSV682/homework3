@@ -1,9 +1,8 @@
 {
 	"info": {
-		"_postman_id": "84cc15d9-63b8-4506-aa54-f0c7846805fb",
+		"_postman_id": "b19a2beb-1940-4824-aac5-31714b4f67bd",
 		"name": "Homework6",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "19366182"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -88,11 +87,8 @@
 							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
 							"tests[\"[INFO] Response: \" + responseBody] = true;",
 							"",
-							"pm.test('status to be 401', function() {",
-							"    pm.response.to.have.status(401);",
-							"})",
-							"pm.test(\"response body to have field 'message'\", function() {",
-							"    pm.expect(pm.response.json()).to.have.all.keys('message');",
+							"pm.test('status to be 403', function() {",
+							"    pm.response.to.have.status(403);",
 							"})"
 						],
 						"type": "text/javascript"
@@ -143,14 +139,8 @@
 							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
 							"tests[\"[INFO] Response: \" + responseBody] = true;",
 							"",
-							"pm.test('status to be 401', function() {",
-							"    pm.response.to.have.status(401);",
-							"})",
-							"pm.test('should be a json response', function() {",
-							"    pm.response.to.be.JSON;",
-							"})",
-							"pm.test(\"response body to have field 'message'\", function() {",
-							"    pm.expect(pm.response.json()).to.have.all.keys('message');",
+							"pm.test('status to be 403', function() {",
+							"    pm.response.to.have.status(403);",
 							"})",
 							"",
 							""
@@ -230,14 +220,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8001/api/v1/login?username={{username1}}&password={{password1}}",
+					"raw": "{{baseUrl}}/login?username={{username1}}&password={{password1}}",
 					"host": [
-						"localhost"
+						"{{baseUrl}}"
 					],
-					"port": "8001",
 					"path": [
-						"api",
-						"v1",
 						"login"
 					],
 					"query": [
@@ -276,8 +263,11 @@
 							"pm.test('status to be 200', function() {",
 							"    pm.response.to.have.status(200);",
 							"})",
+							"pm.test('should be a json response', function() {",
+							"    pm.response.to.be.json;",
+							"})",
 							"pm.test(\"response body to have all field \", function() {",
-							"    pm.expect(pm.response.json()).to.have.all.keys('username','password', 'firstname', 'lastname', 'phone','email');",
+							"    pm.expect(pm.response.json()).to.have.all.keys('Id','Username','Password', 'Firstname', 'Lastname', 'Phone','Email');",
 							"})"
 						],
 						"type": "text/javascript"
@@ -332,26 +322,26 @@
 							"    pm.response.to.have.status(200);",
 							"});",
 							"pm.test('should be a json response', function() {",
-							"    pm.response.to.be.JSON;",
+							"    pm.response.to.be.json;",
 							"})",
 							"pm.test(\"response body to have all field \", function() {",
-							"    pm.expect(pm.response.json()).to.have.all.keys('username','password', 'firstname', 'lastname', 'phone','email');",
+							"    pm.expect(pm.response.json()).to.have.all.keys('Id','Username','Password', 'Firstname', 'Lastname', 'Phone','Email');",
 							"})",
 							"pm.test(\"Changed email\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.email).to.not.eql(pm.environment.email);",
+							"    pm.expect(jsonData.Email).not.eql(pm.environment.email);",
 							"});",
 							"pm.test(\"Changed firstname\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.firstname).to.not.eql(pm.environment.firstname);",
+							"    pm.expect(jsonData.Firstname).not.eql(pm.environment.firstname);",
 							"});",
 							"pm.test(\"Changed lastname\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.lastname).to.not.eql(pm.environment.lastname);",
+							"    pm.expect(jsonData.Lastname).not.eql(pm.environment.lastname);",
 							"});",
 							"pm.test(\"Changed phone\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.phone).to.not.eql(pm.environment.phone);",
+							"    pm.expect(jsonData.Phone).not.eql(pm.environment.phone);",
 							"});",
 							"",
 							"",
@@ -490,14 +480,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8001/api/v1/login?username={{username2}}&password={{password2}}",
+					"raw": "{{baseUrl}}/login?username={{username2}}&password={{password2}}",
 					"host": [
-						"localhost"
+						"{{baseUrl}}"
 					],
-					"port": "8001",
 					"path": [
-						"api",
-						"v1",
 						"login"
 					],
 					"query": [
@@ -537,20 +524,20 @@
 							"    pm.response.to.have.status(200);",
 							"})",
 							"pm.test('should be a json response', function() {",
-							"    pm.response.to.be.JSON;",
+							"    pm.response.to.be.json;",
 							"})",
 							"pm.test(\"response body to have all field \", function() {",
-							"    pm.expect(pm.response.json()).to.have.all.keys('username','password', 'firstname', 'lastname', 'phone','email');",
+							"    pm.expect(pm.response.json()).to.have.all.keys('Id','Username','Password', 'Firstname', 'Lastname', 'Phone','Email');",
 							"})",
 							"",
 							"pm.test(\"Isnt user 1\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.username).to.not.eql(pm.variables.get(\"username1\"));",
+							"    pm.expect(jsonData.Username).not.eql(pm.variables.get(\"username1\"));",
 							"});",
 							"",
-							"pm.test(\"Isnt user 1\", function () {",
+							"pm.test(\"Is user 2\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.username).to.eql(pm.variables.get(\"username2\"));",
+							"    pm.expect(jsonData.Username).to.eql(pm.variables.get(\"username2\"));",
 							"});"
 						],
 						"type": "text/javascript"
