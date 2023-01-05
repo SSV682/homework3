@@ -201,7 +201,7 @@ kubectl label namespace userservice istio-injection=enabled --overwrite
 helm install --set name=userservice userservice --namespace userservice ./k8s/userservice
 ```
 
-Так же требуется посмотреть <EXTERNAL-IP>:
+Так же требуется посмотреть EXTERNAL-IP:
 ```shell
 kubectl get svc istio-ingressgateway -n istio-system
 ```
