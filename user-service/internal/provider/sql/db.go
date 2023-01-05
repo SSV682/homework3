@@ -6,6 +6,7 @@ import (
 	"github.com/elgris/sqrl"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
+	"user-service/internal/domain/errors"
 	"user-service/internal/domain/models"
 )
 
@@ -62,7 +63,8 @@ func (s *sqlProvider) CreateUser(ctx context.Context, user *models.User) (string
 
 	err = s.pool.QueryRowContext(ctx, query, args...).Scan(&id)
 	if err != nil {
-		return "", fmt.Errorf(executeQuery, err, query, s.pool)
+		//return "", fmt.Errorf(executeQuery, err, query, s.pool)
+		return "", errors.ErrDuplicateUser
 	}
 
 	return id, err

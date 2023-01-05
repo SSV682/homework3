@@ -10,4 +10,5 @@ var (
 	ErrNonExistentId   = UserError("non-existent id")
 	ErrIncorrectParams = UserError("incorrect params")
 	ErrConflict        = UserError("conflict")
+	ErrDuplicateUser   = UserError("user with this username exists")
 )

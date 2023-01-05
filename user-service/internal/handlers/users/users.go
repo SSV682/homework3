@@ -33,12 +33,12 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 
 	cct := ctx.Request().Context()
 
-	i, err := h.service.CreateUser(cct, &user)
+	id, err := h.service.CreateUser(cct, &user)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return ctx.JSON(http.StatusCreated, i)
+	return ctx.JSON(http.StatusCreated, ResponseCreated{ID: id})
 }
 
 func (h *handler) GetUser(ctx echo.Context) error {
