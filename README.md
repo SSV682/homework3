@@ -4,17 +4,15 @@
 
 Список зависимостей:
 
-- [Minikube 1.28.0] (https://github.com/kubernetes/minikube/releases/tag/v1.28.0)
-- [Kubectl 0.19.2]
+- [Minikube 1.27.1] (https://github.com/kubernetes/minikube/releases/tag/v1.27.1)
+- [Kubectl 1.26.0] (https://github.com/kubernetes/kubectl/tree/release-1.26)
 - [Istioctl 1.16.0] (https://github.com/istio/istio/releases/tag/1.16.0)
 - [Metallb 0.13.7] (https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml)
 
 Некоторые операции будут совершаться с помощью утилиты `kubectl`
 
 ```shell
-minikube start \
---kubernetes-version="v1.28.0"
---driver=docker
+minikube start driver=docker
 ```
 
 Чтобы подключить дополнения, выполните команду::
@@ -65,12 +63,12 @@ POST http://{address}/signup HTTP/1.1
 
 ```json
 {
-    "Username": "Lyric.Turner",
-    "Firstname": "Turner",
-    "Lastname": "Upton",
+    "Username": "LyricTurner74",
+    "Firstname": "Lyric",
+    "Lastname": "Turner",
     "Email": "Lyric_Turner74@yahoo.com",
     "Phone": "567-461-7480",
-    "Password": "iL0VE4LexKr4eV"
+    "Password": "4LexKr4eV"
 }
 ```
 
@@ -92,9 +90,9 @@ POST http://{address}/login HTTP/1.1
 Параметры запроса:
 
 | Имя        | Положение | Опциональный | Тип      | Описание            |
-|------------| --------- | ------------ |----------|---------------------|
-| `username` | `Query`   | Да           | `String` | Имя пользователя    |
-| `password` | `Query`   | Да           | `String` | Пароль пользователя |
+|------------| --------- |--------------|----------|---------------------|
+| `username` | `Query`   | Нет          | `String` | Имя пользователя    |
+| `password` | `Query`   | Нет          | `String` | Пароль пользователя |
 
 **<u>Пример тела ответа</u>**: `json`
 ```json
@@ -103,7 +101,7 @@ POST http://{address}/login HTTP/1.1
 }
 ```
 
-### Получение информации пользователем о себе
+### Получение пользователем информации о себе
 
 Для получения пользователем информации о себе используется HTTP метод GET. Запросы попадают на `user-service` и проходят проверку авторизации с помощью access-токена.
 
@@ -114,13 +112,54 @@ GET http://{address}/user HTTP/1.1
 ```json
 {
     "id": "a61a8a13-bc6c-4feb-bb77-ade9a31e5b63",
-    "username": "Lyric.Turner",
-    "firstname": "Turner",
-    "lastname": "Upton",
+    "username": "LyricTurner74",
+    "firstname": "Lyric",
+    "lastname": "Turner",
     "email": "Lyric_Turner74@yahoo.com",
     "phone": "567-461-7480",
-    "password": "iL0VE4LexKr4eV"
+    "password": "4LexKr4eV"
 }
+```
+
+### Обновление пользователем информации о себе
+
+Для обновления пользователем информации о себе используется HTTP метод PATCH. Запросы попадают на `user-service` и проходят проверку авторизации с помощью access-токена.
+
+```http request
+PATCH http://{address}/user HTTP/1.1
+```
+**<u>Пример тела запроса</u>**: `json`
+```json
+{
+    "id": "a61a8a13-bc6c-4feb-bb77-ade9a31e5b63",
+    "username": "LyricTurner74",
+    "firstname": "Lyric",
+    "lastname": "Turner",
+    "email": "Lyric_Turner74@yahoo.com",
+    "phone": "567-461-7480",
+    "password": "4LexKr4eV"
+}
+```
+
+**<u>Пример тела ответа</u>**: `json`
+```json
+{
+    "id": "a61a8a13-bc6c-4feb-bb77-ade9a31e5b63",
+    "username": "LyricTurner74",
+    "firstname": "Lyric",
+    "lastname": "Turner",
+    "email": "Lyric_Turner74@yahoo.com",
+    "phone": "567-461-7480",
+    "password": "4LexKr4eV"
+}
+```
+
+### Удаление пользователем информации о себе
+
+Для удаления пользователем информации о себе используется HTTP метод DELETE. Запросы попадают на `user-service` и проходят проверку авторизации с помощью access-токена.
+
+```http request
+DELETE http://{address}/user HTTP/1.1
 ```
 
 ## Установка Istio
@@ -135,7 +174,7 @@ istioctl install
 istioctl operator init --watchedNamespaces istio-system --operatorNamespace istio-operator
 ```
 
-Операция будут совершаться с помощью утилиты `kubectl`
+Конфигурирование Istio с помощью файла манифеста:
 ```shell
 kubectl apply -f ./k8s/apigateway/istio.yaml
 ```
@@ -181,6 +220,10 @@ kubectl get svc istio-ingressgateway -n istio-system
 ```shell
 sudo nano /etc/hosts
 ```
+
+## Аутентификация и Авторизация
+На схеме представлен процесс аутентификации и авторизации пользователей для получения данных от сервиса пользователей 
+
 <img width="695" alt="schema1" src="https://user-images.githubusercontent.com/16625234/210849244-cd803a43-6b19-44bd-8d66-8aad2a04db0c.png">
 
 
