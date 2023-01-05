@@ -1,0 +1,586 @@
+{
+	"info": {
+		"_postman_id": "84cc15d9-63b8-4506-aa54-f0c7846805fb",
+		"name": "Homework6",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19366182"
+	},
+	"item": [
+		{
+			"name": "Sign up user 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"pm.test(\"response body to have field 'id'\", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id');",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\")",
+							"pm.environment.set(\"username1\", userName);",
+							"",
+							"",
+							"let password = pm.variables.replaceIn(\"{{$randomPassword}}\")",
+							"pm.environment.set(\"password1\", password);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Username\": \"{{username1}}\",\n    \"Firstname\": \"{{$randomFirstName}}\",\n    \"Lastname\": \"{{$randomLastName}}\",\n    \"Email\": \"{{$randomEmail}}\",\n    \"Phone\": \"{{$randomPhoneNumber}}\",\n    \"Password\": \"{{password1}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/signup",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user without auth",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 401', function() {",
+							"    pm.response.to.have.status(401);",
+							"})",
+							"pm.test(\"response body to have field 'message'\", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('message');",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/user",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user without auth",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 401', function() {",
+							"    pm.response.to.have.status(401);",
+							"})",
+							"pm.test('should be a json response', function() {",
+							"    pm.response.to.be.JSON;",
+							"})",
+							"pm.test(\"response body to have field 'message'\", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('message');",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Username\": \"{{username1}}\",\n    \"Firstname\": \"{{$randomFirstName}}\",\n    \"Lastname\": \"{{$randomLastName}}\",\n    \"Email\": \"{{$randomEmail}}\",\n    \"Phone\": \"{{$randomPhoneNumber}}\",\n    \"Password\": \"{{password1}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/user",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login user 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"accessToken\", jsonData.accessToken);",
+							"",
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"accessToken\");",
+							"});",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8001/api/v1/login?username={{username1}}&password={{password1}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8001",
+					"path": [
+						"api",
+						"v1",
+						"login"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "{{username1}}"
+						},
+						{
+							"key": "password",
+							"value": "{{password1}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"pm.test(\"response body to have all field \", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('username','password', 'firstname', 'lastname', 'phone','email');",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/user",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Udpate user 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test('should be a json response', function() {",
+							"    pm.response.to.be.JSON;",
+							"})",
+							"pm.test(\"response body to have all field \", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('username','password', 'firstname', 'lastname', 'phone','email');",
+							"})",
+							"pm.test(\"Changed email\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.email).to.not.eql(pm.environment.email);",
+							"});",
+							"pm.test(\"Changed firstname\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.firstname).to.not.eql(pm.environment.firstname);",
+							"});",
+							"pm.test(\"Changed lastname\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.lastname).to.not.eql(pm.environment.lastname);",
+							"});",
+							"pm.test(\"Changed phone\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.phone).to.not.eql(pm.environment.phone);",
+							"});",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Username\": \"{{username1}}\",\n    \"Firstname\": \"{{$randomFirstName}}\",\n    \"Lastname\": \"{{$randomLastName}}\",\n    \"Email\": \"{{$randomEmail}}\",\n    \"Phone\": \"{{$randomPhoneNumber}}\",\n    \"Password\": \"{{password1}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/user",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sign up user 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"pm.test(\"response body to have field 'id'\", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id');",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\")",
+							"pm.environment.set(\"username2\", userName);",
+							"",
+							"",
+							"let password = pm.variables.replaceIn(\"{{$randomPassword}}\")",
+							"pm.environment.set(\"password2\", password);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Username\": \"{{username2}}\",\n    \"Firstname\": \"{{$randomFirstName}}\",\n    \"Lastname\": \"{{$randomLastName}}\",\n    \"Email\": \"{{$randomEmail}}\",\n    \"Phone\": \"{{$randomPhoneNumber}}\",\n    \"Password\": \"{{password2}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/signup",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login user 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"accessToken\", jsonData.accessToken);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8001/api/v1/login?username={{username2}}&password={{password2}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8001",
+					"path": [
+						"api",
+						"v1",
+						"login"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "{{username2}}"
+						},
+						{
+							"key": "password",
+							"value": "{{password2}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"pm.test('should be a json response', function() {",
+							"    pm.response.to.be.JSON;",
+							"})",
+							"pm.test(\"response body to have all field \", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('username','password', 'firstname', 'lastname', 'phone','email');",
+							"})",
+							"",
+							"pm.test(\"Isnt user 1\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.username).to.not.eql(pm.variables.get(\"username1\"));",
+							"});",
+							"",
+							"pm.test(\"Isnt user 1\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.username).to.eql(pm.variables.get(\"username2\"));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/user",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
