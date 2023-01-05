@@ -29,9 +29,9 @@ minikube tunnel
 
 * [Описание стенда](#Описание-стенда)
 * [Установка Istio](#Установка-Istio)
-* [Установка Metallb](#Установка-Metallb)
 * [Установка Gateway](#Установка-Gateway)
 * [Разворачиваем приложения](#Разворачиваем-приложения)
+* [Установка Metallb](#Установка-Metallb)
 * [Аутентификация и Авторизация](#Аутентификация-и-авторизация)
 
 ## Описание стенда
@@ -179,17 +179,6 @@ istioctl operator init --watchedNamespaces istio-system --operatorNamespace isti
 kubectl apply -f ./k8s/apigateway/istio.yaml
 ```
 
-## Установка Metallb
-
-Чтобы установить MetalLB, поскольку он состоит из двух частей, нужно развернуть этот ресурс в minikube командой:
-```shell
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
-```
-А затем мы должны выполнить конфигурацию, без которой он не будет работать, поэтому сначала просто примените этот манифест:
-```shell
-kubectl apply -f ./k8s/apigateway/metallb.yaml
-```
-
 ## Установка Gateway
 
 Установить apigateway с помощью файла манифеста:
@@ -220,6 +209,18 @@ kubectl get svc istio-ingressgateway -n istio-system
 ```shell
 sudo nano /etc/hosts
 ```
+
+## Установка Metallb
+
+Чтобы установить MetalLB, поскольку он состоит из двух частей, нужно развернуть этот ресурс в minikube командой:
+```shell
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
+```
+А затем мы должны выполнить конфигурацию, без которой он не будет работать, поэтому сначала просто примените этот манифест:
+```shell
+kubectl apply -f ./k8s/apigateway/metallb.yaml
+```
+
 
 ## Аутентификация и Авторизация
 На схеме представлен процесс аутентификации и авторизации пользователей для получения данных от сервиса пользователей 
