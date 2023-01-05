@@ -4,7 +4,7 @@
 
 Список зависимостей:
 
-- [Minikube 1.20.0] (https://github.com/kubernetes/minikube/releases/tag/v1.28.0)
+- [Minikube 1.28.0] (https://github.com/kubernetes/minikube/releases/tag/v1.28.0)
 - [Kubectl 0.19.2]
 - [Istioctl 1.16.0] (https://github.com/istio/istio/releases/tag/1.16.0)
 - [Metallb 0.13.7] (https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml)
@@ -13,7 +13,7 @@
 
 ```shell
 minikube start \
---kubernetes-version="v1.20.0"
+--kubernetes-version="v1.28.0"
 --driver=docker
 ```
 
