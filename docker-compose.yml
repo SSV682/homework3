@@ -10,14 +10,16 @@ services:
       - POSTGRES_NAME=homework
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-    volumes:
-      - db:/var/lib/postgresql/data
-      - ./migrations/db/20221015205029_migration.up.sql:/docker-entrypoint-initdb.d/init.sql
+#    volumes:
+#      - db:/var/lib/postgresql/data
+#      - ./migrations/db/20221015205029_migration.up.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - home_net
 
   userService:
-    build: ./user-service
+    build:
+      dockerfile: ./user-service/Dockerfile
+      context: ./
     container_name: user-service
     image: ssv682/user-service:v0.3
     ports:

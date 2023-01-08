@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"user-service/internal/domain/models"
 	"user-service/internal/services"
 )
 
@@ -21,19 +20,21 @@ func NewHandler(s services.UserService) *handler {
 }
 
 func (h *handler) CreateUser(ctx echo.Context) error {
-	var user models.User
-	err := ctx.Bind(&user)
+	var element Element
+	err := ctx.Bind(&element)
 	if err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 	}
 
-	if ok, err := isRequestValid(&user); !ok {
+	user := element.ToModel()
+
+	if ok, err := isRequestValid(user); !ok {
 		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
 	}
 
 	cct := ctx.Request().Context()
 
-	id, err := h.service.CreateUser(cct, &user)
+	id, err := h.service.CreateUser(cct, user)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
@@ -59,7 +60,9 @@ func (h *handler) GetUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return ctx.JSON(http.StatusOK, user)
+	element := ToElement(&user)
+
+	return ctx.JSON(http.StatusOK, element)
 }
 
 func (h *handler) DeleteUser(ctx echo.Context) error {
@@ -83,7 +86,7 @@ func (h *handler) DeleteUser(ctx echo.Context) error {
 }
 
 func (h *handler) UpdateUser(ctx echo.Context) error {
-	var user models.User
+	var element Element
 
 	payload := ctx.Request().Header.Get(tokenHeaderName)
 	if payload == "" {
@@ -96,18 +99,22 @@ func (h *handler) UpdateUser(ctx echo.Context) error {
 	}
 
 	ccx := ctx.Request().Context()
-	err = ctx.Bind(&user)
+	err = ctx.Bind(&element)
 	if err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 	}
 
-	if ok, err := isRequestValid(&user); !ok {
+	user := element.ToModel()
+
+	if ok, err := isRequestValid(user); !ok {
 		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
 	}
-	err = h.service.UpdateUser(ccx, userID, &user)
+	err = h.service.UpdateUser(ccx, userID, user)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	return ctx.JSON(http.StatusOK, user)
+	element = ToElement(user)
+
+	return ctx.JSON(http.StatusOK, element)
 }
