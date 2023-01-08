@@ -4,10 +4,10 @@
 
 Список зависимостей:
 
-- [Minikube 1.27.1] (https://github.com/kubernetes/minikube/releases/tag/v1.27.1)
-- [Kubectl 1.26.0] (https://github.com/kubernetes/kubectl/tree/release-1.26)
-- [Istioctl 1.16.0] (https://github.com/istio/istio/releases/tag/1.16.0)
-- [Metallb 0.13.7] (https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml)
+- [Minikube 1.27.1](https://github.com/kubernetes/minikube/releases/tag/v1.27.1)
+- [Kubectl 1.26.0](https://github.com/kubernetes/kubectl/tree/release-1.26)
+- [Istioctl 1.16.0](https://github.com/istio/istio/releases/tag/1.16.0)
+- [Metallb 0.13.7](https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml)
 
 Некоторые операции будут совершаться с помощью утилиты `kubectl`
 
