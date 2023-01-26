@@ -1,9 +1,0 @@
-{{/*apiVersion: v1*/}}
-{{/*kind: ConfigMap*/}}
-{{/*metadata:*/}}
-{{/*  name: auth-service-configmap*/}}
-{{/*data:*/}}
-{{/*  POSTGRES_HOST: {{ .Values.fullnameOverride | quote }}*/}}
-{{/*  POSTGRES_PORT: {{ .Values.global.postgresql.service.ports.postgresql | quote}}*/}}
-{{/*  POSTGRES_NAME: {{ .Values.global.postgresql.auth.database | quote}}*/}}
-{{/*  POSTGRES_USER: {{ .Values.global.postgresql.auth.username | quote}}*/}}

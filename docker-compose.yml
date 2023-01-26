@@ -42,6 +42,18 @@ services:
     networks:
       - home_net
 
+  orderService:
+    build: ./order-service
+    container_name: order-service
+    image: ssv682/order-service:v0.1
+    ports:
+      - "8002:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - home_net
+
   prometheus:
     image: prom/prometheus
     volumes:
@@ -66,6 +78,18 @@ services:
       - home_net
     depends_on:
       - userService
+
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis
+    ports:
+      - '6379:6379'
+    networks:
+      - home_net
+#    command: redis-server  /usr/local/etc/redis/redis.conf --requirepass redis-pass
+#    volumes:
+#      - ./dev/redis/redis.conf:/usr/local/etc/redis/redis.conf
+
 
 networks:
   home_net:

@@ -33,6 +33,16 @@ spec:
             port:
               number: 80
             host: userservice.userservice.svc.cluster.local
+    - match:
+        - uri:
+            exact: "/orders"
+      rewrite:
+        uri: "/api/v1/orders"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice-orderservice.userservice.svc.cluster.local
     - name: "user-whitelisted"
       match:
         - uri:
@@ -85,14 +95,21 @@ spec:
             methods: ["GET", "DELETE", "PATCH"]
             paths: ["/user*"]
       when:
-        - key: request.auth.claims[iss] # Разрешаем доступ к /admin запросам, с JWT токеном внутри которого есть группа admin
+        - key: request.auth.claims[iss] # Разрешаем доступ к /user запросам, с JWT токеном внутри которого есть наш издатель
           values: ["http://userservice-authservice.userservice.svc.cluster.local"]
+    - to:
+        - operation:
+            methods: [ "GET", "DELETE", "POST" ]
+            paths: [ "/orders*" ]
+      when:
+        - key: request.auth.claims[iss] # Разрешаем доступ к /orders запросам, с JWT токеном внутри которого есть наш издатель
+          values: [ "http://userservice-authservice.userservice.svc.cluster.local" ]
     - from:
         - source:
             requestPrincipals: [ "*" ] # Запрещаем доступ к остальным ресурсам для запросов без JWT
       to:
         - operation:
-            notPaths: ["/auth*", "/signup*","/login*", "/user*"]
+            notPaths: ["/auth*", "/signup*","/login*", "/user*", '/orders']
 
 ---
 apiVersion: security.istio.io/v1beta1

@@ -1,0 +1,32 @@
+app:
+  name: 'order-service'
+  version: '1.1.0'
+
+http:
+  port: '8000'
+
+logger:
+  log_level: 'debug'
+  rollbar_env: 'order-service'
+
+databases:
+  postgres:
+    conn_config:
+      host: 'db'
+      port: 5432
+      username: postgres    # env: POSTGRES_USER
+      password: password #env: POSTGRES_PASSWORD
+      dbname: postgres #env: POSTGRES_DB
+    max_open_conns: 10
+    max_idle_conns: 10
+    conn_max_idle_time: 5m
+
+redis:
+  conn_config:
+    network: tcp
+    host: 'redis'
+    port: 6379
+  db_number: 0
+
+timeout:
+  duration : 5

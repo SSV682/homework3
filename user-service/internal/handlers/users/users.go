@@ -82,7 +82,8 @@ func (h *handler) DeleteUser(ctx echo.Context) error {
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
-	return ctx.JSON(http.StatusNoContent, ResponseError{Message: "No content"})
+
+	return ctx.JSON(http.StatusNoContent, ResponseError{Message: "Resource deleted successfully"})
 }
 
 func (h *handler) UpdateUser(ctx echo.Context) error {

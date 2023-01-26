@@ -63,12 +63,12 @@ POST http://{address}/signup HTTP/1.1
 
 ```json
 {
-    "Username": "LyricTurner74",
-    "Firstname": "Lyric",
-    "Lastname": "Turner",
-    "Email": "Lyric_Turner74@yahoo.com",
-    "Phone": "567-461-7480",
-    "Password": "4LexKr4eV"
+    "username": "LyricTurner74",
+    "firstname": "Lyric",
+    "lastname": "Turner",
+    "email": "Lyric_Turner74@yahoo.com",
+    "phone": "567-461-7480",
+    "password": "4LexKr4eV"
 }
 ```
 
