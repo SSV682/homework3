@@ -167,7 +167,7 @@ DELETE http://{address}/user HTTP/1.1
 Требуется установить istio:
 
 ```shell
-istioctl install
+istioctl install -y
 ```
 
 ```shell

@@ -106,10 +106,12 @@ authservice:
 redis:
   fullnameOverride: redis
   global:
-    password: "alicecooper"
+    redis:
+      password: "alicecooper"
+  master:
+    count: 1
   cluster:
-    externalAccess:
-      service:
-        port: 6379
+    enable: true
+    slaveCount: 1
 
 

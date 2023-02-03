@@ -8,6 +8,7 @@ import (
 )
 
 func initRedis(cfg config.RedisConfig) (*redis.Client, error) {
+
 	client := redis.NewClient(&redis.Options{
 		Network:  cfg.Network,
 		Addr:     cfg.Host + ":" + cfg.Port,
@@ -17,7 +18,7 @@ func initRedis(cfg config.RedisConfig) (*redis.Client, error) {
 	})
 
 	if err := client.Ping(context.Background()).Err(); err != nil {
-		return nil, fmt.Errorf("failed to connect to the redis: %w", err)
+		return nil, fmt.Errorf("failed to connect to the redis %s:%s, %s, %s : %v", cfg.Host, cfg.Port, cfg.Username, cfg.Password, err)
 	}
 
 	return client, nil
