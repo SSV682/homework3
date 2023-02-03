@@ -105,5 +105,11 @@ authservice:
 
 redis:
   fullnameOverride: redis
+  global:
+    password: "alicecooper"
+  cluster:
+    externalAccess:
+      service:
+        port: 6379
 
 

@@ -25,6 +25,7 @@ redis:
   conn_config:
     network: tcp
     host: 'redis'
+    password: 'alicecooper'
     port: 6379
   db_number: 0
 

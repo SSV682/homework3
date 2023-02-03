@@ -99,7 +99,7 @@ type DatabaseConfig struct {
 }
 
 type RedisConfig struct {
-	ConnConfig `yaml:"conn_config"`
+	ConnConfig `yaml:"conn_config" env-prefix:"REDIS_"`
 	DB         int `yaml:"db_number"`
 }
 
