@@ -57,6 +57,16 @@ func NewOrderFromDTO(dto *dto.OrderRequestDTO) *Order {
 	}
 }
 
+func RestoreOrderFromDTO(dto *dto.OrderDTO) *Order {
+	return &Order{
+		id:         dto.ID,
+		userID:     dto.UserID,
+		totalPrice: dto.TotalPrice,
+		createdAt:  dto.CreatedAt,
+		status:     StatusEnum(dto.Status),
+	}
+}
+
 func (o *Order) OrderToDTO() *dto.OrderDTO {
 	return &dto.OrderDTO{
 		ID:         o.ID(),

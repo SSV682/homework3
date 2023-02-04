@@ -116,13 +116,13 @@ func (s *sqlOrderProvider) DetailOrder(ctx context.Context, id int64, userID str
 		return nil, fmt.Errorf(buildQuery, err)
 	}
 
-	var row domain.Order
+	var row OrderRow
 
 	if err = s.pool.SelectContext(ctx, &row, query, args...); err != nil {
 		return nil, fmt.Errorf(executeQuery, err)
 	}
 
-	return &row, nil
+	return domain.RestoreOrderFromDTO(row.ToDTO()), nil
 }
 
 func (s *sqlOrderProvider) ListOrders(ctx context.Context, dto *dto.FilterOrderDTO) ([]*domain.Order, error) {
@@ -139,13 +139,20 @@ func (s *sqlOrderProvider) ListOrders(ctx context.Context, dto *dto.FilterOrderD
 		return nil, fmt.Errorf(buildQuery, err)
 	}
 
-	var rows []*domain.Order
+	var rows []OrderRow
 
 	if err = s.pool.SelectContext(ctx, &rows, query, args...); err != nil {
 		return nil, fmt.Errorf(executeQuery, err)
 	}
 
-	return rows, nil
+	orders := make([]*domain.Order, 0, len(rows))
+
+	for _, v := range rows {
+		order := domain.RestoreOrderFromDTO(v.ToDTO())
+		orders = append(orders, order)
+	}
+
+	return orders, nil
 }
 
 func (s *sqlOrderProvider) DeleteOrder(ctx context.Context, id int64, userID string) error {

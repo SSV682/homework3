@@ -1,64 +1,91 @@
-{{/*apiVersion: batch/v1*/}}
-{{/*kind: Job*/}}
-{{/*metadata:*/}}
-{{/*  name: {{ include "userservice.fullname" . }}*/}}
-{{/*spec:*/}}
-{{/*  template:*/}}
-{{/*    metadata:*/}}
-{{/*      annotations:*/}}
-{{/*        sidecar.istio.io/inject: "false"*/}}
-{{/*    spec:*/}}
-{{/*      restartPolicy: OnFailure*/}}
-{{/*      initContainers:*/}}
-{{/*        - name: check-db-ready*/}}
-{{/*          image: postgres:latest*/}}
-{{/*          env:*/}}
-{{/*            - name: POSTGRES_HOST*/}}
-{{/*#              value: postgres.userservice.svc.cluster.local*/}}
-{{/*              value: {{ .Values.postgresql.fullnameOverride | quote }}*/}}
-{{/*            - name: POSTGRES_PORT*/}}
-{{/*              value: {{ printf "%d" ( .Values.postgresql.global.postgresql.service.ports.postgresql | int64 ) | quote }}*/}}
-{{/*          command:*/}}
-{{/*            - sh*/}}
-{{/*            - "-c"*/}}
-{{/*            - |*/}}
-{{/*              sleep 20;*/}}
-{{/*              until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT;do echo \"Waiting for Sidecar...\"; sleep 5; done;*/}}
-{{/*              echo \"Sidecar available. Running the command ... \";*/}}
-{{/*      containers:*/}}
-{{/*        - name: post-install-job*/}}
-{{/*          env:*/}}
-{{/*            - name: POSTGRES_URI*/}}
-{{/*              value: {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" .Values.postgresql.global.postgresql.auth.username .Values.postgresql.global.postgresql.auth.postgresPassword .Values.postgresql.fullnameOverride ( .Values.postgresql.global.postgresql.service.ports.postgresql | int64 ) .Values.postgresql.global.postgresql.auth.database  | quote }}*/}}
-{{/*          image: postgres:latest*/}}
-{{/*          command:*/}}
-{{/*            - sh*/}}
-{{/*            - "-c"*/}}
-{{/*            - |*/}}
-{{/*              sleep 10;*/}}
-{{/*              */}}
-{{/*              psql $POSTGRES_URI <<'EOF'*/}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "userservice.fullname" . }}
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: OnFailure
+      initContainers:
+        - name: check-db-ready
+          image: postgres:latest
+          env:
+            - name: POSTGRES_HOST
+#              value: postgres.userservice.svc.cluster.local
+              value: {{ .Values.postgresql.fullnameOverride | quote }}
+            - name: POSTGRES_PORT
+              value: {{ printf "%d" ( .Values.postgresql.global.postgresql.service.ports.postgresql | int64 ) | quote }}
+          command:
+            - sh
+            - "-c"
+            - |
+              sleep 20;
+              until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT;do echo \"Waiting for Sidecar...\"; sleep 5; done;
+              echo \"Sidecar available. Running the command ... \";
+      containers:
+        - name: post-install-job
+          env:
+            - name: POSTGRES_URI
+              value: {{ printf "postgresql://%s:%s@%s:%d/%s?sslmode=disable" .Values.postgresql.global.postgresql.auth.username .Values.postgresql.global.postgresql.auth.postgresPassword .Values.postgresql.fullnameOverride ( .Values.postgresql.global.postgresql.service.ports.postgresql | int64 ) .Values.postgresql.global.postgresql.auth.database  | quote }}
+          image: postgres:latest
+          command:
+            - sh
+            - "-c"
+            - |
+              sleep 10;
 
-{{/*              BEGIN;*/}}
+              psql $POSTGRES_URI <<'EOF'
 
-{{/*              DROP TABLE IF EXISTS user_service.users;*/}}
+              BEGIN;
 
-{{/*              DROP SCHEMA IF EXISTS user_service CASCADE;*/}}
+              DROP TABLE IF EXISTS user_service.users;
 
-{{/*              CREATE SCHEMA user_service;*/}}
+              DROP SCHEMA IF EXISTS user_service CASCADE;
 
-{{/*                create table if not exists user_service.users (*/}}
-{{/*                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),*/}}
-{{/*                  username varchar(255) UNIQUE NOT NULL,*/}}
-{{/*                  firstname varchar NOT NULL,*/}}
-{{/*                  lastname varchar NOT NULL,*/}}
-{{/*                  email varchar NOT NULL,*/}}
-{{/*                  phone varchar NOT NULL,*/}}
-{{/*                  password varchar NOT NULL*/}}
-{{/*                );*/}}
+              CREATE SCHEMA user_service;
 
-{{/*                COMMIT;*/}}
+                create table if not exists user_service.users (
+                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  username varchar(255) UNIQUE NOT NULL,
+                  firstname varchar NOT NULL,
+                  lastname varchar NOT NULL,
+                  email varchar NOT NULL,
+                  phone varchar NOT NULL,
+                  password varchar NOT NULL
+                );
 
-{{/*  backoffLimit: 0*/}}
+              COMMIT;
 
-{{/*  id serial PRIMARY KEY NOT NULL,*/}}
+              BEGIN;
+
+              DO
+              $$
+              BEGIN
+              PERFORM 'user_service.order_statuses'::regtype;
+              EXCEPTION
+              WHEN undefined_object THEN
+              CREATE TYPE user_service.order_statuses AS ENUM (
+              'created',
+              'awaiting_payment',
+              'payment_received',
+              'completed',
+              'canceled',
+              'failed'
+              );
+              END
+              $$;
+
+              CREATE TABLE IF NOT EXISTS user_service.orders
+              (
+              id                      serial PRIMARY KEY,
+              user_id                 UUID                            NOT NULL,
+              total_price             float                           NOT NULL,
+              created_at              timestamp(0) with time zone     NOT NULL DEFAULT now(),
+              status                  user_service.order_statuses     NOT NULL DEFAULT 'created'
+              );
+
+              COMMIT;
+  backoffLimit: 0
