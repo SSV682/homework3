@@ -15,6 +15,6 @@ data:
   AUTH_HOST: {{ .Values.authservice.host | quote }}
   AUTH_PORT: {{ .Values.authservice.port | quote }}
   AUTH_ENDPOINT: {{ .Values.authservice.endpoint | quote }}
-  REDIS_HOST: {{ .Values.redis.fullnameOverride | quote }}
-  REDIS_PORT: {{ .Values.redis.cluster.externalAccess.service.port | quote }}
+  REDIS_HOST: {{ .Values.redis.redisIp | quote }}
+  REDIS_PORT: {{ .Values.redis.redisPort | quote }}
 

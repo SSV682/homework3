@@ -105,13 +105,11 @@ authservice:
 
 redis:
   fullnameOverride: redis
+  redisIp: redis-master
+  redisPort: 6379
   global:
     redis:
       password: "alicecooper"
-  master:
-    count: 1
-  cluster:
-    enable: true
-    slaveCount: 1
+  architecture: standalone
 
 
