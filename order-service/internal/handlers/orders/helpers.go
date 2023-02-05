@@ -34,9 +34,9 @@ func getUserID(payload string) (string, error) {
 	return "", fmt.Errorf("payload is empty")
 }
 
-func queryParamsToUInt64(value string) (uint64, error) {
+func queryParamsToUInt64(value string, baseValue uint64) (uint64, error) {
 	if value == "" {
-		return 10, nil
+		return baseValue, nil
 	}
 
 	limit, err := strconv.Atoi(value)

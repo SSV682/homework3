@@ -104,19 +104,8 @@ func (o *Orders) OrdersToDTO() *dto.OrdersDTO {
 }
 
 func NewOrdersFromSlice(res []*Order) *Orders {
-	results := make([]*Order, 0, len(res))
-	for _, v := range res {
-		results = append(results, &Order{
-			id:         v.ID(),
-			userID:     v.UserID(),
-			totalPrice: v.TotalPrice(),
-			createdAt:  v.CreatedAt(),
-			status:     v.Status(),
-		})
-	}
-
 	return &Orders{
-		total:   len(results),
-		results: results,
+		total:   len(res),
+		results: res,
 	}
 }

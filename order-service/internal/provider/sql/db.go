@@ -109,7 +109,7 @@ func (s *sqlOrderProvider) DetailOrder(ctx context.Context, id int64, userID str
 	q := queryBuilder.
 		Select(strings.Join(allColumns(allOrdersColumns), ", ")).
 		From(ordersTable).
-		Where(sqrl.Eq{idColumn.String(): id}, sqrl.Eq{userIDColumn.String(): userID})
+		Where(sqrl.Eq{idColumn.String(): id}, sqrl.Eq{userIDColumn.String(): userID}).Limit(1)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -118,7 +118,7 @@ func (s *sqlOrderProvider) DetailOrder(ctx context.Context, id int64, userID str
 
 	var row OrderRow
 
-	if err = s.pool.SelectContext(ctx, &row, query, args...); err != nil {
+	if err = s.pool.GetContext(ctx, &row, query, args...); err != nil {
 		return nil, fmt.Errorf(executeQuery, err)
 	}
 
@@ -139,7 +139,7 @@ func (s *sqlOrderProvider) ListOrders(ctx context.Context, dto *dto.FilterOrderD
 		return nil, fmt.Errorf(buildQuery, err)
 	}
 
-	var rows []OrderRow
+	rows := make([]OrderRow, 0, dto.Limit)
 
 	if err = s.pool.SelectContext(ctx, &rows, query, args...); err != nil {
 		return nil, fmt.Errorf(executeQuery, err)
@@ -165,8 +165,7 @@ func (s *sqlOrderProvider) DeleteOrder(ctx context.Context, id int64, userID str
 		return fmt.Errorf(buildQuery, err)
 	}
 
-	_, err = s.pool.ExecContext(ctx, query, args...)
-	if err != nil {
+	if _, err = s.pool.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf(executeQuery, err)
 	}
 

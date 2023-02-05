@@ -13,7 +13,7 @@ const (
 	metricsEndpointName = "/metrics"
 	healthEndpointName  = "/health"
 	ordersEndpointName  = "/orders"
-	DetailOrderURL      = "/<order_id>"
+	DetailOrderURL      = "/:order_id"
 	ListURL             = ""
 )
 
@@ -48,7 +48,7 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 			orders.POST(ListURL, h.CreateOrder)
 			orders.GET(DetailOrderURL, h.DetailOrder)
 			orders.GET(ListURL, h.ListOrder)
-			orders.DELETE(ListURL, h.DeleteOrder)
+			orders.DELETE(DetailOrderURL, h.DeleteOrder)
 		}
 	}
 	return nil

@@ -90,14 +90,12 @@ func (h *handler) DetailOrder(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	orderDTO := order.OrderToDTO()
-
 	return ctx.JSON(http.StatusOK, ResponseOrder{
-		ID:         orderDTO.ID,
-		UserID:     orderDTO.UserID,
-		TotalPrice: orderDTO.TotalPrice,
-		CreatedAt:  orderDTO.CreatedAt,
-		Status:     orderDTO.Status,
+		ID:         order.ID(),
+		UserID:     order.UserID(),
+		TotalPrice: order.TotalPrice(),
+		CreatedAt:  order.CreatedAt(),
+		Status:     string(order.Status()),
 	})
 }
 
@@ -115,12 +113,12 @@ func (h *handler) ListOrder(ctx echo.Context) error {
 	filter := dto.FilterOrderDTO{}
 	filter.UserID = userID
 
-	limit, err := queryParamsToUInt64(ctx.QueryParam(limitQueryParam))
+	limit, err := queryParamsToUInt64(ctx.QueryParam(limitQueryParam), 10)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("wrong limit parameter: %v", err).Error()})
 	}
 
-	offset, err := queryParamsToUInt64(ctx.QueryParam(offsetQueryParam))
+	offset, err := queryParamsToUInt64(ctx.QueryParam(offsetQueryParam), 0)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("wrong offst parameter: %v", err).Error()})
 	}
@@ -135,22 +133,20 @@ func (h *handler) ListOrder(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
 	}
 
-	orderDTO := orders.OrdersToDTO()
+	result := make([]*ResponseOrder, 0, len(orders))
 
-	result := make([]*ResponseOrder, 0, len(orderDTO.Results))
-
-	for _, v := range orderDTO.Results {
+	for _, v := range orders {
 		result = append(result, &ResponseOrder{
-			ID:         v.ID,
-			UserID:     v.UserID,
-			TotalPrice: v.TotalPrice,
-			CreatedAt:  v.CreatedAt,
-			Status:     v.Status,
+			ID:         v.ID(),
+			UserID:     v.UserID(),
+			TotalPrice: v.TotalPrice(),
+			CreatedAt:  v.CreatedAt(),
+			Status:     string(v.Status()),
 		})
 	}
 
 	res := ResponseOrders{
-		Total:   orderDTO.Total,
+		Total:   len(orders),
 		Results: result,
 	}
 

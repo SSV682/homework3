@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/labstack/gommon/log"
 	"strings"
 	"user-service/internal/domain/dto"
 	domain "user-service/internal/domain/models"
@@ -66,13 +67,15 @@ func (o *orderService) Delete(ctx context.Context, orderID int64, userID string)
 	return nil
 }
 
-func (o *orderService) List(ctx context.Context, filter *dto.FilterOrderDTO) (*domain.Orders, error) {
+func (o *orderService) List(ctx context.Context, filter *dto.FilterOrderDTO) ([]*domain.Order, error) {
 	res, err := o.sqlProv.ListOrders(ctx, filter)
 	if err != nil {
 		return nil, fmt.Errorf("failed get orders list: %v", err)
 	}
 
-	return domain.NewOrdersFromSlice(res), nil
+	log.Infof("its ok, service: %v", res)
+
+	return res, nil
 
 }
 

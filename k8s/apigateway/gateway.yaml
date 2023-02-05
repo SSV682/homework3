@@ -35,7 +35,17 @@ spec:
             host: userservice.userservice.svc.cluster.local
     - match:
         - uri:
-            exact: "/orders"
+            prefix: "/orders/"
+      rewrite:
+        uri: "/api/v1/orders/"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice-orderservice.userservice.svc.cluster.local
+    - match:
+        - uri:
+            prefix: "/orders"
       rewrite:
         uri: "/api/v1/orders"
       route:
