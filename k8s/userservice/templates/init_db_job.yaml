@@ -61,12 +61,6 @@ spec:
 
               BEGIN;
 
-              DO
-              $$
-              BEGIN
-              PERFORM 'user_service.order_statuses'::regtype;
-              EXCEPTION
-              WHEN undefined_object THEN
               CREATE TYPE user_service.order_statuses AS ENUM (
               'created',
               'awaiting_payment',
@@ -75,8 +69,6 @@ spec:
               'canceled',
               'failed'
               );
-              END
-              $$;
 
               CREATE TABLE IF NOT EXISTS user_service.orders
               (
