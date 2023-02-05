@@ -267,7 +267,7 @@
 							"    pm.response.to.be.json;",
 							"})",
 							"pm.test(\"response body to have all field \", function() {",
-							"    pm.expect(pm.response.json()).to.have.all.keys('Id','Username','Password', 'Firstname', 'Lastname', 'Phone','Email');",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id','username','password', 'firstname', 'lastname', 'phone','email');",
 							"})"
 						],
 						"type": "text/javascript"
@@ -325,23 +325,23 @@
 							"    pm.response.to.be.json;",
 							"})",
 							"pm.test(\"response body to have all field \", function() {",
-							"    pm.expect(pm.response.json()).to.have.all.keys('Id','Username','Password', 'Firstname', 'Lastname', 'Phone','Email');",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id','username','password', 'firstname', 'lastname', 'phone','email');",
 							"})",
 							"pm.test(\"Changed email\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.Email).not.eql(pm.environment.email);",
+							"    pm.expect(jsonData.email).not.eql(pm.environment.email);",
 							"});",
 							"pm.test(\"Changed firstname\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.Firstname).not.eql(pm.environment.firstname);",
+							"    pm.expect(jsonData.firstname).not.eql(pm.environment.firstname);",
 							"});",
 							"pm.test(\"Changed lastname\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.Lastname).not.eql(pm.environment.lastname);",
+							"    pm.expect(jsonData.lastname).not.eql(pm.environment.lastname);",
 							"});",
 							"pm.test(\"Changed phone\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.Phone).not.eql(pm.environment.phone);",
+							"    pm.expect(jsonData.phone).not.eql(pm.environment.phone);",
 							"});",
 							"",
 							"",
@@ -527,17 +527,17 @@
 							"    pm.response.to.be.json;",
 							"})",
 							"pm.test(\"response body to have all field \", function() {",
-							"    pm.expect(pm.response.json()).to.have.all.keys('Id','Username','Password', 'Firstname', 'Lastname', 'Phone','Email');",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id','username','password', 'firstname', 'lastname', 'phone','email');",
 							"})",
 							"",
 							"pm.test(\"Isnt user 1\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.Username).not.eql(pm.variables.get(\"username1\"));",
+							"    pm.expect(jsonData.username).not.eql(pm.variables.get(\"username1\"));",
 							"});",
 							"",
 							"pm.test(\"Is user 2\", function () {",
 							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.Username).to.eql(pm.variables.get(\"username2\"));",
+							"    pm.expect(jsonData.username).to.eql(pm.variables.get(\"username2\"));",
 							"});"
 						],
 						"type": "text/javascript"
@@ -564,6 +564,246 @@
 					],
 					"path": [
 						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let requestID = pm.variables.replaceIn(\"{{$randomUUID}}\")",
+							"pm.environment.set(\"x-request-id\", requestID);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"orderID\", jsonData.id);",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"pm.test('should be a json response', function() {",
+							"    pm.response.to.be.json;",
+							"})",
+							"pm.test(\"response body to have all field \", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id');",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 11.0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order 1 with check idempotency",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"pm.test('should be a json response', function() {",
+							"    pm.response.to.be.json;",
+							"})",
+							"pm.test(\"response body to have all field \", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id');",
+							"})",
+							"",
+							"pm.test(\"Id is equal\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).eql(pm.variables.get(\"orderID\"));",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 11.0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let requestID = pm.variables.replaceIn(\"{{$randomUUID}}\")",
+							"pm.environment.set(\"x-request-id\", requestID);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"pm.test('should be a json response', function() {",
+							"    pm.response.to.be.json;",
+							"})",
+							"pm.test(\"response body to have all field \", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id');",
+							"})",
+							"",
+							"pm.test(\"Id is not equal\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).not.eql(pm.variables.get(\"orderID\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 11.0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
 					]
 				}
 			},

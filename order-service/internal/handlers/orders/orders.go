@@ -3,6 +3,7 @@ package orders
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"time"
@@ -38,6 +39,7 @@ func (h *handler) CreateOrder(ctx echo.Context) error {
 	}
 
 	idempotenceKey := ctx.Request().Header.Get(idempotenceKeyHeaderName)
+	log.Info(idempotenceKey)
 	if idempotenceKey == "" {
 		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't find x-request-id"})
 	}
