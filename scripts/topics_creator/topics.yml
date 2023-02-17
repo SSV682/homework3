@@ -1,0 +1,25 @@
+# Description:
+#
+# topic
+#     - topic name
+# partitions
+#     - partitions number of the topic
+# replicas
+#     - replication factor of the topic. If replication factor sets more than number of brokers it will be reset
+#       to the number of brokers
+
+- topic: delivery_requests
+  partitions: 1
+  replicas: 3
+- topic: order_requests
+  partitions: 1
+  replicas: 3
+- topic: stock_requests
+  partitions: 1
+  replicas: 3
+- topic: billing_requests
+  partitions: 1
+  replicas: 3
+- topic: system_event_bus
+  partitions: 1
+  replicas: 3
