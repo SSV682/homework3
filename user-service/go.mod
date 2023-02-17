@@ -3,6 +3,7 @@ module user-service
 go 1.19
 
 require (
+	github.com/confluentinc/confluent-kafka-go/v2 v2.0.2
 	github.com/elgris/sqrl v0.0.0-20210727210741-7e0198b30236
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/golang-migrate/migrate/v4 v4.15.2
@@ -29,7 +30,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lib/pq v1.10.0 // indirect
