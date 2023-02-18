@@ -29,5 +29,12 @@ redis:
     port: 6379
   db_number: 0
 
+kafka:
+  brokers:
+    - 127.0.0.1:9092
+  sasl:
+    username: alice        # env: KAFKA_USER
+    password: alice-secret # env: KAFKA_PASSWORD
+
 timeout:
   duration : 5

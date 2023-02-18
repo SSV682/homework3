@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
-	"user-service/internal/config"
+	"order-service/internal/config"
 )
 
 func initRedis(cfg config.RedisConfig) (*redis.Client, error) {

@@ -6,15 +6,19 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
+	"order-service/internal/config"
+	"order-service/internal/domain/dto"
+	"order-service/internal/handlers"
+	"order-service/internal/provider/kafka"
+	"order-service/internal/provider/redis"
+	"order-service/internal/provider/sql"
+	"order-service/internal/services/orders"
+	"order-service/internal/services/saga"
+	"order-service/pkg/broker/producer"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	"user-service/internal/config"
-	"user-service/internal/handlers"
-	"user-service/internal/provider/redis"
-	"user-service/internal/provider/sql"
-	"user-service/internal/services/orders"
 )
 
 type App struct {
@@ -40,13 +44,38 @@ func NewApp(configPath string) *App {
 
 	handler := echo.New()
 
+	commandCh := make(chan dto.OrderCommandDTO)
 	orderProv := sql.NewSQLBusinessRulesProvider(pool)
 	redisProv := redis.NewRedisProvider(client)
-
 	orderService := orders.NewOrdersService(orderProv, redisProv)
 
-	rs := handlers.NewRegisterServices(orderService)
+	prodConfig := &producer.Config{
+		NetworkConfig: cfg.Kafka.ToSDKFormat(),
+		PingTimeout:   5 * time.Second,
+	}
 
+	producer, err := producer.NewProducer(prodConfig)
+	if err != nil {
+		//TODO:
+	}
+	commandProducerProv, err := kafka.NewProvider(&producer)
+	if err != nil {
+		//TODO:
+	}
+
+	commandConsumerProv := kafka.NewKafkaConsumerProvider(cfg.Kafka.ToSDKFormat(), cfg.Topics.OrderTopic)
+
+	sagaCfg := &saga.OrchestratorConfig{
+		CommandCh:           commandCh,
+		BillingServiceTopic: cfg.Topics.BillingTopic,
+		StockServiceTopic:   cfg.Topics.StockTopic,
+		CommandConsumerProv: commandConsumerProv,
+		CommandProducerProv: commandProducerProv,
+		SqlProv:             orderProv,
+	}
+	saga.NewOrchestrator(sagaCfg)
+
+	rs := handlers.NewRegisterServices(orderService)
 	err = handlers.RegisterHandlers(handler, rs)
 	if err != nil {
 		log.Fatalf("Failed to register handlers: %v", err)

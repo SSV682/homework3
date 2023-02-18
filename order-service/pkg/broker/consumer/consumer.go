@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	"user-service/pkg/broker"
+	"order-service/pkg/broker"
 )
 
 type Message struct {

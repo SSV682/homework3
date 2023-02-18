@@ -5,10 +5,10 @@ import (
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"order-service/internal/domain/dto"
+	"order-service/internal/services"
 	"strconv"
 	"time"
-	"user-service/internal/domain/dto"
-	"user-service/internal/services"
 )
 
 const (

@@ -5,7 +5,7 @@ import (
 
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
-	"user-service/internal/config"
+	"order-service/internal/config"
 )
 
 const (

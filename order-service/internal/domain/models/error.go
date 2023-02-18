@@ -1,4 +1,4 @@
-package errors
+package domain
 
 import "errors"
 
@@ -10,4 +10,5 @@ var (
 	ErrInternalError    = errors.New("internal server error")
 	ErrUnauthorizedUser = errors.New("unauthorized user")
 	ErrContentNotFound  = errors.New("content not found")
+	ErrOrderNotFound    = errors.New("order not found")
 )

@@ -2,13 +2,15 @@ package sql
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/elgris/sqrl"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
+	"order-service/internal/domain/dto"
+	"order-service/internal/domain/models"
 	"strings"
-	"user-service/internal/domain/dto"
-	"user-service/internal/domain/models"
 )
 
 const (
@@ -66,6 +68,15 @@ const (
 	ordersTable   = defaultSchema + "." + "orders"
 )
 
+type DBClient interface {
+	Get(dest interface{}, query string, args ...interface{}) error
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	NamedExec(query string, arg interface{}) (sql.Result, error)
+	NamedExecContext(ctx context.Context, query string, arg interface{}) (sql.Result, error)
+	QueryRowx(query string, args ...interface{}) *sqlx.Row
+	QueryRowxContext(ctx context.Context, query string, args ...interface{}) *sqlx.Row
+}
+
 type sqlOrderProvider struct {
 	pool *sqlx.DB
 }
@@ -87,7 +98,7 @@ func (s *sqlOrderProvider) CreateOrder(ctx context.Context, order *domain.Order)
 	q := queryInsertBuilder.
 		Insert(ordersTable).
 		Columns(strings.Join(allColumns(ordersColumnsForCreate), ", ")).
-		Values(order.UserID(), order.TotalPrice(), order.CreatedAt(), domain.StatusCreated).
+		Values(order.UserID(), order.TotalPrice(), order.CreatedAt(), domain.Created).
 		Returning(idColumn.String())
 
 	query, args, err := q.ToSql()
@@ -110,6 +121,26 @@ func (s *sqlOrderProvider) DetailOrder(ctx context.Context, id int64, userID str
 		Select(strings.Join(allColumns(allOrdersColumns), ", ")).
 		From(ordersTable).
 		Where(sqrl.Eq{idColumn.String(): id}, sqrl.Eq{userIDColumn.String(): userID}).Limit(1)
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf(buildQuery, err)
+	}
+
+	var row OrderRow
+
+	if err = s.pool.GetContext(ctx, &row, query, args...); err != nil {
+		return nil, fmt.Errorf(executeQuery, err)
+	}
+
+	return domain.RestoreOrderFromDTO(row.ToDTO()), nil
+}
+
+func (s *sqlOrderProvider) GetOrderByID(ctx context.Context, id int64) (*domain.Order, error) {
+	q := queryBuilder.
+		Select(strings.Join(allColumns(allOrdersColumns), ", ")).
+		From(ordersTable).
+		Where(sqrl.Eq{idColumn.String(): id}).Limit(1)
 
 	query, args, err := q.ToSql()
 	if err != nil {
@@ -197,4 +228,70 @@ func (s *sqlOrderProvider) UpdateOrder(ctx context.Context, id int64, userID str
 	}
 
 	return nil
+}
+
+func (s *sqlOrderProvider) GetDeployByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, error) {
+	if fn == nil {
+		return getOrderByID(ctx, s.pool, id)
+	}
+
+	tx, err := s.pool.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("begin transaction: %w", err)
+	}
+
+	defer func() {
+		if txErr := tx.Rollback(); txErr != nil && !errors.Is(txErr, sql.ErrTxDone) {
+			//log.GetLoggerFromContext(ctx).Errorf("Failed rollback transaction: %v", txErr)
+		}
+	}()
+
+	order, err := getOrderByID(ctx, tx, id)
+	if err != nil {
+		return nil, fmt.Errorf("get deployID for update: %w", err)
+	}
+
+	ok, err := fn(order)
+	if err != nil {
+		return nil, err
+	}
+
+	if !ok {
+		return order, nil
+	}
+
+	if err = s.UpdateOrder(ctx, order.ID(), order.UserID(), order); err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return order, nil
+}
+
+func getOrderByID(ctx context.Context, db DBClient, id int64) (*domain.Order, error) {
+	q := queryDeleteBuilder.
+		Delete(ordersTable).
+		Where(sqrl.Eq{idColumn.String(): id})
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build sql deployment getByID query: %w", err)
+	}
+
+	var or OrderRow
+
+	if err = db.GetContext(ctx, &or, query, args...); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("no rows in result set: %w", domain.ErrOrderNotFound)
+		}
+
+		return nil, fmt.Errorf("execute get deployment query: %w", err)
+	}
+
+	order := domain.RestoreOrderFromDTO(or.ToDTO())
+
+	return order, nil
 }

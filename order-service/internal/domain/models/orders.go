@@ -1,31 +1,20 @@
 package domain
 
 import (
+	"order-service/internal/domain/dto"
 	"time"
-	"user-service/internal/domain/dto"
 )
 
 type StatusEnum string
 
-func (e StatusEnum) String() string {
-	return e.String()
-}
-
-const (
-	StatusCreated         StatusEnum = "created"
-	StatusPaymentAwaiting StatusEnum = "awaiting_payment"
-	StatusPaymentReceived StatusEnum = "payment_received"
-	StatusCompleted       StatusEnum = "completed"
-	StatusCanceled        StatusEnum = "canceled"
-	StatusFailed          StatusEnum = "failed"
-)
+type IntermediateOrderFunc func(o *Order) (bool, error)
 
 type Order struct {
 	id         int64
 	userID     string
 	totalPrice float64
 	createdAt  time.Time
-	status     StatusEnum
+	status     Status
 }
 
 func (o *Order) ID() int64 {
@@ -44,8 +33,12 @@ func (o *Order) CreatedAt() time.Time {
 	return o.createdAt
 }
 
-func (o *Order) Status() StatusEnum {
+func (o *Order) Status() Status {
 	return o.status
+}
+
+func (o *Order) SetStatus(status Status) {
+	o.status = status
 }
 
 func NewOrderFromDTO(dto *dto.OrderRequestDTO) *Order {
@@ -53,7 +46,7 @@ func NewOrderFromDTO(dto *dto.OrderRequestDTO) *Order {
 		userID:     dto.UserID,
 		totalPrice: dto.TotalPrice,
 		createdAt:  time.Now(),
-		status:     StatusCreated,
+		status:     Created,
 	}
 }
 
@@ -63,7 +56,7 @@ func RestoreOrderFromDTO(dto *dto.OrderDTO) *Order {
 		userID:     dto.UserID,
 		totalPrice: dto.TotalPrice,
 		createdAt:  dto.CreatedAt,
-		status:     StatusEnum(dto.Status),
+		status:     Status(dto.Status),
 	}
 }
 
@@ -73,7 +66,7 @@ func (o *Order) OrderToDTO() *dto.OrderDTO {
 		UserID:     o.UserID(),
 		TotalPrice: o.TotalPrice(),
 		CreatedAt:  o.CreatedAt(),
-		Status:     o.Status().String(),
+		Status:     string(o.Status()),
 	}
 }
 

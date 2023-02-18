@@ -3,7 +3,6 @@ module user-service
 go 1.19
 
 require (
-	github.com/confluentinc/confluent-kafka-go/v2 v2.0.2
 	github.com/elgris/sqrl v0.0.0-20210727210741-7e0198b30236
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/golang-migrate/migrate/v4 v4.15.2

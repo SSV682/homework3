@@ -1,8 +1,9 @@
-module user-service
+module order-service
 
 go 1.19
 
 require (
+	github.com/confluentinc/confluent-kafka-go/v2 v2.0.2
 	github.com/elgris/sqrl v0.0.0-20210727210741-7e0198b30236
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/ilyakaznacheev/cleanenv v1.4.0
@@ -26,7 +27,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
 	github.com/lib/pq v1.10.4 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

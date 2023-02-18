@@ -1,8 +1,8 @@
 package sql
 
 import (
+	"order-service/internal/domain/dto"
 	"time"
-	"user-service/internal/domain/dto"
 )
 
 type OrderRow struct {

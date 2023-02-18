@@ -2,6 +2,26 @@ package dto
 
 import "time"
 
+type Status string
+
+const (
+	Success         Status = "success"
+	Created         Status = "created"
+	PaymentPending  Status = "payment_pending"
+	PaymentApproved Status = "payment_approved"
+	StockPending    Status = "stock_pending"
+	StockApproved   Status = "stock_approved"
+	PaymentRejected Status = "payment_rejected"
+	StockRejected   Status = "stock_rejected"
+)
+
+type CommandType string
+
+const (
+	Approve CommandType = "approve"
+	Reject  CommandType = "reject"
+)
+
 type OrderRequestDTO struct {
 	UserID         string
 	IdempotencyKey string
@@ -23,7 +43,17 @@ type OrderDTO struct {
 	Status     string
 }
 
+type CommandDTO struct {
+	CommandType CommandType
+	Order       OrderDTO
+}
+
 type OrdersDTO struct {
 	Total   int
 	Results []*OrderDTO
+}
+
+type OrderCommandDTO struct {
+	OrderID int64
+	Status  Status
 }

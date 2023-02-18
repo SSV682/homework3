@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"user-service/internal/app"
+	"order-service/internal/app"
 )
 
 var (

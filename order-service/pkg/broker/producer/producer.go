@@ -3,9 +3,9 @@ package producer
 import (
 	"strings"
 	"time"
-	"user-service/pkg/broker"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
+	"order-service/pkg/broker"
 )
 
 // Producer publishes broker messages, blocking until they have been acknowledged.

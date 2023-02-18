@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/labstack/gommon/log"
+	"order-service/internal/domain/dto"
+	domain "order-service/internal/domain/models"
+	"order-service/internal/provider"
 	"strings"
-	"user-service/internal/domain/dto"
-	domain "user-service/internal/domain/models"
-	"user-service/internal/provider"
 )
 
 type orderService struct {

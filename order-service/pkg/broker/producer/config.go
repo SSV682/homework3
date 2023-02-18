@@ -2,8 +2,8 @@ package producer
 
 import (
 	"errors"
+	"order-service/pkg/broker"
 	"time"
-	"user-service/pkg/broker"
 )
 
 // A Config specifies the configuration for the producers.

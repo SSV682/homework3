@@ -1,6 +1,7 @@
 package config
 
 import (
+	"order-service/pkg/broker"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -13,6 +14,8 @@ type Config struct {
 	Databases DatabaseConfig `yaml:"databases" json:"databases"`
 	Timeout   TimeoutConfig  `yaml:"timeout" json:"timeout"`
 	Cache     RedisConfig    `yaml:"redis" json:"redis"`
+	Topics    Topics         `yaml:"topics" json:"topics"`
+	Kafka     KafkaConfig    `yaml:"kafka" json:"kafka" env-prefix:"KAFKA_"`
 }
 
 type AppConfig struct {
@@ -98,9 +101,45 @@ type DatabaseConfig struct {
 	Postgres SQLConfig `yaml:"postgres" env-prefix:"POSTGRES_"`
 }
 
+type KafkaConfig struct {
+	// BrokerAddresses initial list of brokers as a list of broker host in host:port format.
+	BrokerAddresses []string `yaml:"brokers" env-required:"true"`
+	SASL            struct {
+		Username string `yaml:"username" env:"USER" env-required:"true"`
+		Password string `yaml:"password" env:"PASSWORD"`
+	} `yaml:"sasl"`
+	SSL struct {
+		CALocation string `yaml:"ca-location"`
+	} `yaml:"ssl"`
+}
+
+func (c *KafkaConfig) ToSDKFormat() *broker.NetworkConfig {
+	cfg := &broker.NetworkConfig{
+		BrokerAddresses: c.BrokerAddresses,
+		SASL: &broker.SASL{
+			Username: c.SASL.Username,
+			Password: c.SASL.Password,
+		},
+	}
+
+	if c.SSL.CALocation != "" {
+		cfg.SSL = &broker.SSL{
+			CALocation: c.SSL.CALocation,
+		}
+	}
+
+	return cfg
+}
+
 type RedisConfig struct {
 	ConnConfig `yaml:"conn_config" env-prefix:"REDIS_"`
 	DB         int `yaml:"db_number"`
+}
+
+type Topics struct {
+	BillingTopic string `yaml:"billing_topic" env-default:"hire_requests"`
+	StockTopic   string `yaml:"stock_topic" env-default:"hire_responses"`
+	OrderTopic   string `yaml:"order_topic" env-default:"tasks_run"`
 }
 
 func ReadConfig(filePath string) (Config, error) {

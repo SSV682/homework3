@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"user-service/pkg/broker"
+	"order-service/pkg/broker"
 )
 
 // OffsetResetStrategy represents of the auto offset reset strategy
