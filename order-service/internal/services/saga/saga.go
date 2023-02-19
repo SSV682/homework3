@@ -96,7 +96,7 @@ func (o *Orchestrator) approvePayment(ctx context.Context, id int64) {
 		Order:       *order.OrderToDTO(),
 	}
 
-	if err = o.commandProducerProv.SendMessage(o.billingServiceTopic, cm); err != nil {
+	if err = o.commandProducerProv.SendMessage(ctx, o.billingServiceTopic, cm); err != nil {
 		//TODO: err
 		log.Errorf("send message apporve payment failed: %v", err)
 	}
@@ -113,7 +113,7 @@ func (o *Orchestrator) approveStock(ctx context.Context, id int64) {
 		CommandType: dto.Approve,
 		Order:       *order.OrderToDTO(),
 	}
-	if err = o.commandProducerProv.SendMessage(o.stockServiceTopic, cm); err != nil {
+	if err = o.commandProducerProv.SendMessage(ctx, o.stockServiceTopic, cm); err != nil {
 		//TODO: err
 		log.Errorf("send message approve stock failed: %v", err)
 	}
@@ -131,7 +131,7 @@ func (o *Orchestrator) rejectPayment(ctx context.Context, id int64) {
 		Order:       *order.OrderToDTO(),
 	}
 
-	if err = o.commandProducerProv.SendMessage(o.billingServiceTopic, cm); err != nil {
+	if err = o.commandProducerProv.SendMessage(ctx, o.billingServiceTopic, cm); err != nil {
 		//TODO: err
 		log.Errorf("send message reject payment failed: %v", err)
 	}

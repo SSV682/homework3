@@ -14,7 +14,6 @@ import (
 	"order-service/internal/provider/sql"
 	"order-service/internal/services/orders"
 	"order-service/internal/services/saga"
-	"order-service/pkg/broker/producer"
 	"os"
 	"os/signal"
 	"syscall"
@@ -49,21 +48,15 @@ func NewApp(configPath string) *App {
 	redisProv := redis.NewRedisProvider(client)
 	orderService := orders.NewOrdersService(orderProv, redisProv)
 
-	prodConfig := &producer.Config{
-		NetworkConfig: cfg.Kafka.ToSDKFormat(),
-		PingTimeout:   5 * time.Second,
+	producerConfig := kafka.ProducerConfig{
+		Username: cfg.Kafka.SASL.Username,
+		Password: cfg.Kafka.SASL.Password,
+		Brokers:  cfg.Kafka.BrokerAddresses,
 	}
 
-	producer, err := producer.NewProducer(prodConfig)
-	if err != nil {
-		//TODO:
-	}
-	commandProducerProv, err := kafka.NewProvider(&producer)
-	if err != nil {
-		//TODO:
-	}
+	commandProducerProv := kafka.NewBrokerProducer(producerConfig)
 
-	commandConsumerProv := kafka.NewKafkaConsumerProvider(cfg.Kafka.ToSDKFormat(), cfg.Topics.OrderTopic)
+	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.OrderTopic)
 
 	sagaCfg := &saga.OrchestratorConfig{
 		CommandCh:           commandCh,

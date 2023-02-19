@@ -88,8 +88,10 @@ services:
       - home_net
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:7.0.1
+    image: confluentinc/cp-zookeeper:7.2.1
     container_name: zookeeper
+    ports:
+      - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_SASL_ENABLED: "false"
@@ -97,30 +99,48 @@ services:
       - home_net
 
   kafka:
-    image: confluentinc/cp-kafka:7.0.1
+    image: confluentinc/cp-kafka:7.2.1
     container_name: kafka
     ports:
       - "9092:9092"
     depends_on:
       - zookeeper
     environment:
-      KAFKA_LISTENERS: SASL_PLAINTEXT://:9092
-      KAFKA_ADVERTISED_LISTENERS: SASL_PLAINTEXT://localhost:9092
+      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf"
-      KAFKA_INTER_BROKER_LISTENER_NAME: SASL_PLAINTEXT
-      KAFKA_SASL_ENABLED_MECHANISMS: PLAIN
-      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: PLAIN
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+#      KAFKA_ADVERTISED_LISTENERS: SASL_PLAINTEXT://localhost:9092
+#      KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf"
+#      KAFKA_INTER_BROKER_LISTENER_NAME: 'SASL_PLAINTEXT'
+#      KAFKA_SASL_ENABLED_MECHANISMS: 'PLAIN'
+#      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: 'PLAIN'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      ZOOKEEPER_SASL_ENABLED: "false"
+#      ZOOKEEPER_SASL_ENABLED: "false"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./dev/volumes/kafka/server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
-      - ./dev/volumes/kafka/consumer.properties:/etc/kafka/consumer.properties
-      - ./dev/volumes/kafka/producer.properties:/etc/kafka/producer.properties
+#      - ./dev/volumes/kafka/server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
+#      - ./dev/volumes/kafka/consumer.properties:/etc/kafka/consumer.properties
+#      - ./dev/volumes/kafka/producer.properties:/etc/kafka/producer.properties
     networks:
       - home_net
 
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+#      KAFKA_CLUSTERS_0_NAME: local
+#      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: localhost:9092
+#      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
+#      KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: PLAIN
+#      KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="alice" password="alice-secret";'
+    networks:
+      - home_net
 
 networks:
   home_net:

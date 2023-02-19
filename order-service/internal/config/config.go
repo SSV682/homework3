@@ -1,7 +1,6 @@
 package config
 
 import (
-	"order-service/pkg/broker"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -111,24 +110,6 @@ type KafkaConfig struct {
 	SSL struct {
 		CALocation string `yaml:"ca-location"`
 	} `yaml:"ssl"`
-}
-
-func (c *KafkaConfig) ToSDKFormat() *broker.NetworkConfig {
-	cfg := &broker.NetworkConfig{
-		BrokerAddresses: c.BrokerAddresses,
-		SASL: &broker.SASL{
-			Username: c.SASL.Username,
-			Password: c.SASL.Password,
-		},
-	}
-
-	if c.SSL.CALocation != "" {
-		cfg.SSL = &broker.SSL{
-			CALocation: c.SSL.CALocation,
-		}
-	}
-
-	return cfg
 }
 
 type RedisConfig struct {

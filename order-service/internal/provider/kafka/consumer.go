@@ -4,46 +4,36 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"order-service/pkg/broker"
-	"order-service/pkg/broker/consumer"
-
+	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
 	"order-service/internal/domain/dto"
 )
 
 const groupId = "eventGroupStore"
 
-type kafkaConsumerProvider struct {
-	topic    string
-	cfg      *broker.NetworkConfig
-	consumer consumer.Consumer
+type BrokerConsumer struct {
+	reader *kafka.Reader
 }
 
-func NewKafkaConsumerProvider(cfg *broker.NetworkConfig, topic string) *kafkaConsumerProvider {
-	return &kafkaConsumerProvider{
-		cfg:   cfg,
-		topic: topic,
-	}
-}
-
-func (e *kafkaConsumerProvider) StartConsume(ctx context.Context) (<-chan dto.OrderCommandDTO, <-chan error, error) {
-	client, err := consumer.NewConsumer(&consumer.Config{
-		NetworkConfig:   e.cfg,
-		GroupId:         groupId,
-		Topic:           e.topic,
-		AutoOffsetReset: consumer.Latest,
+func NewBrokerConsumer(brokers []string, topic string) *BrokerConsumer {
+	client := &BrokerConsumer{}
+	client.reader = kafka.NewReader(kafka.ReaderConfig{
+		Brokers: brokers,
+		GroupID: groupId,
+		Topic:   topic,
 	})
-	if err != nil {
-		return nil, nil, fmt.Errorf("consumer create: %v", err)
-	}
-
-	e.consumer = client
-	payloadCh, errCh := e.consume(ctx)
-
-	return payloadCh, errCh, nil
+	return client
 }
 
-func (e *kafkaConsumerProvider) consume(ctx context.Context) (<-chan dto.OrderCommandDTO, <-chan error) {
+func (c *BrokerConsumer) Read(ctx context.Context) ([]byte, error) {
+	msg, err := c.reader.ReadMessage(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return msg.Value, nil
+}
+
+func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan dto.OrderCommandDTO, <-chan error, error) {
 	payloadCh := make(chan dto.OrderCommandDTO)
 	errCh := make(chan error)
 
@@ -56,13 +46,13 @@ func (e *kafkaConsumerProvider) consume(ctx context.Context) (<-chan dto.OrderCo
 			case <-ctx.Done():
 				log.Debug("Got context done! Closing consumer...")
 
-				if err := e.consumer.Close(); err != nil {
+				if err := c.reader.Close(); err != nil {
 					errCh <- fmt.Errorf("consumer close: %v", err)
 				}
-
 				return
+
 			default:
-				message, err := e.consumer.ConsumeContext(ctx)
+				message, err := c.consumeContext(ctx)
 				if err != nil {
 					errCh <- fmt.Errorf("consume message: %v", err)
 					continue
@@ -70,17 +60,35 @@ func (e *kafkaConsumerProvider) consume(ctx context.Context) (<-chan dto.OrderCo
 
 				var command dto.OrderCommandDTO
 
-				if err = json.Unmarshal(message.Value, &command); err != nil {
+				if err = json.Unmarshal(message, &command); err != nil {
 					errCh <- fmt.Errorf("unmarshal message: %v", err)
 					continue
 				}
-
-				log.Debugf("Log command message came: %v", command)
 
 				payloadCh <- command
 			}
 		}
 	}()
 
-	return payloadCh, errCh
+	return payloadCh, errCh, nil
+}
+
+func (c *BrokerConsumer) consumeContext(ctx context.Context) ([]byte, error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+			msg, err := c.Read(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			if msg == nil {
+				continue
+			}
+
+			return msg, nil
+		}
+	}
 }

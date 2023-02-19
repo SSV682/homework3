@@ -13,6 +13,7 @@ require (
 	github.com/labstack/gommon v0.4.0
 	github.com/prometheus/client_golang v1.13.0
 	github.com/redis/go-redis/v9 v9.0.0-rc.4
+	github.com/segmentio/kafka-go v0.4.38
 	github.com/sirupsen/logrus v1.9.0
 )
 
@@ -27,11 +28,13 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
+	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/lib/pq v1.10.4 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect

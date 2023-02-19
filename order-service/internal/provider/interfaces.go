@@ -27,5 +27,5 @@ type BrokerConsumerProvider interface {
 }
 
 type BrokerProducerProvider interface {
-	SendMessage(topic string, message dto.CommandDTO) error
+	SendMessage(ctx context.Context, topic string, command dto.CommandDTO) error
 }

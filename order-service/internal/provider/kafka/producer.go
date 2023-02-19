@@ -1,38 +1,55 @@
 package kafka
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/sasl/plain"
 	"order-service/internal/domain/dto"
-	"order-service/pkg/broker"
-	"order-service/pkg/broker/producer"
 )
 
-type kafkaProducerProvider struct {
-	kafkaProducer producer.Producer
+type BrokerProducer struct {
+	w kafka.Writer
 }
 
-func NewProvider(kafka *producer.Producer) (*kafkaProducerProvider, error) {
-	producerService := &kafkaProducerProvider{
-		kafkaProducer: *kafka,
+type ProducerConfig struct {
+	Username string
+	Password string
+	Brokers  []string
+}
+
+func NewBrokerProducer(cfg ProducerConfig) *BrokerProducer {
+	client := &BrokerProducer{}
+
+	w := kafka.Writer{
+		Addr: kafka.TCP(cfg.Brokers...),
+
+		Transport: &kafka.Transport{
+			SASL: plain.Mechanism{
+				Username: cfg.Username,
+				Password: cfg.Password,
+			},
+		},
 	}
 
-	return producerService, nil
+	client.w = w
+	return client
 }
 
-func (p *kafkaProducerProvider) SendMessage(topic string, message dto.CommandDTO) error {
-	marshaledMessage, err := json.Marshal(message)
+func (client *BrokerProducer) SendMessage(ctx context.Context, topic string, command dto.CommandDTO) error {
+	message, err := json.Marshal(command)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not marshal message: %v", err)
 	}
 
-	bm := broker.Message{
+	err = client.w.WriteMessages(ctx, kafka.Message{
+		Value: message,
 		Topic: topic,
-		Value: marshaledMessage,
+	})
+	if err != nil {
+		return fmt.Errorf("could not send message: %v", err)
 	}
 
-	if err = p.kafkaProducer.Produce(&bm); err != nil {
-		return fmt.Errorf("failed send message: %v", err)
-	}
 	return nil
 }
