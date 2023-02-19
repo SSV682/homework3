@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/segmentio/kafka-go"
-	"github.com/segmentio/kafka-go/sasl/plain"
 	"order-service/internal/domain/dto"
 )
 
@@ -14,9 +13,9 @@ type BrokerProducer struct {
 }
 
 type ProducerConfig struct {
-	Username string
-	Password string
-	Brokers  []string
+	//Username string
+	//Password string
+	Brokers []string
 }
 
 func NewBrokerProducer(cfg ProducerConfig) *BrokerProducer {
@@ -25,12 +24,12 @@ func NewBrokerProducer(cfg ProducerConfig) *BrokerProducer {
 	w := kafka.Writer{
 		Addr: kafka.TCP(cfg.Brokers...),
 
-		Transport: &kafka.Transport{
-			SASL: plain.Mechanism{
-				Username: cfg.Username,
-				Password: cfg.Password,
-			},
-		},
+		//Transport: &kafka.Transport{
+		//	SASL: plain.Mechanism{
+		//		Username: cfg.Username,
+		//		Password: cfg.Password,
+		//	},
+		//},
 	}
 
 	client.w = w

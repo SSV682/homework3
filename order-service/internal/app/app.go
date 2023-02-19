@@ -46,12 +46,12 @@ func NewApp(configPath string) *App {
 	commandCh := make(chan dto.OrderCommandDTO)
 	orderProv := sql.NewSQLBusinessRulesProvider(pool)
 	redisProv := redis.NewRedisProvider(client)
-	orderService := orders.NewOrdersService(orderProv, redisProv)
+	orderService := orders.NewOrdersService(orderProv, redisProv, commandCh)
 
 	producerConfig := kafka.ProducerConfig{
-		Username: cfg.Kafka.SASL.Username,
-		Password: cfg.Kafka.SASL.Password,
-		Brokers:  cfg.Kafka.BrokerAddresses,
+		//Username: cfg.Kafka.SASL.Username,
+		//Password: cfg.Kafka.SASL.Password,
+		Brokers: cfg.Kafka.BrokerAddresses,
 	}
 
 	commandProducerProv := kafka.NewBrokerProducer(producerConfig)

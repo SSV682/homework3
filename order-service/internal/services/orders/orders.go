@@ -14,35 +14,44 @@ import (
 type orderService struct {
 	sqlProv   provider.OrderProvider
 	redisProv provider.RedisProvider
+	commandCh chan dto.OrderCommandDTO
 }
 
-func NewOrdersService(s provider.OrderProvider, t provider.RedisProvider) *orderService {
+func NewOrdersService(s provider.OrderProvider, t provider.RedisProvider, commandCh chan dto.OrderCommandDTO) *orderService {
 	return &orderService{
 		sqlProv:   s,
 		redisProv: t,
+		commandCh: commandCh,
 	}
 }
 
-func (o *orderService) Create(ctx context.Context, dto *dto.OrderRequestDTO) (int64, error) {
-	exist, err := o.redisProv.Exist(ctx, key(dto.IdempotencyKey, dto.UserID))
+func (o *orderService) Create(ctx context.Context, request *dto.OrderRequestDTO) (int64, error) {
+	exist, err := o.redisProv.Exist(ctx, key(request.IdempotencyKey, request.UserID))
 	if err != nil {
 		return 0, fmt.Errorf("failed check exist: %v", err)
 	}
 
 	if exist {
-		if id, err := o.redisProv.Read(ctx, key(dto.IdempotencyKey, dto.UserID)); err == nil {
+		if id, err := o.redisProv.Read(ctx, key(request.IdempotencyKey, request.UserID)); err == nil {
 			return id, nil
 		}
 
 		return 0, errors.New("idempotency conflict")
 	}
 
-	id, err := o.sqlProv.CreateOrder(ctx, domain.NewOrderFromDTO(dto))
+	id, err := o.sqlProv.CreateOrder(ctx, domain.NewOrderFromDTO(request))
 	if err != nil {
 		return 0, fmt.Errorf("failed create order: %v", err)
 	}
 
-	err = o.redisProv.Write(ctx, key(dto.IdempotencyKey, dto.UserID), id)
+	command := dto.OrderCommandDTO{
+		OrderID: id,
+		Status:  dto.Created,
+	}
+
+	o.commandCh <- command
+
+	err = o.redisProv.Write(ctx, key(request.IdempotencyKey, request.UserID), id)
 	if err != nil {
 		return 0, fmt.Errorf("failed save key: %v", err)
 	}
