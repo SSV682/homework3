@@ -12,6 +12,7 @@ type OrderService interface {
 	Detail(ctx context.Context, orderID int64, userID string) (*domain.Order, error)
 	Delete(ctx context.Context, orderID int64, userID string) error
 	Update(ctx context.Context, orderID int64, userID string, order *domain.Order) error
+	Cancel(ctx context.Context, orderID int64, userID string) error
 }
 
 type RunAsService interface {

@@ -37,13 +37,15 @@ func NewBrokerProducer(cfg ProducerConfig) *BrokerProducer {
 }
 
 func (client *BrokerProducer) SendMessage(ctx context.Context, topic string, command dto.CommandDTO) error {
-	message, err := json.Marshal(command)
+	message := RequestCommandFromDTO(command)
+
+	marshaledMessage, err := json.Marshal(message)
 	if err != nil {
 		return fmt.Errorf("could not marshal message: %v", err)
 	}
 
 	err = client.w.WriteMessages(ctx, kafka.Message{
-		Value: message,
+		Value: marshaledMessage,
 		Topic: topic,
 	})
 	if err != nil {

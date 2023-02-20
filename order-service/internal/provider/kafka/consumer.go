@@ -25,7 +25,7 @@ func NewBrokerConsumer(brokers []string, topic string) *BrokerConsumer {
 	return client
 }
 
-func (c *BrokerConsumer) Read(ctx context.Context) ([]byte, error) {
+func (c *BrokerConsumer) read(ctx context.Context) ([]byte, error) {
 	msg, err := c.reader.ReadMessage(ctx)
 	if err != nil {
 		return nil, err
@@ -58,14 +58,14 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan dto.OrderComm
 					continue
 				}
 
-				var command dto.OrderCommandDTO
+				var command ResponseCommand
 
 				if err = json.Unmarshal(message, &command); err != nil {
 					errCh <- fmt.Errorf("unmarshal message: %v", err)
 					continue
 				}
 
-				payloadCh <- command
+				payloadCh <- command.ToDTO()
 			}
 		}
 	}()
@@ -79,7 +79,7 @@ func (c *BrokerConsumer) consumeContext(ctx context.Context) ([]byte, error) {
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
-			msg, err := c.Read(ctx)
+			msg, err := c.read(ctx)
 			if err != nil {
 				return nil, err
 			}

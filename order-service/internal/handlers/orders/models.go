@@ -6,6 +6,10 @@ type CreateOrderRequest struct {
 	TotalPrice float64 `json:"total_price"`
 }
 
+type CancelingOrderRequest struct {
+	Status float64 `json:"status"`
+}
+
 type ResponseError struct {
 	Message string `json:"message"`
 }

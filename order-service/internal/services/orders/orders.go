@@ -44,17 +44,18 @@ func (o *orderService) Create(ctx context.Context, request *dto.OrderRequestDTO)
 		return 0, fmt.Errorf("failed create order: %v", err)
 	}
 
+	err = o.redisProv.Write(ctx, key(request.IdempotencyKey, request.UserID), id)
+	if err != nil {
+		return 0, fmt.Errorf("failed save key: %v", err)
+	}
+
 	command := dto.OrderCommandDTO{
 		OrderID: id,
 		Status:  dto.Created,
 	}
 
 	o.commandCh <- command
-
-	err = o.redisProv.Write(ctx, key(request.IdempotencyKey, request.UserID), id)
-	if err != nil {
-		return 0, fmt.Errorf("failed save key: %v", err)
-	}
+	log.Infof("command sent: %v", command)
 
 	return id, nil
 }
@@ -93,6 +94,23 @@ func (o *orderService) Update(ctx context.Context, orderID int64, userID string,
 	if err != nil {
 		return fmt.Errorf("failed update: %v", err)
 	}
+
+	return nil
+}
+
+func (o *orderService) Cancel(ctx context.Context, orderID int64, userID string) error {
+	err := o.sqlProv.CancelOrder(ctx, orderID, userID)
+	if err != nil {
+		return fmt.Errorf("failed update: %v", err)
+	}
+
+	command := dto.OrderCommandDTO{
+		OrderID: orderID,
+		Status:  dto.Canceling,
+	}
+
+	o.commandCh <- command
+	log.Infof("command sent: %v", command)
 
 	return nil
 }

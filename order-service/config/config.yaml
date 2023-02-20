@@ -31,10 +31,15 @@ redis:
 
 kafka:
   brokers:
-    - 127.0.0.1:9092
+    - 'kafka'
   sasl:
     username: alice        # env: KAFKA_USER
     password: alice-secret # env: KAFKA_PASSWORD
+
+topics:
+  billing_topic: billing_topic
+  stock_topic: stock_topic
+  order_topic: order_topic
 
 timeout:
   duration : 5

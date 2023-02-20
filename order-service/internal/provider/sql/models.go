@@ -2,6 +2,7 @@ package sql
 
 import (
 	"order-service/internal/domain/dto"
+	domain "order-service/internal/domain/models"
 	"time"
 )
 
@@ -20,5 +21,15 @@ func (r *OrderRow) ToDTO() *dto.OrderDTO {
 		TotalPrice: r.TotalPrice,
 		CreatedAt:  r.CreatedAt,
 		Status:     r.Status,
+	}
+}
+
+func FromModel(order *domain.Order) *OrderRow {
+	return &OrderRow{
+		ID:         order.ID(),
+		UserID:     order.UserID(),
+		TotalPrice: order.TotalPrice(),
+		CreatedAt:  order.CreatedAt(),
+		Status:     string(order.Status()),
 	}
 }

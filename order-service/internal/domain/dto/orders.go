@@ -7,6 +7,7 @@ type Status string
 const (
 	Success         Status = "success"
 	Created         Status = "created"
+	Canceling       Status = "canceling"
 	PaymentPending  Status = "payment_pending"
 	PaymentApproved Status = "payment_approved"
 	StockPending    Status = "stock_pending"

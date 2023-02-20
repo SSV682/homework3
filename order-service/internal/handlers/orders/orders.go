@@ -28,15 +28,17 @@ func NewHandler(s services.OrderService) *handler {
 }
 
 func (h *handler) CreateOrder(ctx echo.Context) error {
-	payload := ctx.Request().Header.Get(tokenHeaderName)
-	if payload == "" {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
-	}
+	//payload := ctx.Request().Header.Get(tokenHeaderName)
+	//if payload == "" {
+	//	return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
+	//}
+	//
+	//userID, err := getUserID(payload)
+	//if err != nil {
+	//	return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
+	//}
 
-	userID, err := getUserID(payload)
-	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
-	}
+	userID := "503c3602-5c51-4848-b332-ead24b4e0621"
 
 	idempotenceKey := ctx.Request().Header.Get(idempotenceKeyHeaderName)
 	log.Info(idempotenceKey)
@@ -46,7 +48,7 @@ func (h *handler) CreateOrder(ctx echo.Context) error {
 
 	var body CreateOrderRequest
 
-	err = ctx.Bind(&body)
+	err := ctx.Bind(&body)
 	if err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 	}
@@ -182,37 +184,30 @@ func (h *handler) DeleteOrder(ctx echo.Context) error {
 	return ctx.JSON(http.StatusNoContent, ResponseError{Message: "Resource deleted successfully"})
 }
 
-//func (h *handler) UpdateOrder(ctx echo.Context) error {
-//	payload := ctx.Request().Header.Get(tokenHeaderName)
-//	if payload == "" {
-//		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
-//	}
-//
-//	userID, err := getUserID(payload)
-//	if err != nil {
-//		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
-//	}
-//
-//	var body CreateOrderRequest
-//
-//	err = ctx.Bind(&body)
-//	if err != nil {
-//		return ctx.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
-//	}
-//
-//	dto := dto.OrderRequestDTO{
-//		UserID:         userID,
-//		IdempotencyKey: idempotenceKey,
-//		TotalPrice:     body.TotalPrice,
-//		CreatedAt:      time.Now(),
-//	}
-//
-//	cct := ctx.Request().Context()
-//
-//	err = h.service.Update(cct, , ,&dto)
-//	if err != nil {
-//		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
-//	}
-//
-//	return ctx.JSON(http.StatusCreated, ResponseCreated{ID: id})
-//}
+func (h *handler) CancelOrder(ctx echo.Context) error {
+	//payload := ctx.Request().Header.Get(tokenHeaderName)
+	//if payload == "" {
+	//	return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
+	//}
+	//
+	//userID, err := getUserID(payload)
+	//if err != nil {
+	//	return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
+	//}
+	userID := "503c3602-5c51-4848-b332-ead24b4e0621"
+
+	orderID := ctx.Param(orderIDPathArg)
+	id, err := strconv.Atoi(orderID)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("bad id parametr %v", err).Error()})
+	}
+
+	cct := ctx.Request().Context()
+
+	err = h.service.Cancel(cct, int64(id), userID)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+	}
+
+	return ctx.JSON(http.StatusAccepted, ResponseCreated{ID: int64(id)})
+}

@@ -15,6 +15,7 @@ const (
 	ordersEndpointName  = "/orders"
 	DetailOrderURL      = "/:order_id"
 	ListURL             = ""
+	CancelURL           = "/:order_id/cancellation"
 )
 
 const (
@@ -49,6 +50,7 @@ func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 			orders.GET(DetailOrderURL, h.DetailOrder)
 			orders.GET(ListURL, h.ListOrder)
 			orders.DELETE(DetailOrderURL, h.DeleteOrder)
+			orders.PUT(CancelURL, h.CancelOrder)
 		}
 	}
 	return nil

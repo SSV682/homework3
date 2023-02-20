@@ -12,6 +12,8 @@ const (
 	PaymentApproved  Status = "payment_approved"
 	StockPending     Status = "stock_pending"
 	StockApproved    Status = "stock_approved"
+	StockReject      Status = "stock_reject"
+	Canceling        Status = "canceling"
 )
 
 type CreateOrderSagaState struct {

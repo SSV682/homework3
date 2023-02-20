@@ -8,6 +8,7 @@ import (
 	"github.com/elgris/sqrl"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
+	log "github.com/sirupsen/logrus"
 	"order-service/internal/domain/dto"
 	"order-service/internal/domain/models"
 	"strings"
@@ -230,7 +231,7 @@ func (s *sqlOrderProvider) UpdateOrder(ctx context.Context, id int64, userID str
 	return nil
 }
 
-func (s *sqlOrderProvider) GetDeployByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, error) {
+func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, error) {
 	if fn == nil {
 		return getOrderByID(ctx, s.pool, id)
 	}
@@ -248,8 +249,9 @@ func (s *sqlOrderProvider) GetDeployByIDThenUpdate(ctx context.Context, id int64
 
 	order, err := getOrderByID(ctx, tx, id)
 	if err != nil {
-		return nil, fmt.Errorf("get deployID for update: %w", err)
+		return nil, fmt.Errorf("get order by id for update: %w", err)
 	}
+	log.Infof("get then update order: %v", order)
 
 	ok, err := fn(order)
 	if err != nil {
@@ -259,8 +261,9 @@ func (s *sqlOrderProvider) GetDeployByIDThenUpdate(ctx context.Context, id int64
 	if !ok {
 		return order, nil
 	}
+	log.Infof("ok order: %v", order)
 
-	if err = s.UpdateOrder(ctx, order.ID(), order.UserID(), order); err != nil {
+	if err = s.update(ctx, tx, order); err != nil {
 		return nil, err
 	}
 
@@ -272,26 +275,67 @@ func (s *sqlOrderProvider) GetDeployByIDThenUpdate(ctx context.Context, id int64
 }
 
 func getOrderByID(ctx context.Context, db DBClient, id int64) (*domain.Order, error) {
-	q := queryDeleteBuilder.
-		Delete(ordersTable).
-		Where(sqrl.Eq{idColumn.String(): id})
+	q := queryBuilder.
+		Select(strings.Join(allColumns(allOrdersColumns), ", ")).
+		From(ordersTable).
+		Where(sqrl.Eq{idColumn.String(): id}).Limit(1)
 
 	query, args, err := q.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("build sql deployment getByID query: %w", err)
+		return nil, fmt.Errorf(buildQuery, err)
 	}
 
-	var or OrderRow
+	var row OrderRow
 
-	if err = db.GetContext(ctx, &or, query, args...); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("no rows in result set: %w", domain.ErrOrderNotFound)
-		}
-
-		return nil, fmt.Errorf("execute get deployment query: %w", err)
+	if err = db.GetContext(ctx, &row, query, args...); err != nil {
+		return nil, fmt.Errorf(executeQuery, err)
 	}
 
-	order := domain.RestoreOrderFromDTO(or.ToDTO())
+	return domain.RestoreOrderFromDTO(row.ToDTO()), nil
+}
 
-	return order, nil
+func (s *sqlOrderProvider) update(ctx context.Context, db DBClient, order *domain.Order) error {
+	query := `UPDATE user_service.orders 
+			SET 
+				status=:status,
+				created_at=:created_at,
+				user_id=:user_id,
+				total_price=:total_price
+			WHERE id=:id`
+
+	res, err := db.NamedExecContext(ctx, query, FromModel(order))
+	if err != nil {
+		return fmt.Errorf("execute update order query: %v", err)
+	}
+
+	affectedRows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("get affected rows: %v", err)
+	}
+
+	if affectedRows == 0 {
+		return fmt.Errorf("no rows in result set")
+	}
+
+	return nil
+}
+
+func (s *sqlOrderProvider) CancelOrder(ctx context.Context, id int64, userID string) error {
+	q := queryUpdateBuilder.
+		Update(ordersTable).
+		Where(sqrl.Eq{idColumn.String(): id}, sqrl.Eq{userIDColumn.String(): userID})
+
+	q.Set(statusColumn.String(), domain.Canceling)
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf(buildQuery, err)
+	}
+
+	_, err = s.pool.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf(executeQuery, err)
+	}
+
+	return nil
 }

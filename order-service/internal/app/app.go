@@ -43,7 +43,7 @@ func NewApp(configPath string) *App {
 
 	handler := echo.New()
 
-	commandCh := make(chan dto.OrderCommandDTO)
+	commandCh := make(chan dto.OrderCommandDTO, 1000)
 	orderProv := sql.NewSQLBusinessRulesProvider(pool)
 	redisProv := redis.NewRedisProvider(client)
 	orderService := orders.NewOrdersService(orderProv, redisProv, commandCh)
@@ -66,7 +66,10 @@ func NewApp(configPath string) *App {
 		CommandProducerProv: commandProducerProv,
 		SqlProv:             orderProv,
 	}
-	saga.NewOrchestrator(sagaCfg)
+
+	orchestrator := saga.NewOrchestrator(sagaCfg)
+
+	orchestrator.Run(context.Background())
 
 	rs := handlers.NewRegisterServices(orderService)
 	err = handlers.RegisterHandlers(handler, rs)
