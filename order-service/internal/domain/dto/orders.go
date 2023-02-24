@@ -45,6 +45,7 @@ type OrderDTO struct {
 }
 
 type CommandDTO struct {
+	Topic       string
 	CommandType CommandType
 	Order       OrderDTO
 }

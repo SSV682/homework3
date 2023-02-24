@@ -231,14 +231,15 @@ func (s *sqlOrderProvider) UpdateOrder(ctx context.Context, id int64, userID str
 	return nil
 }
 
-func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, error) {
+func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, bool, error) {
 	if fn == nil {
-		return getOrderByID(ctx, s.pool, id)
+		order, err := getOrderByID(ctx, s.pool, id)
+		return order, false, err
 	}
 
 	tx, err := s.pool.BeginTxx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("begin transaction: %w", err)
+		return nil, false, fmt.Errorf("begin transaction: %w", err)
 	}
 
 	defer func() {
@@ -249,29 +250,29 @@ func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64,
 
 	order, err := getOrderByID(ctx, tx, id)
 	if err != nil {
-		return nil, fmt.Errorf("get order by id for update: %w", err)
+		return nil, false, fmt.Errorf("get order by id for update: %w", err)
 	}
 	log.Infof("get then update order: %v", order)
 
 	ok, err := fn(order)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if !ok {
-		return order, nil
+		return order, false, nil
 	}
 	log.Infof("ok order: %v", order)
 
 	if err = s.update(ctx, tx, order); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if err = tx.Commit(); err != nil {
-		return nil, fmt.Errorf("commit transaction: %w", err)
+		return nil, false, fmt.Errorf("commit transaction: %w", err)
 	}
 
-	return order, nil
+	return order, true, nil
 }
 
 func getOrderByID(ctx context.Context, db DBClient, id int64) (*domain.Order, error) {

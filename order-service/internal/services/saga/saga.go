@@ -10,7 +10,7 @@ import (
 )
 
 type OrchestratorConfig struct {
-	CommandCh           <-chan dto.OrderCommandDTO //для сервиса пользователей
+	CommandCh           <-chan dto.OrderCommandDTO
 	BillingServiceTopic string
 	StockServiceTopic   string
 	CommandConsumerProv provider.BrokerConsumerProvider
@@ -44,7 +44,6 @@ func NewOrchestrator(cfg *OrchestratorConfig) *Orchestrator {
 func (o *Orchestrator) Run(ctx context.Context) {
 	payloadCh, _, err := o.commandConsumerProv.StartConsume(ctx)
 	if err != nil {
-		// TODO: обработать ошибку
 		log.Errorf("failed consumer: %v", err)
 	}
 
@@ -87,32 +86,33 @@ func (o *Orchestrator) executeCommand(ctx context.Context, command dto.OrderComm
 }
 
 func (o *Orchestrator) approvePayment(ctx context.Context, id int64) {
-	order, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.PaymentPending))
+	order, ok, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.PaymentPending))
 	if err != nil {
-		//TODO:err
 		log.Errorf("sql approve payment failed: %v", err)
 	}
 
-	cm := dto.CommandDTO{
-		Order: *order.OrderToDTO(),
-	}
+	if ok {
+		cm := dto.CommandDTO{
+			Topic:       o.billingServiceTopic,
+			CommandType: dto.Approve,
+			Order:       *order.OrderToDTO(),
+		}
 
-	if order.Status() != domain.StockPending {
-		cm.CommandType = dto.Reject
+		log.Infof("command: %v", cm)
+		if err = o.commandProducerProv.SendMessage(ctx, cm); err != nil {
+			log.Errorf("send message apporve payment failed: %v", err)
+		}
 	} else {
-		cm.CommandType = dto.Approve
+
+		o.cancelOrder(ctx, id)
 	}
 
-	if err = o.commandProducerProv.SendMessage(ctx, o.billingServiceTopic, cm); err != nil {
-		//TODO: err
-		log.Errorf("send message apporve payment failed: %v", err)
-	}
 }
 
 func (o *Orchestrator) approveStock(ctx context.Context, id int64) {
-	order, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.StockPending))
+	log.Info("approve stock")
+	order, ok, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.StockPending))
 	if err != nil {
-		//TODO:err
 		log.Errorf("sql approve stock failed: %v", err)
 	}
 
@@ -120,73 +120,86 @@ func (o *Orchestrator) approveStock(ctx context.Context, id int64) {
 		Order: *order.OrderToDTO(),
 	}
 
-	if order.Status() != domain.StockPending {
-		cm.CommandType = dto.Reject
-	} else {
+	if ok {
+		cm.Topic = o.stockServiceTopic
 		cm.CommandType = dto.Approve
+	} else {
+		cm.Topic = o.billingServiceTopic
+		cm.CommandType = dto.Reject
 	}
 
-	if err = o.commandProducerProv.SendMessage(ctx, o.stockServiceTopic, cm); err != nil {
-		//TODO: err
+	log.Infof("command: %v", cm)
+	if err = o.commandProducerProv.SendMessage(ctx, cm); err != nil {
 		log.Errorf("send message approve stock failed: %v", err)
 	}
 }
 
 func (o *Orchestrator) rejectPayment(ctx context.Context, id int64) {
-	order, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.PaymentRejecting))
+	order, _, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.PaymentRejecting))
 	if err != nil {
-		//TODO:err
 		log.Errorf("sql reject payment failed: %v", err)
 	}
 
 	cm := dto.CommandDTO{
+		Topic:       o.billingServiceTopic,
 		CommandType: dto.Reject,
 		Order:       *order.OrderToDTO(),
 	}
 
-	if err = o.commandProducerProv.SendMessage(ctx, o.billingServiceTopic, cm); err != nil {
-		//TODO: err
+	if err = o.commandProducerProv.SendMessage(ctx, cm); err != nil {
 		log.Errorf("send message reject payment failed: %v", err)
 	}
 }
 
 func (o *Orchestrator) approveOrder(ctx context.Context, id int64) {
-	_, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.Success))
+	order, ok, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.Success))
 	if err != nil {
-		//TODO:err
 		log.Errorf("approve order failed: %v", err)
 	}
+
+	if ok {
+		cm := dto.CommandDTO{
+			Topic:       o.stockServiceTopic,
+			Order:       *order.OrderToDTO(),
+			CommandType: dto.Reject,
+		}
+
+		log.Infof("command: %v", cm)
+		if err = o.commandProducerProv.SendMessage(ctx, cm); err != nil {
+			log.Errorf("send message reject payment failed: %v", err)
+		}
+	}
+
+	//TODO: if not ok
 }
 
 func (o *Orchestrator) cancelOrder(ctx context.Context, id int64) {
-	_, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.Canceled))
+	_, _, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.Canceled))
 	if err != nil {
-		//TODO:err
 		log.Errorf("cancel order failed: %v", err)
 	}
 }
 
 func (o *Orchestrator) rejectStock(ctx context.Context, id int64) {
-	order, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.StockReject))
+	order, _, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, id, UpdateOrderStatusFunc(domain.StockReject))
 	if err != nil {
-		//TODO:err
 		log.Errorf("sql reject stock failed: %v", err)
 	}
 
 	cm := dto.CommandDTO{
+		Topic:       o.stockServiceTopic,
 		CommandType: dto.Reject,
 		Order:       *order.OrderToDTO(),
 	}
 
-	if err = o.commandProducerProv.SendMessage(ctx, o.stockServiceTopic, cm); err != nil {
-		//TODO: err
+	if err = o.commandProducerProv.SendMessage(ctx, cm); err != nil {
 		log.Errorf("send message reject stock failed: %v", err)
 	}
 }
 
 func UpdateOrderStatusFunc(status domain.Status) domain.IntermediateOrderFunc {
 	return func(o *domain.Order) (bool, error) {
-		if o.Status() != domain.Canceling {
+		if o.Status() != domain.Canceling || status == domain.Canceled {
 			o.SetStatus(status)
 			log.Infof("order: %v", o)
 		} else {

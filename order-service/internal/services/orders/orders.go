@@ -98,20 +98,21 @@ func (o *orderService) Update(ctx context.Context, orderID int64, userID string,
 	return nil
 }
 
-func (o *orderService) Cancel(ctx context.Context, orderID int64, userID string) error {
-	err := o.sqlProv.CancelOrder(ctx, orderID, userID)
+func (o *orderService) Cancel(ctx context.Context, orderID int64, _ string) error {
+	order, _, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, orderID, UpdateOrderStatusFunc(domain.Canceling))
 	if err != nil {
 		return fmt.Errorf("failed update: %v", err)
 	}
 
-	command := dto.OrderCommandDTO{
-		OrderID: orderID,
-		Status:  dto.Canceling,
+	if order.Status() == domain.Success {
+		command := dto.OrderCommandDTO{
+			OrderID: orderID,
+			Status:  dto.Canceling,
+		}
+
+		o.commandCh <- command
+		log.Infof("command sent: %v", command)
 	}
-
-	o.commandCh <- command
-	log.Infof("command sent: %v", command)
-
 	return nil
 }
 
@@ -123,4 +124,17 @@ func key(idempotenceKey, userID string) string {
 	sb.WriteString(userID)
 
 	return sb.String()
+}
+
+func UpdateOrderStatusFunc(status domain.Status) domain.IntermediateOrderFunc {
+	return func(o *domain.Order) (bool, error) {
+		if o.Status() != domain.Canceling {
+			o.SetStatus(status)
+			log.Infof("order: %v", o)
+		} else {
+			return false, nil
+		}
+
+		return true, nil
+	}
 }

@@ -13,7 +13,7 @@ type OrderProvider interface {
 	ListOrders(ctx context.Context, dto *dto.FilterOrderDTO) ([]*domain.Order, error)
 	DeleteOrder(ctx context.Context, id int64, userID string) error
 	UpdateOrder(ctx context.Context, id int64, userID string, order *domain.Order) error
-	GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, error)
+	GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, bool, error)
 	CancelOrder(ctx context.Context, id int64, userID string) error
 }
 
@@ -28,5 +28,5 @@ type BrokerConsumerProvider interface {
 }
 
 type BrokerProducerProvider interface {
-	SendMessage(ctx context.Context, topic string, command dto.CommandDTO) error
+	SendMessage(ctx context.Context, command dto.CommandDTO) error
 }
