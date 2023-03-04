@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
-	"order-service/internal/domain/dto"
+	domain "order-service/internal/domain/models"
 )
 
 const groupId = "eventGroupStore"
@@ -33,8 +33,8 @@ func (c *BrokerConsumer) read(ctx context.Context) ([]byte, error) {
 	return msg.Value, nil
 }
 
-func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan dto.OrderCommandDTO, <-chan error, error) {
-	payloadCh := make(chan dto.OrderCommandDTO)
+func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.OrderCommand, <-chan error, error) {
+	payloadCh := make(chan domain.OrderCommand)
 	errCh := make(chan error)
 
 	go func() {

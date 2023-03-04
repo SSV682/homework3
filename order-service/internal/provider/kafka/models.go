@@ -1,7 +1,7 @@
 package kafka
 
 import (
-	"order-service/internal/domain/dto"
+	domain "order-service/internal/domain/models"
 	"time"
 )
 
@@ -10,10 +10,10 @@ type ResponseCommand struct {
 	Status  string `json:"status"`
 }
 
-func (c *ResponseCommand) ToDTO() dto.OrderCommandDTO {
-	return dto.OrderCommandDTO{
+func (c *ResponseCommand) ToDTO() domain.OrderCommand {
+	return domain.OrderCommand{
 		OrderID: c.OrderID,
-		Status:  dto.Status(c.Status),
+		Status:  domain.Status(c.Status),
 	}
 }
 
@@ -30,15 +30,15 @@ type Order struct {
 	Status     string    `json:"status"`
 }
 
-func RequestCommandFromDTO(commandDTO dto.CommandDTO) RequestCommand {
+func RequestCommandFromDTO(command domain.Command) RequestCommand {
 	return RequestCommand{
-		CommandType: string(commandDTO.CommandType),
+		CommandType: string(command.CommandType),
 		Order: Order{
-			ID:         commandDTO.Order.ID,
-			UserID:     commandDTO.Order.UserID,
-			TotalPrice: commandDTO.Order.TotalPrice,
-			CreatedAt:  commandDTO.Order.CreatedAt,
-			Status:     commandDTO.Order.Status,
+			ID:         command.Order.ID,
+			UserID:     command.Order.UserID,
+			TotalPrice: command.Order.TotalPrice,
+			CreatedAt:  command.Order.CreatedAt,
+			Status:     string(command.Order.Status),
 		},
 	}
 }

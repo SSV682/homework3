@@ -13,8 +13,7 @@ type OrderProvider interface {
 	ListOrders(ctx context.Context, dto *dto.FilterOrderDTO) ([]*domain.Order, error)
 	DeleteOrder(ctx context.Context, id int64, userID string) error
 	UpdateOrder(ctx context.Context, id int64, userID string, order *domain.Order) error
-	GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, bool, error)
-	CancelOrder(ctx context.Context, id int64, userID string) error
+	GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, error)
 }
 
 type RedisProvider interface {
@@ -24,9 +23,10 @@ type RedisProvider interface {
 }
 
 type BrokerConsumerProvider interface {
-	StartConsume(ctx context.Context) (<-chan dto.OrderCommandDTO, <-chan error, error)
+	StartConsume(ctx context.Context) (<-chan domain.OrderCommand, <-chan error, error)
 }
 
 type BrokerProducerProvider interface {
-	SendMessage(ctx context.Context, command dto.CommandDTO) error
+	SendCommand(ctx context.Context, command domain.Command) error
+	SendMessage(ctx context.Context, command domain.Message) error
 }

@@ -99,7 +99,7 @@ func (s *sqlOrderProvider) CreateOrder(ctx context.Context, order *domain.Order)
 	q := queryInsertBuilder.
 		Insert(ordersTable).
 		Columns(strings.Join(allColumns(ordersColumnsForCreate), ", ")).
-		Values(order.UserID(), order.TotalPrice(), order.CreatedAt(), domain.Created).
+		Values(order.UserID, order.TotalPrice, order.CreatedAt, domain.Created).
 		Returning(idColumn.String())
 
 	query, args, err := q.ToSql()
@@ -231,15 +231,15 @@ func (s *sqlOrderProvider) UpdateOrder(ctx context.Context, id int64, userID str
 	return nil
 }
 
-func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, bool, error) {
+func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, error) {
 	if fn == nil {
 		order, err := getOrderByID(ctx, s.pool, id)
-		return order, false, err
+		return order, err
 	}
 
 	tx, err := s.pool.BeginTxx(ctx, nil)
 	if err != nil {
-		return nil, false, fmt.Errorf("begin transaction: %w", err)
+		return nil, fmt.Errorf("begin transaction: %w", err)
 	}
 
 	defer func() {
@@ -250,29 +250,30 @@ func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64,
 
 	order, err := getOrderByID(ctx, tx, id)
 	if err != nil {
-		return nil, false, fmt.Errorf("get order by id for update: %w", err)
+		return nil, fmt.Errorf("get order by id for update: %w", err)
 	}
+
 	log.Infof("get then update order: %v", order)
 
 	ok, err := fn(order)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
 	if !ok {
-		return order, false, nil
+		return order, nil
 	}
 	log.Infof("ok order: %v", order)
 
 	if err = s.update(ctx, tx, order); err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
 	if err = tx.Commit(); err != nil {
-		return nil, false, fmt.Errorf("commit transaction: %w", err)
+		return nil, fmt.Errorf("commit transaction: %w", err)
 	}
 
-	return order, true, nil
+	return order, nil
 }
 
 func getOrderByID(ctx context.Context, db DBClient, id int64) (*domain.Order, error) {
@@ -316,26 +317,6 @@ func (s *sqlOrderProvider) update(ctx context.Context, db DBClient, order *domai
 
 	if affectedRows == 0 {
 		return fmt.Errorf("no rows in result set")
-	}
-
-	return nil
-}
-
-func (s *sqlOrderProvider) CancelOrder(ctx context.Context, id int64, userID string) error {
-	q := queryUpdateBuilder.
-		Update(ordersTable).
-		Where(sqrl.Eq{idColumn.String(): id}, sqrl.Eq{userIDColumn.String(): userID})
-
-	q.Set(statusColumn.String(), domain.Canceling)
-
-	query, args, err := q.ToSql()
-	if err != nil {
-		return fmt.Errorf(buildQuery, err)
-	}
-
-	_, err = s.pool.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf(executeQuery, err)
 	}
 
 	return nil

@@ -14,10 +14,10 @@ import (
 type orderService struct {
 	sqlProv   provider.OrderProvider
 	redisProv provider.RedisProvider
-	commandCh chan dto.OrderCommandDTO
+	commandCh chan domain.OrderCommand
 }
 
-func NewOrdersService(s provider.OrderProvider, t provider.RedisProvider, commandCh chan dto.OrderCommandDTO) *orderService {
+func NewOrdersService(s provider.OrderProvider, t provider.RedisProvider, commandCh chan domain.OrderCommand) *orderService {
 	return &orderService{
 		sqlProv:   s,
 		redisProv: t,
@@ -49,9 +49,9 @@ func (o *orderService) Create(ctx context.Context, request *dto.OrderRequestDTO)
 		return 0, fmt.Errorf("failed save key: %v", err)
 	}
 
-	command := dto.OrderCommandDTO{
+	command := domain.OrderCommand{
 		OrderID: id,
-		Status:  dto.Created,
+		Status:  domain.Created,
 	}
 
 	o.commandCh <- command
@@ -98,21 +98,15 @@ func (o *orderService) Update(ctx context.Context, orderID int64, userID string,
 	return nil
 }
 
-func (o *orderService) Cancel(ctx context.Context, orderID int64, _ string) error {
-	order, _, err := o.sqlProv.GetOrderByIDThenUpdate(ctx, orderID, UpdateOrderStatusFunc(domain.Canceling))
-	if err != nil {
-		return fmt.Errorf("failed update: %v", err)
+func (o *orderService) Cancel(_ context.Context, orderID int64, _ string) error {
+	log.Infof("order info when canceling: %d", orderID)
+	command := domain.OrderCommand{
+		OrderID: orderID,
+		Status:  domain.Canceling,
 	}
 
-	if order.Status() == domain.Success {
-		command := dto.OrderCommandDTO{
-			OrderID: orderID,
-			Status:  dto.Canceling,
-		}
-
-		o.commandCh <- command
-		log.Infof("command sent: %v", command)
-	}
+	log.Infof("command sent: %v", command)
+	o.commandCh <- command
 	return nil
 }
 
@@ -124,17 +118,4 @@ func key(idempotenceKey, userID string) string {
 	sb.WriteString(userID)
 
 	return sb.String()
-}
-
-func UpdateOrderStatusFunc(status domain.Status) domain.IntermediateOrderFunc {
-	return func(o *domain.Order) (bool, error) {
-		if o.Status() != domain.Canceling {
-			o.SetStatus(status)
-			log.Infof("order: %v", o)
-		} else {
-			return false, nil
-		}
-
-		return true, nil
-	}
 }

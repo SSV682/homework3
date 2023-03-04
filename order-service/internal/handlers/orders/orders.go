@@ -95,11 +95,11 @@ func (h *handler) DetailOrder(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, ResponseOrder{
-		ID:         order.ID(),
-		UserID:     order.UserID(),
-		TotalPrice: order.TotalPrice(),
-		CreatedAt:  order.CreatedAt(),
-		Status:     string(order.Status()),
+		ID:         order.ID,
+		UserID:     order.UserID,
+		TotalPrice: order.TotalPrice,
+		CreatedAt:  order.CreatedAt,
+		Status:     string(order.Status),
 	})
 }
 
@@ -141,11 +141,11 @@ func (h *handler) ListOrder(ctx echo.Context) error {
 
 	for _, v := range orders {
 		result = append(result, &ResponseOrder{
-			ID:         v.ID(),
-			UserID:     v.UserID(),
-			TotalPrice: v.TotalPrice(),
-			CreatedAt:  v.CreatedAt(),
-			Status:     string(v.Status()),
+			ID:         v.ID,
+			UserID:     v.UserID,
+			TotalPrice: v.TotalPrice,
+			CreatedAt:  v.CreatedAt,
+			Status:     string(v.Status),
 		})
 	}
 

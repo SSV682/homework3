@@ -9,64 +9,51 @@ type StatusEnum string
 
 type IntermediateOrderFunc func(o *Order) (bool, error)
 
+type CommandType string
+
+const (
+	Approve CommandType = "approve"
+	Reject  CommandType = "reject"
+)
+
 type Order struct {
-	id         int64
-	userID     string
-	totalPrice float64
-	createdAt  time.Time
-	status     Status
-}
-
-func (o *Order) ID() int64 {
-	return o.id
-}
-
-func (o *Order) UserID() string {
-	return o.userID
-}
-
-func (o *Order) TotalPrice() float64 {
-	return o.totalPrice
-}
-
-func (o *Order) CreatedAt() time.Time {
-	return o.createdAt
-}
-
-func (o *Order) Status() Status {
-	return o.status
+	ID         int64
+	UserID     string
+	TotalPrice float64
+	CreatedAt  time.Time
+	Status     Status
 }
 
 func (o *Order) SetStatus(status Status) {
-	o.status = status
+	o.Status = status
 }
 
 func NewOrderFromDTO(dto *dto.OrderRequestDTO) *Order {
 	return &Order{
-		userID:     dto.UserID,
-		totalPrice: dto.TotalPrice,
-		createdAt:  time.Now(),
-		status:     Created,
+		UserID:     dto.UserID,
+		TotalPrice: dto.TotalPrice,
+		CreatedAt:  time.Now(),
+		Status:     Created,
 	}
 }
 
 func RestoreOrderFromDTO(dto *dto.OrderDTO) *Order {
 	return &Order{
-		id:         dto.ID,
-		userID:     dto.UserID,
-		totalPrice: dto.TotalPrice,
-		createdAt:  dto.CreatedAt,
-		status:     Status(dto.Status),
+		ID:         dto.ID,
+		UserID:     dto.UserID,
+		TotalPrice: dto.TotalPrice,
+		CreatedAt:  dto.CreatedAt,
+		Status:     Status(dto.Status),
 	}
 }
 
 func (o *Order) OrderToDTO() *dto.OrderDTO {
 	return &dto.OrderDTO{
-		ID:         o.ID(),
-		UserID:     o.UserID(),
-		TotalPrice: o.TotalPrice(),
-		CreatedAt:  o.CreatedAt(),
-		Status:     string(o.Status()),
+		ID:         o.ID,
+		UserID:     o.UserID,
+		TotalPrice: o.TotalPrice,
+		CreatedAt:  o.CreatedAt,
+		Status:     string(o.Status),
 	}
 }
 
@@ -101,4 +88,20 @@ func NewOrdersFromSlice(res []*Order) *Orders {
 		total:   len(res),
 		results: res,
 	}
+}
+
+type Command struct {
+	Topic       string
+	CommandType CommandType
+	Order       *Order
+}
+
+type Message struct {
+	Topic string
+	Order Order
+}
+
+type OrderCommand struct {
+	OrderID int64
+	Status  Status
 }

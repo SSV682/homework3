@@ -103,6 +103,8 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+#    expose:
+#      - '29092'
     depends_on:
       - zookeeper
     environment:
@@ -123,6 +125,26 @@ services:
 #      - ./dev/volumes/kafka/producer.properties:/etc/kafka/producer.properties
     networks:
       - home_net
+
+#  init-kafka:
+#    image: confluentinc/cp-kafka:7.2.1
+#    depends_on:
+#      - kafka
+#    entrypoint: [ '/bin/sh', '-c' ]
+#    command: |
+#      "
+#      # blocks until kafka is reachable
+#      kafka-topics --bootstrap-server kafka:29092 --list
+#
+#      echo -e 'Creating kafka topics'
+#      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic billing-topic --replication-factor 1 --partitions 1
+#      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-topic --replication-factor 1 --partitions 1
+#      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic stock-topic --replication-factor 1 --partitions 1
+#
+#      echo -e 'Successfully created the following topics:'
+#      kafka-topics --bootstrap-server kafka:29092 --list
+#      "
+
 
   kafka-ui:
     container_name: kafka-ui

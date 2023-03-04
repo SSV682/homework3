@@ -7,13 +7,14 @@ import (
 	"net"
 	"net/http"
 	"order-service/internal/config"
-	"order-service/internal/domain/dto"
+	domain "order-service/internal/domain/models"
 	"order-service/internal/handlers"
 	"order-service/internal/provider/kafka"
 	"order-service/internal/provider/redis"
 	"order-service/internal/provider/sql"
+	"order-service/internal/services/orchestrator"
 	"order-service/internal/services/orders"
-	"order-service/internal/services/saga"
+	updater "order-service/internal/services/updater"
 	"os"
 	"os/signal"
 	"syscall"
@@ -43,7 +44,8 @@ func NewApp(configPath string) *App {
 
 	handler := echo.New()
 
-	commandCh := make(chan dto.OrderCommandDTO, 1000)
+	commandCh := make(chan domain.OrderCommand, 1000)
+	updateCh := make(chan domain.OrderCommand, 1000)
 	orderProv := sql.NewSQLBusinessRulesProvider(pool)
 	redisProv := redis.NewRedisProvider(client)
 	orderService := orders.NewOrdersService(orderProv, redisProv, commandCh)
@@ -58,18 +60,26 @@ func NewApp(configPath string) *App {
 
 	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.OrderTopic)
 
-	sagaCfg := &saga.OrchestratorConfig{
+	sagaCfg := orchestrator.Config{
 		CommandCh:           commandCh,
+		UpdateCh:            updateCh,
 		BillingServiceTopic: cfg.Topics.BillingTopic,
 		StockServiceTopic:   cfg.Topics.StockTopic,
 		CommandConsumerProv: commandConsumerProv,
 		CommandProducerProv: commandProducerProv,
-		SqlProv:             orderProv,
 	}
 
-	orchestrator := saga.NewOrchestrator(sagaCfg)
-
+	orchestrator := orchestrator.NewOrchestrator(sagaCfg)
 	orchestrator.Run(context.Background())
+
+	updaterCfg := updater.Config{
+		CommandCh:           updateCh,
+		SystemBusTopic:      cfg.Topics.SystemBus,
+		StorageProv:         orderProv,
+		CommandProducerProv: commandProducerProv,
+	}
+	updater := updater.NewUpdater(updaterCfg)
+	updater.Run(context.Background())
 
 	rs := handlers.NewRegisterServices(orderService)
 	err = handlers.RegisterHandlers(handler, rs)

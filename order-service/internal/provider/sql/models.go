@@ -26,10 +26,10 @@ func (r *OrderRow) ToDTO() *dto.OrderDTO {
 
 func FromModel(order *domain.Order) *OrderRow {
 	return &OrderRow{
-		ID:         order.ID(),
-		UserID:     order.UserID(),
-		TotalPrice: order.TotalPrice(),
-		CreatedAt:  order.CreatedAt(),
-		Status:     string(order.Status()),
+		ID:         order.ID,
+		UserID:     order.UserID,
+		TotalPrice: order.TotalPrice,
+		CreatedAt:  order.CreatedAt,
+		Status:     string(order.Status),
 	}
 }

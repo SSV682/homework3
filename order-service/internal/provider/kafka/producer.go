@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/segmentio/kafka-go"
-	"order-service/internal/domain/dto"
+	domain "order-service/internal/domain/models"
 )
 
 type BrokerProducer struct {
@@ -36,7 +36,7 @@ func NewBrokerProducer(cfg ProducerConfig) *BrokerProducer {
 	return client
 }
 
-func (client *BrokerProducer) SendMessage(ctx context.Context, command dto.CommandDTO) error {
+func (client *BrokerProducer) SendCommand(ctx context.Context, command domain.Command) error {
 	message := RequestCommandFromDTO(command)
 
 	marshaledMessage, err := json.Marshal(message)
@@ -47,6 +47,23 @@ func (client *BrokerProducer) SendMessage(ctx context.Context, command dto.Comma
 	err = client.w.WriteMessages(ctx, kafka.Message{
 		Value: marshaledMessage,
 		Topic: command.Topic,
+	})
+	if err != nil {
+		return fmt.Errorf("could not send message: %v", err)
+	}
+
+	return nil
+}
+
+func (client *BrokerProducer) SendMessage(ctx context.Context, message domain.Message) error {
+	marshaledMessage, err := json.Marshal(message.Order)
+	if err != nil {
+		return fmt.Errorf("could not marshal message: %v", err)
+	}
+
+	err = client.w.WriteMessages(ctx, kafka.Message{
+		Value: marshaledMessage,
+		Topic: message.Topic,
 	})
 	if err != nil {
 		return fmt.Errorf("could not send message: %v", err)
