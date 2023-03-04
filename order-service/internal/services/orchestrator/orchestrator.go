@@ -41,6 +41,11 @@ func NewOrchestrator(cfg Config) *Orchestrator {
 	}
 }
 
+func (o *Orchestrator) Register(order *domain.Order) {
+	saga := domain.NewSaga(order, o.billingServiceTopic, o.stockServiceTopic)
+	o.sagas[order.ID] = saga
+}
+
 func (o *Orchestrator) Run(ctx context.Context) {
 	payloadCh, _, err := o.commandConsumerProv.StartConsume(ctx)
 	if err != nil {

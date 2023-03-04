@@ -8,13 +8,15 @@ import (
 	"order-service/internal/domain/dto"
 	domain "order-service/internal/domain/models"
 	"order-service/internal/provider"
+	"order-service/internal/services/orchestrator"
 	"strings"
 )
 
 type orderService struct {
-	sqlProv   provider.OrderProvider
-	redisProv provider.RedisProvider
-	commandCh chan domain.OrderCommand
+	orchestrator *orchestrator.Orchestrator
+	sqlProv      provider.OrderProvider
+	redisProv    provider.RedisProvider
+	commandCh    chan domain.OrderCommand
 }
 
 func NewOrdersService(s provider.OrderProvider, t provider.RedisProvider, commandCh chan domain.OrderCommand) *orderService {
@@ -39,10 +41,15 @@ func (o *orderService) Create(ctx context.Context, request *dto.OrderRequestDTO)
 		return 0, errors.New("idempotency conflict")
 	}
 
-	id, err := o.sqlProv.CreateOrder(ctx, domain.NewOrderFromDTO(request))
+	order := domain.NewOrderFromDTO(request)
+
+	id, err := o.sqlProv.CreateOrder(ctx, order)
 	if err != nil {
 		return 0, fmt.Errorf("failed create order: %v", err)
 	}
+
+	order.ID = id
+	o.orchestrator.Register(order)
 
 	err = o.redisProv.Write(ctx, key(request.IdempotencyKey, request.UserID), id)
 	if err != nil {
