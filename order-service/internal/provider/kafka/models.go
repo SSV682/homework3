@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"encoding/json"
 	domain "order-service/internal/domain/models"
 	"time"
 )
@@ -23,11 +24,13 @@ type RequestCommand struct {
 }
 
 type Order struct {
-	ID         int64     `json:"id"`
-	UserID     string    `json:"user_id"`
-	TotalPrice float64   `json:"total_price"`
-	CreatedAt  time.Time `json:"created_at"`
-	Status     string    `json:"status"`
+	ID         int64           `json:"id"`
+	UserID     string          `json:"user_id"`
+	TotalPrice float64         `json:"total_price"`
+	Products   json.RawMessage `json:"products"`
+	CreatedAt  time.Time       `json:"created_at"`
+	DeliveryAt time.Time       `json:"delivery_at"`
+	Status     string          `json:"status"`
 }
 
 func RequestCommandFromDTO(command domain.Command) RequestCommand {
@@ -37,7 +40,9 @@ func RequestCommandFromDTO(command domain.Command) RequestCommand {
 			ID:         command.Order.ID,
 			UserID:     command.Order.UserID,
 			TotalPrice: command.Order.TotalPrice,
+			Products:   command.Order.Products,
 			CreatedAt:  command.Order.CreatedAt,
+			DeliveryAt: command.Order.DeliveryAt,
 			Status:     string(command.Order.Status),
 		},
 	}

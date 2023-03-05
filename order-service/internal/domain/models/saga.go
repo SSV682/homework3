@@ -310,13 +310,13 @@ type SuccessState struct {
 
 func (s *SuccessState) NextStep(command OrderCommand) Step {
 	if command.Status == Canceling {
-		s.saga.SetState(s.saga.stockRejectPendingState)
+		s.saga.SetState(s.saga.deliveryRejectPendingState)
 		return Step{
 			Command: Command{
 				Topic:       s.cancelingTopicName,
 				CommandType: Reject,
 			},
-			Status: StockRejecting,
+			Status: DeliveryRejecting,
 			Action: NextStep,
 		}
 	}

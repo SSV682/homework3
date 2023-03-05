@@ -50,6 +50,7 @@ func (o *orderService) Create(ctx context.Context, request *dto.OrderRequestDTO)
 	}
 
 	order.ID = id
+	log.Infof("register saga with order: %w", order)
 	o.orchestrator.Register(order)
 
 	err = o.redisProv.Write(ctx, key(request.IdempotencyKey, request.UserID), id)
