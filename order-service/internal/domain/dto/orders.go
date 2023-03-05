@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -8,6 +9,8 @@ type OrderRequestDTO struct {
 	UserID         string
 	IdempotencyKey string
 	TotalPrice     float64
+	DeliveryAt     time.Time
+	Products       json.RawMessage
 	CreatedAt      time.Time
 }
 
@@ -21,6 +24,8 @@ type OrderDTO struct {
 	ID         int64
 	UserID     string
 	TotalPrice float64
+	DeliveryAt time.Time
+	Products   json.RawMessage
 	CreatedAt  time.Time
 	Status     string
 }

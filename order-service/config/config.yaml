@@ -39,6 +39,7 @@ kafka:
 topics:
   billing_topic: billing_topic
   stock_topic: stock_topic
+  delivery_topic: delivery_topic
   order_topic: order_topic
   system_bus: system_bus
 

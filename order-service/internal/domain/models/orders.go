@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"order-service/internal/domain/dto"
 	"time"
 )
@@ -20,6 +21,8 @@ type Order struct {
 	ID         int64
 	UserID     string
 	TotalPrice float64
+	Products   json.RawMessage
+	DeliveryAt time.Time
 	CreatedAt  time.Time
 	Status     Status
 }
@@ -32,6 +35,8 @@ func NewOrderFromDTO(dto *dto.OrderRequestDTO) *Order {
 	return &Order{
 		UserID:     dto.UserID,
 		TotalPrice: dto.TotalPrice,
+		Products:   dto.Products,
+		DeliveryAt: dto.DeliveryAt,
 		CreatedAt:  time.Now(),
 		Status:     Created,
 	}
@@ -42,6 +47,8 @@ func RestoreOrderFromDTO(dto *dto.OrderDTO) *Order {
 		ID:         dto.ID,
 		UserID:     dto.UserID,
 		TotalPrice: dto.TotalPrice,
+		DeliveryAt: dto.DeliveryAt,
+		Products:   dto.Products,
 		CreatedAt:  dto.CreatedAt,
 		Status:     Status(dto.Status),
 	}
@@ -52,6 +59,8 @@ func (o *Order) OrderToDTO() *dto.OrderDTO {
 		ID:         o.ID,
 		UserID:     o.UserID,
 		TotalPrice: o.TotalPrice,
+		Products:   o.Products,
+		DeliveryAt: o.DeliveryAt,
 		CreatedAt:  o.CreatedAt,
 		Status:     string(o.Status),
 	}

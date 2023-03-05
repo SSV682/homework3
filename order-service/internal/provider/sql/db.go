@@ -31,6 +31,8 @@ const (
 	userIDColumn     OrderField = "user_id"
 	totalPriceColumn OrderField = "total_price"
 	createAtColumn   OrderField = "created_at"
+	deliveryAtColumn OrderField = "delivery_at"
+	productsColumn   OrderField = "products"
 	statusColumn     OrderField = "status"
 )
 
@@ -40,6 +42,8 @@ func ordersColumnsForCreate() []OrderField {
 		totalPriceColumn,
 		createAtColumn,
 		statusColumn,
+		deliveryAtColumn,
+		productsColumn,
 	}
 }
 
@@ -99,7 +103,7 @@ func (s *sqlOrderProvider) CreateOrder(ctx context.Context, order *domain.Order)
 	q := queryInsertBuilder.
 		Insert(ordersTable).
 		Columns(strings.Join(allColumns(ordersColumnsForCreate), ", ")).
-		Values(order.UserID, order.TotalPrice, order.CreatedAt, domain.Created).
+		Values(order.UserID, order.TotalPrice, order.CreatedAt, domain.Created, order.DeliveryAt, order.Products).
 		Returning(idColumn.String())
 
 	query, args, err := q.ToSql()

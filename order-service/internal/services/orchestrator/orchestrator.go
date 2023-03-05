@@ -9,12 +9,13 @@ import (
 )
 
 type Config struct {
-	CommandCh           <-chan domain.OrderCommand
-	UpdateCh            chan<- domain.OrderCommand
-	BillingServiceTopic string
-	StockServiceTopic   string
-	CommandConsumerProv provider.BrokerConsumerProvider
-	CommandProducerProv provider.BrokerProducerProvider
+	CommandCh            <-chan domain.OrderCommand
+	UpdateCh             chan<- domain.OrderCommand
+	BillingServiceTopic  string
+	StockServiceTopic    string
+	DeliveryServiceTopic string
+	CommandConsumerProv  provider.BrokerConsumerProvider
+	CommandProducerProv  provider.BrokerProducerProvider
 }
 
 type Orchestrator struct {
@@ -23,27 +24,29 @@ type Orchestrator struct {
 	commandSourceCh <-chan domain.OrderCommand // для кафки
 	UpdateCh        chan<- domain.OrderCommand
 
-	billingServiceTopic string
-	stockServiceTopic   string
-	commandConsumerProv provider.BrokerConsumerProvider
-	commandProducerProv provider.BrokerProducerProvider
-	sagas               *domain.SagaSet
+	billingServiceTopic  string
+	stockServiceTopic    string
+	deliveryServiceTopic string
+	commandConsumerProv  provider.BrokerConsumerProvider
+	commandProducerProv  provider.BrokerProducerProvider
+	sagas                *domain.SagaSet
 }
 
 func NewOrchestrator(cfg Config) *Orchestrator {
 	return &Orchestrator{
-		commandCh:           cfg.CommandCh,
-		UpdateCh:            cfg.UpdateCh,
-		billingServiceTopic: cfg.BillingServiceTopic,
-		stockServiceTopic:   cfg.StockServiceTopic,
-		commandConsumerProv: cfg.CommandConsumerProv,
-		commandProducerProv: cfg.CommandProducerProv,
-		sagas:               domain.NewSagaSet(),
+		commandCh:            cfg.CommandCh,
+		UpdateCh:             cfg.UpdateCh,
+		billingServiceTopic:  cfg.BillingServiceTopic,
+		stockServiceTopic:    cfg.StockServiceTopic,
+		deliveryServiceTopic: cfg.DeliveryServiceTopic,
+		commandConsumerProv:  cfg.CommandConsumerProv,
+		commandProducerProv:  cfg.CommandProducerProv,
+		sagas:                domain.NewSagaSet(),
 	}
 }
 
 func (o *Orchestrator) Register(order *domain.Order) {
-	saga := domain.NewSaga(order, o.billingServiceTopic, o.stockServiceTopic)
+	saga := domain.NewSaga(order, o.billingServiceTopic, o.stockServiceTopic, o.deliveryServiceTopic)
 	o.sagas.Register(order.ID, saga)
 }
 

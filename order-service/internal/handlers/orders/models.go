@@ -1,9 +1,18 @@
 package orders
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type CreateOrderRequest struct {
-	TotalPrice float64 `json:"total_price"`
+	TotalPrice float64         `json:"total_price"`
+	Products   json.RawMessage `json:"products"`
+	//Products   []struct {
+	//	ID    int64 `json:"product_id"`
+	//	Count int64 `json:"count"`
+	//} `json:"products"`
+	DeliveryDate time.Time `json:"delivery_date"`
 }
 
 type CancelingOrderRequest struct {

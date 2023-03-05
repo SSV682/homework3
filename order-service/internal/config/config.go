@@ -118,10 +118,11 @@ type RedisConfig struct {
 }
 
 type Topics struct {
-	BillingTopic string `yaml:"billing_topic" env-default:"billing_topic"`
-	StockTopic   string `yaml:"stock_topic" env-default:"stock_topic"`
-	OrderTopic   string `yaml:"order_topic" env-default:"order_topic"`
-	SystemBus    string `yaml:"system_bus" env-default:"system_bus"`
+	BillingTopic  string `yaml:"billing_topic" env-default:"billing_topic"`
+	StockTopic    string `yaml:"stock_topic" env-default:"stock_topic"`
+	DeliveryTopic string `yaml:"delivery_topic" env-default:"delivery_topic"`
+	OrderTopic    string `yaml:"order_topic" env-default:"order_topic"`
+	SystemBus     string `yaml:"system_bus" env-default:"system_bus"`
 }
 
 func ReadConfig(filePath string) (Config, error) {

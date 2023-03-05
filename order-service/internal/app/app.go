@@ -45,8 +45,6 @@ func NewApp(configPath string) *App {
 	handler := echo.New()
 
 	producerConfig := kafka.ProducerConfig{
-		//Username: cfg.Kafka.SASL.Username,
-		//Password: cfg.Kafka.SASL.Password,
 		Brokers: cfg.Kafka.BrokerAddresses,
 	}
 
@@ -58,12 +56,13 @@ func NewApp(configPath string) *App {
 	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.OrderTopic)
 
 	orchestratorCfg := orchestrator.Config{
-		CommandCh:           commandCh,
-		UpdateCh:            updateCh,
-		BillingServiceTopic: cfg.Topics.BillingTopic,
-		StockServiceTopic:   cfg.Topics.StockTopic,
-		CommandConsumerProv: commandConsumerProv,
-		CommandProducerProv: commandProducerProv,
+		CommandCh:            commandCh,
+		UpdateCh:             updateCh,
+		BillingServiceTopic:  cfg.Topics.BillingTopic,
+		StockServiceTopic:    cfg.Topics.StockTopic,
+		DeliveryServiceTopic: cfg.Topics.DeliveryTopic,
+		CommandConsumerProv:  commandConsumerProv,
+		CommandProducerProv:  commandProducerProv,
 	}
 
 	o := orchestrator.NewOrchestrator(orchestratorCfg)
