@@ -19,11 +19,12 @@ type orderService struct {
 	commandCh    chan domain.OrderCommand
 }
 
-func NewOrdersService(s provider.OrderProvider, t provider.RedisProvider, commandCh chan domain.OrderCommand) *orderService {
+func NewOrdersService(s provider.OrderProvider, t provider.RedisProvider, commandCh chan domain.OrderCommand, o *orchestrator.Orchestrator) *orderService {
 	return &orderService{
-		sqlProv:   s,
-		redisProv: t,
-		commandCh: commandCh,
+		orchestrator: o,
+		sqlProv:      s,
+		redisProv:    t,
+		commandCh:    commandCh,
 	}
 }
 
@@ -105,8 +106,14 @@ func (o *orderService) Update(ctx context.Context, orderID int64, userID string,
 	return nil
 }
 
-func (o *orderService) Cancel(_ context.Context, orderID int64, _ string) error {
+func (o *orderService) Cancel(ctx context.Context, orderID int64, userID string) error {
 	log.Infof("order info when canceling: %d", orderID)
+	order, err := o.sqlProv.DetailOrder(ctx, orderID, userID)
+	if err != nil {
+		return fmt.Errorf("failed cancel order: %v", err)
+	}
+
+	o.orchestrator.Register(order)
 	command := domain.OrderCommand{
 		OrderID: orderID,
 		Status:  domain.Canceling,

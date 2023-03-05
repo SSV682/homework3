@@ -44,23 +44,20 @@ func NewApp(configPath string) *App {
 
 	handler := echo.New()
 
-	commandCh := make(chan domain.OrderCommand, 1000)
-	updateCh := make(chan domain.OrderCommand, 1000)
-	orderProv := sql.NewSQLBusinessRulesProvider(pool)
-	redisProv := redis.NewRedisProvider(client)
-	orderService := orders.NewOrdersService(orderProv, redisProv, commandCh)
-
 	producerConfig := kafka.ProducerConfig{
 		//Username: cfg.Kafka.SASL.Username,
 		//Password: cfg.Kafka.SASL.Password,
 		Brokers: cfg.Kafka.BrokerAddresses,
 	}
 
+	commandCh := make(chan domain.OrderCommand, 1000)
+	updateCh := make(chan domain.OrderCommand, 1000)
+	orderProv := sql.NewSQLBusinessRulesProvider(pool)
+	redisProv := redis.NewRedisProvider(client)
 	commandProducerProv := kafka.NewBrokerProducer(producerConfig)
-
 	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.OrderTopic)
 
-	sagaCfg := orchestrator.Config{
+	orchestratorCfg := orchestrator.Config{
 		CommandCh:           commandCh,
 		UpdateCh:            updateCh,
 		BillingServiceTopic: cfg.Topics.BillingTopic,
@@ -69,8 +66,10 @@ func NewApp(configPath string) *App {
 		CommandProducerProv: commandProducerProv,
 	}
 
-	orchestrator := orchestrator.NewOrchestrator(sagaCfg)
-	orchestrator.Run(context.Background())
+	o := orchestrator.NewOrchestrator(orchestratorCfg)
+	o.Run(context.Background())
+
+	orderService := orders.NewOrdersService(orderProv, redisProv, commandCh, o)
 
 	updaterCfg := updater.Config{
 		CommandCh:           updateCh,
@@ -78,8 +77,8 @@ func NewApp(configPath string) *App {
 		StorageProv:         orderProv,
 		CommandProducerProv: commandProducerProv,
 	}
-	updater := updater.NewUpdater(updaterCfg)
-	updater.Run(context.Background())
+	u := updater.NewUpdater(updaterCfg)
+	u.Run(context.Background())
 
 	rs := handlers.NewRegisterServices(orderService)
 	err = handlers.RegisterHandlers(handler, rs)

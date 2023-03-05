@@ -1,5 +1,7 @@
 package domain
 
+import "github.com/labstack/gommon/log"
+
 type Status string
 
 const (
@@ -12,7 +14,8 @@ const (
 	PaymentApproved  Status = "payment_approved"
 	StockPending     Status = "stock_pending"
 	StockApproved    Status = "stock_approved"
-	StockRejected    Status = "stock_reject"
+	StockRejected    Status = "stock_rejected"
+	StockRejecting   Status = "stock_rejecting"
 	Canceling        Status = "canceling"
 )
 
@@ -26,7 +29,7 @@ const (
 )
 
 type state interface {
-	NextState(command OrderCommand) Step
+	NextStep(command OrderCommand) Step
 }
 
 type Step struct {
@@ -36,20 +39,23 @@ type Step struct {
 }
 
 type Saga struct {
-	CreatedState              state
-	PaymentPendingState       state
-	StockPendingState         state
-	SuccessState              state
-	PaymentRejectPendingState state
-	StockRejectPendingState   state
+	createdState              state
+	paymentPendingState       state
+	stockPendingState         state
+	successState              state
+	paymentRejectPendingState state
+	stockRejectPendingState   state
+	canceledState             state
+	currentState              state
+	order                     *Order
+}
 
-	currentState state
-	order        *Order
+func (s *Saga) SetState(state state) {
+	s.currentState = state
 }
 
 func (s *Saga) NextState(command OrderCommand) Step {
-	step := s.currentState.NextState(command)
-
+	step := s.currentState.NextStep(command)
 	switch step.Action {
 	case NextStep:
 		step.Command.Order = s.order
@@ -63,20 +69,24 @@ func NewSaga(order *Order, paymentTopicName, stockTopicName string) *Saga {
 	saga := Saga{
 		order: order,
 	}
+
+	saga.createdState = NewCreatedState(&saga, paymentTopicName)
+	saga.paymentPendingState = NewPaymentPendingState(&saga, stockTopicName, paymentTopicName)
+	saga.stockPendingState = NewStockPendingState(&saga, paymentTopicName, stockTopicName)
+	saga.successState = NewSuccessState(&saga, stockTopicName)
+	saga.paymentRejectPendingState = NewPaymentRejectPendingState(&saga, paymentTopicName)
+	saga.stockRejectPendingState = NewStockRejectPendingState(&saga, paymentTopicName, stockTopicName)
+	saga.canceledState = NewCanceledState(&saga)
+
 	if order.Status == Created {
-		saga.currentState = saga.CreatedState
+		saga.currentState = saga.createdState
 	}
 
 	if order.Status == Success {
-		saga.currentState = saga.SuccessState
+		saga.currentState = saga.successState
 	}
 
-	saga.CreatedState = NewCreatedState(&saga, paymentTopicName)
-	saga.PaymentPendingState = NewPaymentPendingState(&saga, stockTopicName, paymentTopicName)
-	saga.StockPendingState = NewStockPendingState(&saga, paymentTopicName, stockTopicName)
-	saga.SuccessState = NewSuccessState(&saga, stockTopicName)
-	saga.PaymentRejectPendingState = NewPaymentRejectPendingState(&saga, paymentTopicName)
-	saga.StockRejectPendingState = NewStockRejectPendingState(&saga, paymentTopicName, stockTopicName)
+	log.Infof("saga for orderID %d created: %v", order.ID, saga)
 
 	return &saga
 }
@@ -86,10 +96,9 @@ type CreatedState struct {
 	topicName string
 }
 
-func (s *CreatedState) NextState(command OrderCommand) Step {
+func (s *CreatedState) NextStep(command OrderCommand) Step {
 	if command.Status == Created {
-		s.saga.currentState = s.saga.PaymentPendingState
-
+		s.saga.SetState(s.saga.paymentPendingState)
 		return Step{
 			Command: Command{
 				Topic:       s.topicName,
@@ -120,33 +129,33 @@ type PaymentPendingState struct {
 	cancelingTopicName string
 }
 
-func (s *PaymentPendingState) NextState(command OrderCommand) Step {
+func (s *PaymentPendingState) NextStep(command OrderCommand) Step {
 	switch command.Status {
 	case PaymentApproved:
-		s.saga.currentState = s.saga.StockPendingState
+		s.saga.SetState(s.saga.stockPendingState)
 		return Step{
 			Command: Command{
 				Topic:       s.approveTopicName,
 				CommandType: Approve,
 			},
-			Status: PaymentApproved,
+			Status: StockPending,
 			Action: NextStep,
 		}
 	case PaymentRejected:
-		s.saga.currentState = nil
+		s.saga.SetState(s.saga.canceledState)
 		return Step{
 			Command: Command{},
 			Status:  Canceled,
 			Action:  End,
 		}
 	case Canceling:
-		s.saga.currentState = s.saga.PaymentRejectPendingState
+		s.saga.SetState(s.saga.paymentRejectPendingState)
 		return Step{
 			Command: Command{
 				Topic:       s.cancelingTopicName,
 				CommandType: Reject,
 			},
-			Status: Canceling,
+			Status: Canceled,
 			Action: NextStep,
 		}
 	}
@@ -172,17 +181,17 @@ type StockPendingState struct {
 	cancelingTopicName string
 }
 
-func (s *StockPendingState) NextState(command OrderCommand) Step {
+func (s *StockPendingState) NextStep(command OrderCommand) Step {
 	switch command.Status {
 	case StockApproved:
-		s.saga.currentState = s.saga.SuccessState
+		s.saga.SetState(s.saga.successState)
 		return Step{
 			Command: Command{},
 			Status:  Success,
 			Action:  End,
 		}
 	case StockRejected:
-		s.saga.currentState = s.saga.PaymentRejectPendingState
+		s.saga.SetState(s.saga.paymentRejectPendingState)
 		return Step{
 			Command: Command{
 				Topic:       s.rejectTopicName,
@@ -192,7 +201,7 @@ func (s *StockPendingState) NextState(command OrderCommand) Step {
 			Action: NextStep,
 		}
 	case Canceling:
-		s.saga.currentState = s.saga.PaymentRejectPendingState
+		s.saga.SetState(s.saga.paymentRejectPendingState)
 		return Step{
 			Command: Command{
 				Topic:       s.cancelingTopicName,
@@ -224,15 +233,15 @@ type StockRejectPendingState struct {
 	retryTopicName string
 }
 
-func (s *StockRejectPendingState) NextState(command OrderCommand) Step {
+func (s *StockRejectPendingState) NextStep(command OrderCommand) Step {
 	if command.Status == StockRejected {
-		s.saga.currentState = s.saga.PaymentRejectPendingState
+		s.saga.SetState(s.saga.paymentRejectPendingState)
 		return Step{
 			Command: Command{
 				Topic:       s.nextTopicName,
 				CommandType: Reject,
 			},
-			Status: StockRejected,
+			Status: PaymentRejecting,
 			Action: NextStep,
 		}
 	}
@@ -257,12 +266,12 @@ type PaymentRejectPendingState struct {
 	retryTopicName string
 }
 
-func (s *PaymentRejectPendingState) NextState(command OrderCommand) Step {
+func (s *PaymentRejectPendingState) NextStep(command OrderCommand) Step {
 	if command.Status == PaymentRejected {
-		s.saga.currentState = nil
+		s.saga.SetState(s.saga.canceledState)
 		return Step{
 			Command: Command{},
-			Status:  PaymentRejected,
+			Status:  Canceled,
 			Action:  End,
 		}
 	}
@@ -286,16 +295,16 @@ type SuccessState struct {
 	cancelingTopicName string
 }
 
-func (s *SuccessState) NextState(command OrderCommand) Step {
+func (s *SuccessState) NextStep(command OrderCommand) Step {
 	if command.Status == Canceling {
-		s.saga.currentState = s.saga.StockRejectPendingState
+		s.saga.SetState(s.saga.stockRejectPendingState)
 		return Step{
 			Command: Command{
 				Topic:       s.cancelingTopicName,
 				CommandType: Reject,
 			},
-			Status: StockRejected,
-			Action: End,
+			Status: StockRejecting,
+			Action: NextStep,
 		}
 	}
 
@@ -310,5 +319,23 @@ func NewSuccessState(saga *Saga, cancelingTopicName string) *SuccessState {
 	return &SuccessState{
 		saga:               saga,
 		cancelingTopicName: cancelingTopicName,
+	}
+}
+
+type CanceledState struct {
+	saga *Saga
+}
+
+func (s *CanceledState) NextStep(_ OrderCommand) Step {
+	return Step{
+		Command: Command{},
+		Status:  Canceled,
+		Action:  Inaction,
+	}
+}
+
+func NewCanceledState(saga *Saga) *CanceledState {
+	return &CanceledState{
+		saga: saga,
 	}
 }

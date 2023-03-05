@@ -27,7 +27,7 @@ type Orchestrator struct {
 	stockServiceTopic   string
 	commandConsumerProv provider.BrokerConsumerProvider
 	commandProducerProv provider.BrokerProducerProvider
-	sagas               map[int64]*domain.Saga
+	sagas               *domain.SagaSet
 }
 
 func NewOrchestrator(cfg Config) *Orchestrator {
@@ -38,12 +38,13 @@ func NewOrchestrator(cfg Config) *Orchestrator {
 		stockServiceTopic:   cfg.StockServiceTopic,
 		commandConsumerProv: cfg.CommandConsumerProv,
 		commandProducerProv: cfg.CommandProducerProv,
+		sagas:               domain.NewSagaSet(),
 	}
 }
 
 func (o *Orchestrator) Register(order *domain.Order) {
 	saga := domain.NewSaga(order, o.billingServiceTopic, o.stockServiceTopic)
-	o.sagas[order.ID] = saga
+	o.sagas.Register(order.ID, saga)
 }
 
 func (o *Orchestrator) Run(ctx context.Context) {
@@ -74,27 +75,32 @@ func (o *Orchestrator) start(ctx context.Context) {
 }
 
 func (o *Orchestrator) executeCommand(ctx context.Context, command domain.OrderCommand) {
-	saga, ok := o.sagas[command.OrderID]
-	if !ok {
-		//TODO: обработать ошибку
+	saga := o.sagas.Get(command.OrderID)
+	if saga == nil {
+		return
 	}
 
 	step := saga.NextState(command)
+
+	log.Infof("step: %v", step)
+
 	switch step.Action {
 	case domain.NextStep, domain.Retry:
-		log.Infof("command: %v", step.Command)
 		if err := o.commandProducerProv.SendCommand(ctx, step.Command); err != nil {
 			log.Errorf("send command %v failed: %v", step.Command, err)
 		}
 
 		o.UpdateCh <- domain.OrderCommand{
-			OrderID: step.Command.Order.ID,
+			OrderID: command.OrderID,
 			Status:  step.Status,
 		}
 
 	case domain.End:
-		log.Infof("end position")
-		delete(o.sagas, command.OrderID)
+		o.UpdateCh <- domain.OrderCommand{
+			OrderID: command.OrderID,
+			Status:  step.Status,
+		}
+		o.sagas.Remove(command.OrderID)
 	case domain.Inaction:
 	}
 }
