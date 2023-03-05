@@ -46,6 +46,7 @@ func NewOrchestrator(cfg Config) *Orchestrator {
 }
 
 func (o *Orchestrator) Register(order *domain.Order) {
+	log.Infof("register sage for order: %v", order)
 	saga := domain.NewSaga(order, o.billingServiceTopic, o.stockServiceTopic, o.deliveryServiceTopic)
 	o.sagas.Register(order.ID, saga)
 }

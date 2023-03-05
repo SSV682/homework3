@@ -12,7 +12,7 @@ type CreateOrderRequest struct {
 	//	ID    int64 `json:"product_id"`
 	//	Count int64 `json:"count"`
 	//} `json:"products"`
-	DeliveryDate time.Time `json:"delivery_date"`
+	DeliveryAt time.Time `json:"delivery_at"`
 }
 
 type CancelingOrderRequest struct {

@@ -57,7 +57,7 @@ func (h *handler) CreateOrder(ctx echo.Context) error {
 		UserID:         userID,
 		IdempotencyKey: idempotenceKey,
 		TotalPrice:     body.TotalPrice,
-		DeliveryAt:     body.DeliveryDate,
+		DeliveryAt:     body.DeliveryAt,
 		Products:       body.Products,
 		CreatedAt:      time.Now(),
 	}
