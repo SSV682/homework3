@@ -1,0 +1,37 @@
+app:
+  name: 'order-service'
+  version: '1.1.0'
+
+http:
+  port: '8000'
+
+logger:
+  log_level: 'debug'
+  rollbar_env: 'order-service'
+
+databases:
+  postgres:
+    conn_config:
+      host: 'db'
+      port: 5432
+      username: postgres    # env: POSTGRES_USER
+      password: password #env: POSTGRES_PASSWORD
+      dbname: postgres #env: POSTGRES_DB
+    max_open_conns: 10
+    max_idle_conns: 10
+    conn_max_idle_time: 5m
+
+kafka:
+  brokers:
+    - 'kafka'
+  sasl:
+    username: alice        # env: KAFKA_USER
+    password: alice-secret # env: KAFKA_PASSWORD
+
+topics:
+  stock_topic: stock_topic
+  delivery_topic: delivery_topic
+  system_bus: system_bus
+
+timeout:
+  duration : 5

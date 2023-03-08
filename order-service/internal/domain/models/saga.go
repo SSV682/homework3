@@ -21,6 +21,7 @@ const (
 	DeliveryRejected  Status = "delivery_rejected"
 	DeliveryRejecting Status = "delivery_rejecting"
 	Canceling         Status = "canceling"
+	ErroneousAttempt  Status = "erroneous_attempt"
 )
 
 type Action string

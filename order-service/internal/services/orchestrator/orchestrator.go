@@ -72,6 +72,7 @@ func (o *Orchestrator) start(ctx context.Context) {
 		case msg := <-o.commandSourceCh: //подтверждение или отмена оплаты, подтверждение или отмена доставки
 			o.executeCommand(ctx, msg)
 		case <-ctx.Done():
+			close(o.UpdateCh)
 			log.Infof("Contex faired! Stopping orchestrator service...")
 			break
 		}

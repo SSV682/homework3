@@ -8,11 +8,7 @@ import (
 type CreateOrderRequest struct {
 	TotalPrice float64         `json:"total_price"`
 	Products   json.RawMessage `json:"products"`
-	//Products   []struct {
-	//	ID    int64 `json:"product_id"`
-	//	Count int64 `json:"count"`
-	//} `json:"products"`
-	DeliveryAt time.Time `json:"delivery_at"`
+	DeliveryAt time.Time       `json:"delivery_at"`
 }
 
 type CancelingOrderRequest struct {
