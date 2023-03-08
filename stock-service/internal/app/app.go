@@ -41,7 +41,7 @@ func NewApp(configPath string) *App {
 
 	sqlProv := sql.NewSQLProductProvider(pool)
 	commandProducerProv := kafka.NewBrokerProducer(producerConfig)
-	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.OrderTopic)
+	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.StockTopic)
 
 	processorConfig := stock.Config{
 		OrderServiceTopic:   cfg.Topics.OrderTopic,

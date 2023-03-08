@@ -54,6 +54,18 @@ services:
     networks:
       - home_net
 
+  stockService:
+    build: ./stock-service
+    container_name: stock-service
+    image: ssv682/stock-service:v0.1
+    ports:
+      - "8003:8000"
+    depends_on:
+      - db
+      - orderService
+    networks:
+      - home_net
+
   prometheus:
     image: prom/prometheus
     volumes:
@@ -103,21 +115,13 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
-#    expose:
-#      - '29092'
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-#      KAFKA_ADVERTISED_LISTENERS: SASL_PLAINTEXT://localhost:9092
-#      KAFKA_OPTS: "-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf"
-#      KAFKA_INTER_BROKER_LISTENER_NAME: 'SASL_PLAINTEXT'
-#      KAFKA_SASL_ENABLED_MECHANISMS: 'PLAIN'
-#      KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL: 'PLAIN'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-#      ZOOKEEPER_SASL_ENABLED: "false"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 #      - ./dev/volumes/kafka/server_jaas.conf:/etc/kafka/kafka_server_jaas.conf
@@ -140,11 +144,12 @@ services:
 #      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic billing-topic --replication-factor 1 --partitions 1
 #      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic order-topic --replication-factor 1 --partitions 1
 #      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic stock-topic --replication-factor 1 --partitions 1
+#      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic stock-topic --replication-factor 1 --partitions 1
 #
 #      echo -e 'Successfully created the following topics:'
 #      kafka-topics --bootstrap-server kafka:29092 --list
 #      "
-
+#
 
   kafka-ui:
     container_name: kafka-ui
@@ -156,11 +161,6 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-#      KAFKA_CLUSTERS_0_NAME: local
-#      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: localhost:9092
-#      KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL: PLAINTEXT
-#      KAFKA_CLUSTERS_0_PROPERTIES_SASL_MECHANISM: PLAIN
-#      KAFKA_CLUSTERS_0_PROPERTIES_SASL_JAAS_CONFIG: 'org.apache.kafka.common.security.plain.PlainLoginModule required username="alice" password="alice-secret";'
     networks:
       - home_net
 

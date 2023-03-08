@@ -9,7 +9,7 @@ import (
 	domain "stock-service/internal/domain/models"
 )
 
-const groupId = "eventGroupStore"
+const groupID = "eventGroupStore"
 
 type BrokerConsumer struct {
 	reader *kafka.Reader
@@ -19,7 +19,7 @@ func NewBrokerConsumer(brokers []string, topic string) *BrokerConsumer {
 	client := &BrokerConsumer{}
 	client.reader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers: brokers,
-		GroupID: groupId,
+		GroupID: groupID,
 		Topic:   topic,
 	})
 	return client

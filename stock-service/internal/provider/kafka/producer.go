@@ -38,6 +38,7 @@ func NewBrokerProducer(cfg ProducerConfig) *BrokerProducer {
 
 func (client *BrokerProducer) SendCommand(ctx context.Context, command domain.ResponseCommand) error {
 	message := NewResponseCommand(command.Command)
+	fmt.Sprintf("message: %#v", message)
 
 	marshaledMessage, err := json.Marshal(message)
 	if err != nil {

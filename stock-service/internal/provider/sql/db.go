@@ -153,9 +153,10 @@ func (s *sqlProductProvider) RavageStock(ctx context.Context, productsOrder []do
 	fail := func(err error) error {
 		return fmt.Errorf("approve order: %v", err)
 	}
-	var enough bool
+
 	for _, v := range productsOrder {
 
+		var enough bool
 		if err = tx.QueryRowContext(ctx, "SELECT (quantity >= $1) FROM user_service.products WHERE id=$2", v.Quantity, v.ID).Scan(&enough); err != nil {
 			if err == sql.ErrNoRows {
 				return fail(fmt.Errorf("no such %s", v.Name))
@@ -163,6 +164,7 @@ func (s *sqlProductProvider) RavageStock(ctx context.Context, productsOrder []do
 			return fail(err)
 		}
 
+		fmt.Println(fmt.Sprintf("product id: %d, quantity: %d, enough %t", v.ID, v.Quantity, enough))
 		if !enough {
 			return fail(fmt.Errorf("not enough %s", v.Name))
 		}
@@ -197,7 +199,7 @@ func (s *sqlProductProvider) FillStock(ctx context.Context, productsOrder []doma
 
 	for _, v := range productsOrder {
 		var quantity int64
-		var exist bool
+		exist := true
 		if err = tx.QueryRowContext(ctx, "SELECT quantity FROM user_service.products WHERE id=$1", v.ID).Scan(&quantity); err != nil {
 			if err == sql.ErrNoRows {
 				exist = false
@@ -274,28 +276,4 @@ func getProductByID(ctx context.Context, db DBClient, id int64) (*domain.Product
 	}
 
 	return row.ToModel(), nil
-}
-
-func (s *sqlProductProvider) update(ctx context.Context, db DBClient, product *domain.Product) error {
-	query := `UPDATE user_service.products 
-			SET 
-				name=:name,
-				count=:count
-			WHERE id=:id`
-
-	res, err := db.NamedExecContext(ctx, query, FromModel(product))
-	if err != nil {
-		return fmt.Errorf("execute update order query: %v", err)
-	}
-
-	affectedRows, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("get affected rows: %v", err)
-	}
-
-	if affectedRows == 0 {
-		return fmt.Errorf("no rows in result set")
-	}
-
-	return nil
 }

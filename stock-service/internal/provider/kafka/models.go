@@ -57,7 +57,7 @@ func (c *RequestCommand) ToModel() (domain.RequestCommand, error) {
 	return domain.RequestCommand{
 		CommandType: ct,
 		Order: domain.Order{
-			ID:       0,
+			ID:       c.Order.ID,
 			Products: products,
 		},
 	}, nil
