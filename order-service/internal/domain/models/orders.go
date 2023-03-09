@@ -23,6 +23,7 @@ type Order struct {
 	TotalPrice float64
 	Products   json.RawMessage
 	DeliveryAt time.Time
+	Address    json.RawMessage
 	CreatedAt  time.Time
 	Status     Status
 }
@@ -37,6 +38,7 @@ func NewOrderFromDTO(dto *dto.OrderRequestDTO) *Order {
 		TotalPrice: dto.TotalPrice,
 		Products:   dto.Products,
 		DeliveryAt: dto.DeliveryAt,
+		Address:    dto.Address,
 		CreatedAt:  time.Now(),
 		Status:     Created,
 	}
@@ -49,6 +51,7 @@ func RestoreOrderFromDTO(dto *dto.OrderDTO) *Order {
 		TotalPrice: dto.TotalPrice,
 		DeliveryAt: dto.DeliveryAt,
 		Products:   dto.Products,
+		Address:    dto.Address,
 		CreatedAt:  dto.CreatedAt,
 		Status:     Status(dto.Status),
 	}
@@ -60,6 +63,7 @@ func (o *Order) OrderToDTO() *dto.OrderDTO {
 		UserID:     o.UserID,
 		TotalPrice: o.TotalPrice,
 		Products:   o.Products,
+		Address:    o.Address,
 		DeliveryAt: o.DeliveryAt,
 		CreatedAt:  o.CreatedAt,
 		Status:     string(o.Status),

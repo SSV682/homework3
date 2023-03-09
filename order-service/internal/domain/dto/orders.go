@@ -11,6 +11,7 @@ type OrderRequestDTO struct {
 	TotalPrice     float64
 	DeliveryAt     time.Time
 	Products       json.RawMessage
+	Address        json.RawMessage
 	CreatedAt      time.Time
 }
 
@@ -26,6 +27,7 @@ type OrderDTO struct {
 	TotalPrice float64
 	DeliveryAt time.Time
 	Products   json.RawMessage
+	Address    json.RawMessage
 	CreatedAt  time.Time
 	Status     string
 }

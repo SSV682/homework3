@@ -8,6 +8,7 @@ import (
 type CreateOrderRequest struct {
 	TotalPrice float64         `json:"total_price"`
 	Products   json.RawMessage `json:"products"`
+	Address    json.RawMessage `json:"address"`
 	DeliveryAt time.Time       `json:"delivery_at"`
 }
 
@@ -24,11 +25,13 @@ type ResponseCreated struct {
 }
 
 type ResponseOrder struct {
-	ID         int64     `json:"id"`
-	UserID     string    `json:"user_id"`
-	TotalPrice float64   `json:"total_price"`
-	CreatedAt  time.Time `json:"created_at"`
-	Status     string    `json:"status"`
+	ID         int64           `json:"id"`
+	UserID     string          `json:"user_id"`
+	TotalPrice float64         `json:"total_price"`
+	Products   json.RawMessage `json:"products"`
+	Address    json.RawMessage `json:"address"`
+	CreatedAt  time.Time       `json:"created_at"`
+	Status     string          `json:"status"`
 }
 
 type ResponseOrders struct {

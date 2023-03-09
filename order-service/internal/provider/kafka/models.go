@@ -31,6 +31,7 @@ type Order struct {
 	CreatedAt  time.Time       `json:"created_at"`
 	DeliveryAt time.Time       `json:"delivery_at"`
 	Status     string          `json:"status"`
+	Address    json.RawMessage `json:"address"`
 }
 
 func RequestCommandFromDTO(command domain.Command) RequestCommand {
@@ -43,6 +44,7 @@ func RequestCommandFromDTO(command domain.Command) RequestCommand {
 			Products:   command.Order.Products,
 			CreatedAt:  command.Order.CreatedAt,
 			DeliveryAt: command.Order.DeliveryAt,
+			Address:    command.Order.Address,
 			Status:     string(command.Order.Status),
 		},
 	}

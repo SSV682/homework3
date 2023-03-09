@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS user_service.orders
     user_id                 UUID                            NOT NULL,
     total_price             float                           NOT NULL,
     products                jsonb                           NOT NULL,
-    delivery_at             timestamp(0) with time zone     NOT NULL DEFAULT now(),
+    delivery_at             timestamp(0) with time zone     NOT NULL,
+    address                 jsonb                           NOT NULL,
     created_at              timestamp(0) with time zone     NOT NULL DEFAULT now(),
     status                  varchar                         NOT NULL DEFAULT 'created'
 );

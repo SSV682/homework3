@@ -23,7 +23,7 @@ func (s *stockService) Create(ctx context.Context, request dto.ProductRequestDTO
 
 	id, err := s.storageProv.CreateProduct(ctx, product)
 	if err != nil {
-		return 0, fmt.Errorf("failed create order: %v", err)
+		return 0, fmt.Errorf("failed create product: %v", err)
 	}
 
 	return id, nil

@@ -1,5 +1,5 @@
 app:
-  name: 'stock-service'
+  name: 'delivery-service'
   version: '1.1.0'
 
 http:
@@ -7,7 +7,7 @@ http:
 
 logger:
   log_level: 'debug'
-  rollbar_env: 'stock-service'
+  rollbar_env: 'delivery-service'
 
 databases:
   postgres:
@@ -29,7 +29,7 @@ kafka:
     password: alice-secret # env: KAFKA_PASSWORD
 
 topics:
-  stock_topic: stock_topic
+  order_topic: order_topic
   delivery_topic: delivery_topic
   system_bus: system_bus
 

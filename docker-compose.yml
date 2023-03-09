@@ -66,6 +66,18 @@ services:
     networks:
       - home_net
 
+  deliveryService:
+    build: ./delivery-service
+    container_name: delivery-service
+    image: ssv682/delivery-service:v0.1
+    ports:
+      - "8004:8000"
+    depends_on:
+      - db
+      - orderService
+    networks:
+      - home_net
+
   prometheus:
     image: prom/prometheus
     volumes:
