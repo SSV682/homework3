@@ -9,6 +9,7 @@ import (
 	"github.com/elgris/sqrl"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 )
@@ -81,9 +82,10 @@ type sqlDeliveryProvider struct {
 	maxDeliveriesPerDay int
 }
 
-func NewSQLProductProvider(pool *sqlx.DB) *sqlDeliveryProvider {
+func NewSQLProductProvider(pool *sqlx.DB, maxDeliveriesPerDay int) *sqlDeliveryProvider {
 	return &sqlDeliveryProvider{
-		pool: pool,
+		pool:                pool,
+		maxDeliveriesPerDay: maxDeliveriesPerDay,
 	}
 }
 
@@ -91,7 +93,6 @@ var (
 	queryBuilder       = sqrl.NewSelectBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
 	queryInsertBuilder = sqrl.NewInsertBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
 	queryDeleteBuilder = sqrl.NewDeleteBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
-	queryUpdateBuilder = sqrl.NewUpdateBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
 )
 
 func (s *sqlDeliveryProvider) CheckPossibleDelivery(ctx context.Context, entry domain.DeliveryEntry) error {
@@ -102,6 +103,7 @@ func (s *sqlDeliveryProvider) CheckPossibleDelivery(ctx context.Context, entry d
 
 	defer func() {
 		if txErr := tx.Rollback(); txErr != nil && !errors.Is(txErr, sql.ErrTxDone) {
+			log.Errorf("defer func: %v", txErr)
 		}
 	}()
 
