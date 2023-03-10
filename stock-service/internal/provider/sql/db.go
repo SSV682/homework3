@@ -8,6 +8,7 @@ import (
 	"github.com/elgris/sqrl"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
+	log "github.com/sirupsen/logrus"
 	"stock-service/internal/domain/dto"
 	domain "stock-service/internal/domain/models"
 	"strings"
@@ -145,14 +146,15 @@ func (s *sqlProductProvider) RavageStock(ctx context.Context, productsOrder []do
 		return fmt.Errorf("begin transaction: %w", err)
 	}
 
-	defer func() {
-		if txErr := tx.Rollback(); txErr != nil && !errors.Is(txErr, sql.ErrTxDone) {
-		}
-	}()
-
 	fail := func(err error) error {
 		return fmt.Errorf("approve order: %v", err)
 	}
+
+	defer func() {
+		if txErr := tx.Rollback(); txErr != nil && !errors.Is(txErr, sql.ErrTxDone) {
+			log.Errorf("transaction error: %s", txErr)
+		}
+	}()
 
 	for _, v := range productsOrder {
 

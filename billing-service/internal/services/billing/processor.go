@@ -1,17 +1,17 @@
 package billing
 
 import (
+	domain "billing-service/internal/domain/models"
+	"billing-service/internal/provider"
 	"context"
-	domain "delivery-service/internal/domain/models"
-	"delivery-service/internal/provider"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"sync"
 )
 
 const (
-	deliveryApproved = "delivery_approved"
-	deliveryRejected = "delivery_rejected"
+	paymentApproved = "payment_approved"
+	paymentRejected = "payment_rejected"
 )
 
 type Config struct {
@@ -19,7 +19,6 @@ type Config struct {
 	SystemBusTopic      string
 	StorageProv         provider.StorageProvider
 	CommandConsumerProv provider.BrokerConsumerProvider
-	CommandProducerProv provider.BrokerProducerProvider
 }
 
 type Processor struct {
@@ -38,7 +37,6 @@ func NewProcessor(cfg Config) *Processor {
 		systemBusTopic:      cfg.SystemBusTopic,
 		storageProv:         cfg.StorageProv,
 		commandConsumerProv: cfg.CommandConsumerProv,
-		commandProducerProv: cfg.CommandProducerProv,
 	}
 }
 
@@ -80,61 +78,26 @@ func (p *Processor) executeCommand(ctx context.Context, command domain.RequestCo
 }
 
 func (p *Processor) approveFunc(ctx context.Context, command domain.RequestCommand) {
-	responseCommand := domain.ResponseCommand{
-		Topic: p.orderServiceTopic,
-		Command: domain.Command{
-			OrderID: command.Order.ID,
-		},
+	de := domain.Order{
+		ID:         command.Order.ID,
+		UserID:     command.Order.UserID,
+		TotalPrice: command.Order.TotalPrice,
 	}
 
-	de := domain.DeliveryEntry{
-		OrderID:      command.Order.ID,
-		OrderContent: command.Order.OrderContent,
-		Address:      command.Order.Address,
-		Date:         command.Order.Date,
+	if err := p.storageProv.CheckPossiblePayment(ctx, de); err != nil {
+		log.Errorf("approve func: %v", err)
 	}
 
-	if err := p.storageProv.CheckPossibleDelivery(ctx, de); err != nil {
-		log.Errorf("reject: %v", err)
-		responseCommand.Command.Status = deliveryRejected
-	} else {
-		responseCommand.Command.Status = deliveryApproved
-	}
-
-	p.commandProducerProv.SendCommand(ctx, responseCommand)
 }
 
 func (p *Processor) rejectFunc(ctx context.Context, command domain.RequestCommand) {
-	if err := p.storageProv.RejectDelivery(ctx, command.Order.ID); err == nil {
-		responseCommand := domain.ResponseCommand{
-			Topic: p.orderServiceTopic,
-			Command: domain.Command{
-				OrderID: command.Order.ID,
-				Status:  deliveryRejected,
-			},
-		}
-		p.commandProducerProv.SendCommand(ctx, responseCommand)
-	} else {
+	de := domain.Order{
+		ID:         command.Order.ID,
+		UserID:     command.Order.UserID,
+		TotalPrice: command.Order.TotalPrice,
+	}
+
+	if err := p.storageProv.RejectPayment(ctx, de); err != nil {
 		log.Errorf("failed reject order: %#v", command.Order)
 	}
 }
-
-//{
-//"command_type": "approve",
-//"order": {
-//"total_price": 1000,
-//"delivery_at": "2023-03-10T00:00:00Z",
-//"products": [
-//{
-//"id": 1,
-//"quantity": 10,
-//"name": "milky way"
-//},
-//{
-//"id": 2,
-//"quantity": 1,
-//"name": "mars"
-//}
-//]
-//}
-//}

@@ -39,7 +39,7 @@ func NewApp(configPath string) *App {
 		Brokers: cfg.Kafka.BrokerAddresses,
 	}
 
-	sqlProv := sql.NewSQLProductProvider(pool, 3)
+	sqlProv := sql.NewSQLBillingProvider(pool, cfg.Topics.SystemBus, cfg.Topics.OrderTopic)
 	commandProducerProv := kafka.NewBrokerProducer(producerConfig)
 	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.BillingTopic)
 
@@ -48,11 +48,20 @@ func NewApp(configPath string) *App {
 		SystemBusTopic:      cfg.Topics.SystemBus,
 		StorageProv:         sqlProv,
 		CommandConsumerProv: commandConsumerProv,
+	}
+
+	outboxConfig := billing.OutboxConfig{
+		OrderServiceTopic:   cfg.Topics.OrderTopic,
+		SystemBusTopic:      cfg.Topics.SystemBus,
+		StorageProv:         sqlProv,
 		CommandProducerProv: commandProducerProv,
 	}
 
 	processorService := billing.NewProcessor(processorConfig)
 	processorService.Run(context.Background())
+
+	outboxService := billing.NewOutbox(outboxConfig)
+	outboxService.Run(context.Background())
 
 	stockService := billing.NewDeliveryService(sqlProv)
 	rs := handlers.NewRegisterServices(stockService)

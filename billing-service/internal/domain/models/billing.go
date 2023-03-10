@@ -45,6 +45,12 @@ type ResponseCommand struct {
 	Command Command
 }
 
+type ReadyResponseCommand struct {
+	ID      int64
+	Topic   string
+	Command []byte
+}
+
 type Order struct {
 	ID         int64
 	TotalPrice float64

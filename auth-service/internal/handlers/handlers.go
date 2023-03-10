@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"auth-service/internal/handlers/auth"
+	"auth-service/internal/handlers/health"
+	"auth-service/internal/services"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"user-service/internal/handlers/auth"
-	"user-service/internal/handlers/health"
-	"user-service/internal/services"
 )
 
 const (

@@ -28,7 +28,7 @@ func (r *AccountRow) ToModel() *domain.Account {
 type CommandRow struct {
 	ID      int64           `db:"id"`
 	Topic   string          `db:"topic"`
-	Message json.RawMessage `db:"topic"`
+	Message json.RawMessage `db:"message"`
 }
 
 type Command struct {

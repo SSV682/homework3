@@ -1,13 +1,15 @@
 package services
 
 import (
+	domain "billing-service/internal/domain/models"
 	"context"
-	domain "delivery-service/internal/domain/models"
-	"time"
+	"github.com/google/uuid"
 )
 
 type Service interface {
-	List(ctx context.Context, date time.Time) ([]*domain.DeliveryEntry, error)
+	Detail(ctx context.Context, id uuid.UUID) (*domain.Account, error)
+	Create(ctx context.Context, id uuid.UUID) error
+	FillAccount(ctx context.Context, id uuid.UUID, amount float64) error
 }
 
 type RunAsService interface {

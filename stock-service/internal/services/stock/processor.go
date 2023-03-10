@@ -110,23 +110,3 @@ func (p *Processor) rejectFunc(ctx context.Context, command domain.RequestComman
 		log.Errorf("failed reject order: %#v", command.Order)
 	}
 }
-
-//{
-//"command_type": "approve",
-//"order": {
-//"total_price": 1000,
-//"delivery_at": "2023-03-10T00:00:00Z",
-//"products": [
-//{
-//"id": 1,
-//"quantity": 10,
-//"name": "milky way"
-//},
-//{
-//"id": 2,
-//"quantity": 1,
-//"name": "mars"
-//}
-//]
-//}
-//}

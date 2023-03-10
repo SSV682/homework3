@@ -78,6 +78,18 @@ services:
     networks:
       - home_net
 
+  billingService:
+    build: ./billing-service
+    container_name: billing-service
+    image: ssv682/billing-service:v0.1
+    ports:
+      - "8005:8000"
+    depends_on:
+      - db
+      - orderService
+    networks:
+      - home_net
+
   prometheus:
     image: prom/prometheus
     volumes:

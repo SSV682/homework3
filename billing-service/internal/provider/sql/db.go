@@ -60,6 +60,13 @@ func createOutboxColumns() []OutboxFields {
 	}
 }
 
+func createAccountColumns() []AccountFields {
+	return []AccountFields{
+		idColumn,
+		amountColumn,
+	}
+}
+
 func accountColumns(fn func() []AccountFields) []string {
 	fs := fn()
 	result := make([]string, 0, len(fs))
@@ -84,7 +91,7 @@ func outboxColumns(fn func() []OutboxFields) []string {
 
 const (
 	defaultSchema = "user_service"
-	billingTable  = defaultSchema + "." + "billing"
+	billingTable  = defaultSchema + "." + "account"
 	outboxTable   = defaultSchema + "." + "outbox"
 )
 
@@ -97,19 +104,18 @@ type DBClient interface {
 	QueryRowxContext(ctx context.Context, query string, args ...interface{}) *sqlx.Row
 }
 
-type sqlDeliveryProvider struct {
+type sqlBillingProvider struct {
 	pool                *sqlx.DB
 	maxDeliveriesPerDay int
 	messageTopic        string
 	commandTopic        string
 }
 
-func NewSQLProductProvider(pool *sqlx.DB, maxDeliveriesPerDay int, messageTopic, commandTopic string) *sqlDeliveryProvider {
-	return &sqlDeliveryProvider{
-		pool:                pool,
-		maxDeliveriesPerDay: maxDeliveriesPerDay,
-		messageTopic:        messageTopic,
-		commandTopic:        commandTopic,
+func NewSQLBillingProvider(pool *sqlx.DB, messageTopic, commandTopic string) *sqlBillingProvider {
+	return &sqlBillingProvider{
+		pool:         pool,
+		messageTopic: messageTopic,
+		commandTopic: commandTopic,
 	}
 }
 
@@ -119,7 +125,7 @@ var (
 	queryDeleteBuilder = sqrl.NewDeleteBuilder(sqrl.StatementBuilder).PlaceholderFormat(sqrl.Dollar)
 )
 
-func (s *sqlDeliveryProvider) CheckPossiblePayment(ctx context.Context, order domain.Order) error {
+func (s *sqlBillingProvider) CheckPossiblePayment(ctx context.Context, order domain.Order) error {
 	tx, err := s.pool.BeginTxx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
@@ -172,14 +178,14 @@ func (s *sqlDeliveryProvider) CheckPossiblePayment(ctx context.Context, order do
 	return nil
 }
 
-func (s *sqlDeliveryProvider) CreateOutboxCommand(ctx context.Context, command domain.ResponseCommand) (int64, error) {
-	message, err := json.Marshal(command.Command)
+func (s *sqlBillingProvider) CreateOutboxCommand(ctx context.Context, command domain.ResponseCommand) (int64, error) {
+	message, err := json.Marshal(NewResponseCommand(command.Command))
 	if err != nil {
 		//TODO:
 	}
 
 	q := queryInsertBuilder.
-		Insert(billingTable).
+		Insert(outboxTable).
 		Columns(strings.Join(outboxColumns(createOutboxColumns), ", ")).
 		Values(command.Topic, message)
 
@@ -198,9 +204,33 @@ func (s *sqlDeliveryProvider) CreateOutboxCommand(ctx context.Context, command d
 	return id, nil
 }
 
-func (s *sqlDeliveryProvider) DeleteOutboxCommand(ctx context.Context, id int64) error {
+func (s *sqlBillingProvider) GetNextOutboxCommand(ctx context.Context) (*domain.ReadyResponseCommand, error) {
+	q := queryBuilder.
+		Select(strings.Join(outboxColumns(allOutboxColumns), ", ")).
+		From(outboxTable)
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf(buildQuery, err)
+	}
+
+	var c CommandRow
+
+	err = s.pool.GetContext(ctx, &c, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf(executeQuery, err)
+	}
+
+	return &domain.ReadyResponseCommand{
+		ID:      c.ID,
+		Topic:   c.Topic,
+		Command: c.Message,
+	}, nil
+}
+
+func (s *sqlBillingProvider) DeleteOutboxCommand(ctx context.Context, id int64) error {
 	q := queryDeleteBuilder.
-		From(billingTable).
+		Delete(outboxTable).
 		Where(sqrl.Eq{idOutboxColumn.String(): id})
 
 	query, args, err := q.ToSql()
@@ -208,15 +238,14 @@ func (s *sqlDeliveryProvider) DeleteOutboxCommand(ctx context.Context, id int64)
 		return fmt.Errorf(buildQuery, err)
 	}
 
-	_, err = s.pool.ExecContext(ctx, query, args...)
-	if err != nil {
+	if _, err = s.pool.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf(executeQuery, err)
 	}
 
 	return nil
 }
 
-func (s *sqlDeliveryProvider) DetailAccount(ctx context.Context, id uuid.UUID) (*domain.Account, error) {
+func (s *sqlBillingProvider) DetailAccount(ctx context.Context, id uuid.UUID) (*domain.Account, error) {
 	q := queryBuilder.
 		Select(strings.Join(accountColumns(allAccountColumns), ", ")).
 		From(billingTable).
@@ -236,7 +265,7 @@ func (s *sqlDeliveryProvider) DetailAccount(ctx context.Context, id uuid.UUID) (
 	return ar.ToModel(), nil
 }
 
-func (s *sqlDeliveryProvider) FillAccount(ctx context.Context, id uuid.UUID, amount float64) error {
+func (s *sqlBillingProvider) FillAccount(ctx context.Context, id uuid.UUID, amount float64) error {
 	tx, err := s.pool.BeginTxx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
@@ -252,11 +281,7 @@ func (s *sqlDeliveryProvider) FillAccount(ctx context.Context, id uuid.UUID, amo
 		return fmt.Errorf("fill account: %v", err)
 	}
 
-	if err = tx.GetContext(ctx, "SELECT * FROM user_service.account WHERE id=$1", id.String()); err != nil {
-		return fail(err)
-	}
-
-	_, err = tx.ExecContext(ctx, "UPDATE user_service.account SET amount = amount +$1 WHERE id = $2", amount)
+	_, err = tx.ExecContext(ctx, "UPDATE user_service.account SET amount = amount +$1 WHERE id = $2", amount, id.String())
 	if err != nil {
 		return fail(err)
 	}
@@ -268,7 +293,7 @@ func (s *sqlDeliveryProvider) FillAccount(ctx context.Context, id uuid.UUID, amo
 	return nil
 }
 
-func (s *sqlDeliveryProvider) RejectPayment(ctx context.Context, order domain.Order) error {
+func (s *sqlBillingProvider) RejectPayment(ctx context.Context, order domain.Order) error {
 	tx, err := s.pool.BeginTxx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
@@ -284,11 +309,7 @@ func (s *sqlDeliveryProvider) RejectPayment(ctx context.Context, order domain.Or
 		return fmt.Errorf("fill account: %v", err)
 	}
 
-	if err = tx.GetContext(ctx, "SELECT * FROM user_service.account WHERE id=$1", order.UserID.String()); err != nil {
-		return fail(err)
-	}
-
-	_, err = tx.ExecContext(ctx, "UPDATE user_service.account SET amount = amount +$1 WHERE id = $2", order.TotalPrice)
+	_, err = tx.ExecContext(ctx, "UPDATE user_service.account SET amount = amount +$1 WHERE id = $2", order.TotalPrice, order.UserID.String())
 	if err != nil {
 		return fail(err)
 	}
@@ -304,6 +325,25 @@ func (s *sqlDeliveryProvider) RejectPayment(ctx context.Context, order domain.Or
 			Status:  domain.PaymentRejected,
 		},
 	})
+
+	return nil
+}
+
+func (s *sqlBillingProvider) CreateAccount(ctx context.Context, id uuid.UUID) error {
+	q := queryInsertBuilder.
+		Insert(billingTable).
+		Columns(strings.Join(accountColumns(createAccountColumns), ", ")).
+		Values(id.String(), 0)
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return fmt.Errorf(buildQuery, err)
+	}
+
+	err = s.pool.QueryRowxContext(ctx, query, args...).Err()
+	if err != nil {
+		return fmt.Errorf(executeQuery, err)
+	}
 
 	return nil
 }

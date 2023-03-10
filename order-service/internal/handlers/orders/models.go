@@ -12,10 +12,6 @@ type CreateOrderRequest struct {
 	DeliveryAt time.Time       `json:"delivery_at"`
 }
 
-type CancelingOrderRequest struct {
-	Status float64 `json:"status"`
-}
-
 type ResponseError struct {
 	Message string `json:"message"`
 }
