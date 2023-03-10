@@ -1,14 +1,14 @@
 package user
 
 import (
+	"auth-service/internal/domain/errors"
+	"auth-service/internal/domain/models"
+	"auth-service/internal/provider"
 	"context"
 	"fmt"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
-	"user-service/internal/domain/errors"
-	"user-service/internal/domain/models"
-	"user-service/internal/provider"
 )
 
 type userService struct {

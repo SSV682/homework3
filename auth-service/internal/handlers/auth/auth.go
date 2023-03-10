@@ -1,11 +1,11 @@
 package auth
 
 import (
+	"auth-service/internal/domain/errors"
+	"auth-service/internal/services"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
-	"user-service/internal/domain/errors"
-	"user-service/internal/services"
 )
 
 type handler struct {

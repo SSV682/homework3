@@ -1,14 +1,14 @@
 package sql
 
 import (
+	"auth-service/internal/domain/models"
+	"auth-service/internal/provider"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/elgris/sqrl"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
-	"user-service/internal/domain/models"
-	"user-service/internal/provider"
 )
 
 const (

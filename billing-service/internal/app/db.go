@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 
-	"auth-service/internal/config"
+	"billing-service/internal/config"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 )

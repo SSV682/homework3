@@ -1,4 +1,4 @@
-package delivery
+package billing
 
 import (
 	"delivery-service/internal/services"

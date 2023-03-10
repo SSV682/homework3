@@ -147,6 +147,8 @@ func (s *sqlDeliveryProvider) ListDelivery(ctx context.Context, date time.Time) 
 		return nil, fmt.Errorf(buildQuery, err)
 	}
 
+	log.Infof("query: %s, args: %s", query, date)
+
 	rows := make([]DeliveryRow, 0, s.maxDeliveriesPerDay)
 
 	if err = s.pool.SelectContext(ctx, &rows, query, args...); err != nil {

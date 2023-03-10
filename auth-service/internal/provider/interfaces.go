@@ -1,11 +1,11 @@
 package provider
 
 import (
+	"auth-service/internal/domain/models"
 	"context"
 	//"github.com/golang-jwt/jwt/v4"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"
-	"user-service/internal/domain/models"
 )
 
 type UserProvider interface {

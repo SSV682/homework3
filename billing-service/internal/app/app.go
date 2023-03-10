@@ -1,11 +1,11 @@
 package app
 
 import (
-	"auth-service/internal/config"
-	"auth-service/internal/handlers"
-	"auth-service/internal/provider/sql"
-	"auth-service/internal/provider/token"
-	"auth-service/internal/services/user"
+	"billing-service/internal/config"
+	"billing-service/internal/handlers"
+	"billing-service/internal/provider/kafka"
+	"billing-service/internal/provider/sql"
+	"billing-service/internal/services/billing"
 	"context"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
@@ -35,12 +35,27 @@ func NewApp(configPath string) *App {
 
 	handler := echo.New()
 
-	userProv := sql.NewSQLBusinessRulesProvider(pool)
-	tokenProv := token.NewJWTProvider()
-	userService := user.NewUserService(userProv, tokenProv)
+	producerConfig := kafka.ProducerConfig{
+		Brokers: cfg.Kafka.BrokerAddresses,
+	}
 
-	rs := handlers.NewRegisterServices(userService)
+	sqlProv := sql.NewSQLProductProvider(pool, 3)
+	commandProducerProv := kafka.NewBrokerProducer(producerConfig)
+	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.BillingTopic)
 
+	processorConfig := billing.Config{
+		OrderServiceTopic:   cfg.Topics.OrderTopic,
+		SystemBusTopic:      cfg.Topics.SystemBus,
+		StorageProv:         sqlProv,
+		CommandConsumerProv: commandConsumerProv,
+		CommandProducerProv: commandProducerProv,
+	}
+
+	processorService := billing.NewProcessor(processorConfig)
+	processorService.Run(context.Background())
+
+	stockService := billing.NewDeliveryService(sqlProv)
+	rs := handlers.NewRegisterServices(stockService)
 	err = handlers.RegisterHandlers(handler, rs)
 	if err != nil {
 		log.Fatalf("Failed to register handlers: %v", err)

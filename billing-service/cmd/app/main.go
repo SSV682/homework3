@@ -1,7 +1,7 @@
 package main
 
 import (
-	"auth-service/internal/app"
+	"billing-service/internal/app"
 	"flag"
 )
 

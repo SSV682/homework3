@@ -1,9 +1,9 @@
 package services
 
 import (
+	"auth-service/internal/domain/models"
 	"context"
 	"github.com/lestrrat-go/jwx/v2/jwk"
-	"user-service/internal/domain/models"
 )
 
 type AuthService interface {
