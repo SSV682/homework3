@@ -30,6 +30,7 @@ services:
       - home_net
     links:
       - authService
+      - billingService
 
   authService:
     build: ./auth-service

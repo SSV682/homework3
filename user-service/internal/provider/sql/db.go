@@ -93,7 +93,7 @@ func (s *sqlProvider) GetUser(ctx context.Context, id string) (models.User, erro
 
 func (s *sqlProvider) DeleteUser(ctx context.Context, id string) error {
 	q := queryDeleteBuilder.
-		From(usersTable).
+		Delete(usersTable).
 		Where(sqrl.Eq{idColumn: id})
 
 	query, args, err := q.ToSql()

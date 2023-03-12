@@ -12,6 +12,7 @@ import (
 	"time"
 	"user-service/internal/config"
 	"user-service/internal/handlers"
+	"user-service/internal/provider/rc"
 	"user-service/internal/provider/sql"
 	"user-service/internal/services/user"
 )
@@ -35,7 +36,8 @@ func NewApp(configPath string) *App {
 	handler := echo.New()
 
 	sqlProv := sql.NewSQLProvider(pool)
-	userService := user.NewUserService(sqlProv)
+	clientProv := rc.NewClientProvider("http://"+cfg.BillingService.Host+":"+cfg.BillingService.Port, "/api/v1/account/")
+	userService := user.NewUserService(sqlProv, clientProv)
 
 	rs := handlers.NewRegisterServices(userService)
 

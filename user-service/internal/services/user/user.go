@@ -2,19 +2,23 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"user-service/internal/domain/models"
 	"user-service/internal/provider"
 )
 
 type userService struct {
-	sqlProv provider.SqlUserProvider
+	sqlProv    provider.SqlUserProvider
+	clientProv provider.ClientProvider
 }
 
-func NewUserService(s provider.SqlUserProvider) *userService {
+func NewUserService(s provider.SqlUserProvider, c provider.ClientProvider) *userService {
 	return &userService{
-		sqlProv: s,
+		sqlProv:    s,
+		clientProv: c,
 	}
 }
 
@@ -31,7 +35,20 @@ func (s *userService) CreateUser(ctx context.Context, user *models.User) (string
 	if err != nil {
 		return "", err
 	}
-	return i, nil
+
+	err = s.clientProv.CreateAccount(i)
+	if err == nil {
+		log.Errorf("couldnt create account: %s", err)
+		return i, nil
+	}
+
+	err = s.sqlProv.DeleteUser(ctx, i)
+	if err != nil {
+		log.Errorf("couldnt delete user: %s", err)
+	}
+
+	return "", errors.New("")
+
 }
 
 func (s *userService) GetUser(ctx context.Context, userID string) (models.User, error) {

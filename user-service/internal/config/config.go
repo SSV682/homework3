@@ -7,18 +7,24 @@ import (
 )
 
 type Config struct {
-	App         AppConfig      `yaml:"app" json:"app"`
-	HTTP        HTTPConfig     `yaml:"http" json:"HTTP"`
-	Log         LogConfig      `yaml:"logger" json:"log"`
-	Databases   DatabaseConfig `yaml:"databases" json:"databases"`
-	Timeout     TimeoutConfig  `yaml:"timeout" json:"timeout"`
-	AuthService AuthService    `yaml:"auth_service"`
+	App            AppConfig      `yaml:"app" json:"app"`
+	HTTP           HTTPConfig     `yaml:"http" json:"HTTP"`
+	Log            LogConfig      `yaml:"logger" json:"log"`
+	Databases      DatabaseConfig `yaml:"databases" json:"databases"`
+	Timeout        TimeoutConfig  `yaml:"timeout" json:"timeout"`
+	AuthService    AuthService    `yaml:"auth_service"`
+	BillingService BillingService `yaml:"billing_service"`
 }
 
 type AuthService struct {
 	Host     string `yaml:"host" env:"AUTH_HOST"`
 	Port     string `yaml:"port" env:"AUTH_PORT"`
 	Endpoint string `yaml:"endpoint" env:"AUTH_ENDPOINT"`
+}
+
+type BillingService struct {
+	Host string `yaml:"host" env:"BILLING_HOST"`
+	Port string `yaml:"port" env:"BILLING_PORT"`
 }
 
 type AppConfig struct {

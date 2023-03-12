@@ -11,3 +11,7 @@ type SqlUserProvider interface {
 	DeleteUser(ctx context.Context, id string) error
 	UpdateUser(ctx context.Context, id string, user *models.User) error
 }
+
+type ClientProvider interface {
+	CreateAccount(userID string) error
+}
