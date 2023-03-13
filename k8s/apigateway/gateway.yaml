@@ -45,6 +45,46 @@ spec:
             host: userservice-orderservice.userservice.svc.cluster.local
     - match:
         - uri:
+            prefix: "/products/"
+      rewrite:
+        uri: "/api/v1/products/"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice-stockservice.userservice.svc.cluster.local
+    - match:
+        - uri:
+            prefix: "/account/"
+      rewrite:
+        uri: "/api/v1/account/"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice-billingservice.userservice.svc.cluster.local
+    - match:
+        - uri:
+            prefix: "/deliveries/"
+      rewrite:
+        uri: "/api/v1/deliveries/"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice-deliveriesservice.userservice.svc.cluster.local
+    - match:
+        - uri:
+            prefix: "/notifications/"
+      rewrite:
+        uri: "/api/v1/notifications/"
+      route:
+        - destination:
+            port:
+              number: 80
+            host: userservice-notificationservice.userservice.svc.cluster.local
+    - match:
+        - uri:
             prefix: "/orders"
       rewrite:
         uri: "/api/v1/orders"
@@ -100,6 +140,22 @@ spec:
         - operation:
             methods: [ "POST" ]
             paths: [ "/login*" ]
+    - to:
+        - operation:
+            methods: [ "GET", "PATCH", "POST" ]
+            paths: [ "/products*" ]
+    - to:
+        - operation:
+            methods: [ "GET", "POST" ]
+            paths: [ "/deliveries*" ]
+    - to:
+        - operation:
+            methods: [ "GET" ]
+            paths: [ "/notifications*" ]
+    - to:
+        - operation:
+            methods: [ "GET", "POST" ]
+            paths: [ "/account*" ]
     - to:
         - operation:
             methods: ["GET", "DELETE", "PATCH"]
