@@ -1,11 +1,11 @@
-# Default values for orderservice.
+# Default values for stockservice.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: ssv682/order-service
+  repository: ssv682/stock-service
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "v0.1"
@@ -47,7 +47,7 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: order-service.local
+    - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
@@ -56,17 +56,17 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: #{}
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-#   limits:
-#     cpu: 100m
-#     memory: 256Mi
-#   requests:
-#     cpu: 100m
-#     memory: 256Mi
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
 
 autoscaling:
   enabled: false
