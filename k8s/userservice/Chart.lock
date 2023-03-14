@@ -7,9 +7,9 @@ dependencies:
   version: 17.0.11
 - name: kafka
   repository: https://charts.bitnami.com/bitnami
-  version: 20.0.6
+  version: 21.4.0
 - name: zookeeper
   repository: https://charts.bitnami.com/bitnami
   version: 11.1.4
-digest: sha256:1e0b6fd789c6245488b2fe3b1c4c95c6c9069820aaf00f3b9c06e4cc82d8d1e9
-generated: "2023-03-13T21:01:39.611768+03:00"
+digest: sha256:860c8a18f05da4e27dd6ea982dcf8824e8b1713b5f8fde33e320e038c5087778
+generated: "2023-03-14T22:59:48.727311+03:00"

@@ -112,12 +112,11 @@ redis:
       password: "alicecooper"
   architecture: standalone
 
+zookeeper:
+  fullnameOverride: zookeeper
+  replicaCount: 1
+
 kafka:
-  provisioning:
-    enabled: true
-    topics:
-      - order_topic
-      - billing_topic
-      - delivery_topic
-      - stock_topic
-      - system_bus
+  replicaCount: 1
+  externalZookeeper: [ClusterIP-zookeeper:2181]
+

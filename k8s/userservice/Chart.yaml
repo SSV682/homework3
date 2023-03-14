@@ -32,8 +32,8 @@ dependencies:
     version: 17.0.x
     repository: https://charts.bitnami.com/bitnami
   - name: kafka
+    version: 21.4.0
     repository: https://charts.bitnami.com/bitnami
-    version: 20.0.6
   - name: zookeeper
-    repository: https://charts.bitnami.com/bitnami
     version: 11.1.4
+    repository: https://charts.bitnami.com/bitnami
