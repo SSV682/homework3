@@ -143,8 +143,10 @@ kafka:
 kafka-ui:
   envs:
     config:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      - name: KAFKA_CLUSTERS_0_NAME
+        value: "K8 Kafka Cluster"
+      - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+        value: kafka-kafka-bootstrap.kafka:9092
 
 
 
