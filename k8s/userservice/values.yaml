@@ -117,7 +117,10 @@ zookeeper:
   replicaCount: 1
 
 kafka:
+  fullnameOverride: kafka
   replicaCount: 1
+  zookeeper:
+    enabled: true
   externalZookeeper: [ClusterIP-zookeeper:2181]
   provisioning:
     topics:
@@ -136,5 +139,14 @@ kafka:
       - name: system_bus
         partitions: 1
         replicationFactor: 1
+
+kafka-ui:
+  envs:
+    config:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+
+
+
 
 
