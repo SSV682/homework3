@@ -119,4 +119,22 @@ zookeeper:
 kafka:
   replicaCount: 1
   externalZookeeper: [ClusterIP-zookeeper:2181]
+  provisioning:
+    topics:
+      - name: order_topic
+        partitions: 1
+        replicationFactor: 1
+      - name: stock_topic
+        partitions: 1
+        replicationFactor: 1
+      - name: delivery_topic
+        partitions: 1
+        replicationFactor: 1
+      - name: billing_topic
+        partitions: 1
+        replicationFactor: 1
+      - name: system_bus
+        partitions: 1
+        replicationFactor: 1
+
 
