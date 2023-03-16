@@ -57,26 +57,52 @@ spec:
                   password varchar NOT NULL
                 );
 
-              COMMIT;
-
-              BEGIN;
-
-              CREATE TYPE user_service.order_statuses AS ENUM (
-              'created',
-              'awaiting_payment',
-              'payment_received',
-              'completed',
-              'canceled',
-              'failed'
-              );
-
               CREATE TABLE IF NOT EXISTS user_service.orders
               (
               id                      serial PRIMARY KEY,
               user_id                 UUID                            NOT NULL,
               total_price             float                           NOT NULL,
+              products                jsonb                           NOT NULL,
+              delivery_at             timestamp(0) with time zone     NOT NULL,
+              address                 jsonb                           NOT NULL,
               created_at              timestamp(0) with time zone     NOT NULL DEFAULT now(),
-              status                  user_service.order_statuses     NOT NULL DEFAULT 'created'
+              status                  varchar                         NOT NULL DEFAULT 'created'
+              );
+
+              CREATE TABLE IF NOT EXISTS user_service.products
+              (
+              id                      serial PRIMARY KEY,
+              quantity                   int                             NOT NULL,
+              name                    varchar                         NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS user_service.delivery
+              (
+              id                      serial PRIMARY KEY,
+              order_id                int                             NOT NULL,
+              date                    timestamp(0) with time zone     NOT NULL,
+              order_content           jsonb                           NOT NULL,
+              address                 jsonb                           NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS user_service.account
+              (
+              id                    UUID                              NOT NULL PRIMARY KEY,
+              amount                float                             NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS user_service.outbox
+              (
+              id                   serial                           NOT NULL PRIMARY KEY,
+              topic                varchar                          NOT NULL,
+              message              jsonb                            NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS user_service.notification
+              (
+              id                      serial                              PRIMARY KEY,
+              user_id                 varchar                             NOT NULL,
+              message                 varchar                             NOT NULL
               );
 
               COMMIT;
