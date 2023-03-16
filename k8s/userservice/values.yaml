@@ -121,7 +121,7 @@ kafka:
   replicaCount: 1
   zookeeper:
     enabled: true
-  externalZookeeper: [ClusterIP-zookeeper:2181]
+  externalZookeeper: [userservice-zookeeper:2181]
   provisioning:
     topics:
       - name: order_topic
@@ -143,10 +143,11 @@ kafka:
 kafka-ui:
   envs:
     config:
-      - name: KAFKA_CLUSTERS_0_NAME
-        value: "K8 Kafka Cluster"
-      - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
-        value: kafka-kafka-bootstrap.kafka:9092
+      config:
+        - name: KAFKA_CLUSTERS_0_NAME
+          value: local
+        - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+          value: userservice-kafka:9092
 
 
 
