@@ -17,4 +17,5 @@ data:
   AUTH_ENDPOINT: {{ .Values.authservice.endpoint | quote }}
   REDIS_HOST: {{ .Values.redis.redisIp | quote }}
   REDIS_PORT: {{ .Values.redis.redisPort | quote }}
+  KAFKA_BROKER: {{ .Values.kafka.fullnameOverride | quote }}
 

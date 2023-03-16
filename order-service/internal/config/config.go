@@ -102,7 +102,7 @@ type DatabaseConfig struct {
 
 type KafkaConfig struct {
 	// BrokerAddresses initial list of brokers as a list of broker host in host:port format.
-	BrokerAddresses []string `yaml:"brokers" env-required:"true"`
+	BrokerAddresses []string `yaml:"brokers"  env:"BROKER" env-required:"true"`
 	SASL            struct {
 		Username string `yaml:"username" env:"USER" env-required:"true"`
 		Password string `yaml:"password" env:"PASSWORD"`

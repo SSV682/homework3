@@ -23,7 +23,7 @@ databases:
 
 kafka:
   brokers:
-    - 'kafka'
+    - 'kafka' # env: KAFKA_BROKER
   sasl:
     username: alice        # env: KAFKA_USER
     password: alice-secret # env: KAFKA_PASSWORD

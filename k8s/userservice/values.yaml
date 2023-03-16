@@ -121,33 +121,18 @@ kafka:
   replicaCount: 1
   zookeeper:
     enabled: true
-  externalZookeeper: [userservice-zookeeper:2181]
-  provisioning:
-    topics:
-      - name: order_topic
-        partitions: 1
-        replicationFactor: 1
-      - name: stock_topic
-        partitions: 1
-        replicationFactor: 1
-      - name: delivery_topic
-        partitions: 1
-        replicationFactor: 1
-      - name: billing_topic
-        partitions: 1
-        replicationFactor: 1
-      - name: system_bus
-        partitions: 1
-        replicationFactor: 1
+  externalZookeeper:
+    servers: [zookeeper:2181]
+  service:
+    ports:
+      client: 9092
+
 
 kafka-ui:
   envs:
     config:
-      config:
-        - name: KAFKA_CLUSTERS_0_NAME
-          value: local
-        - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
-          value: userservice-kafka:9092
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
 
 
 
