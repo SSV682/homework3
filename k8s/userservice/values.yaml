@@ -126,9 +126,30 @@ kafka:
   service:
     ports:
       client: 9092
-
+  provisioning:
+    enabled: true
+    topics:
+      - name: billing-topic
+        partitions: 1
+        replicationFactor: 1
+      - name: stock-topic
+        partitions: 1
+        replicationFactor: 1
+      - name: delivery-topic
+        partitions: 1
+        replicationFactor: 1
+      - name: order-topic
+        partitions: 1
+        replicationFactor: 1
+      - name: system-bus
+        partitions: 1
+        replicationFactor: 1
+      - name: notification-topic
+        partitions: 1
+        replicationFactor: 1
 
 kafka-ui:
+  fullnameOverride: kafka-ui
   envs:
     config:
       KAFKA_CLUSTERS_0_NAME: local
