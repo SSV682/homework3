@@ -37,11 +37,12 @@ func NewApp(configPath string) *App {
 
 	sqlProv := sql.NewSQLProvider(pool)
 	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.SystemBus)
+	userConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.NotificationTopic)
 
 	processorConfig := notification.Config{
-		SystemBusTopic:      cfg.Topics.SystemBus,
 		StorageProv:         sqlProv,
 		CommandConsumerProv: commandConsumerProv,
+		UserConsumerProv:    userConsumerProv,
 	}
 
 	processorService := notification.NewProcessor(processorConfig)

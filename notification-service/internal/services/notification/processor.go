@@ -10,35 +10,38 @@ import (
 )
 
 type Config struct {
-	SystemBusTopic      string
 	StorageProv         provider.StorageProvider
 	CommandConsumerProv provider.BrokerConsumerProvider
+	UserConsumerProv    provider.BrokerConsumerProvider
 }
 
 type Processor struct {
 	startOnce           sync.Once
 	commandCh           <-chan domain.Order
-	orderServiceTopic   string
-	systemBusTopic      string
+	userUpdateCh        <-chan domain.User
 	storageProv         provider.StorageProvider
 	commandConsumerProv provider.BrokerConsumerProvider
+	userConsumerProv    provider.BrokerConsumerProvider
 }
 
 func NewProcessor(cfg Config) *Processor {
 	return &Processor{
-		systemBusTopic:      cfg.SystemBusTopic,
 		storageProv:         cfg.StorageProv,
 		commandConsumerProv: cfg.CommandConsumerProv,
+		userConsumerProv:    cfg.UserConsumerProv,
 	}
 }
 
 func (p *Processor) Run(ctx context.Context) {
-	payloadCh, _, err := p.commandConsumerProv.StartConsume(ctx)
+	errCh := make(chan error, 0)
+	payloadCh, err := p.commandConsumerProv.StartConsume(ctx, errCh)
+	userUpdateCh, err := p.userConsumerProv.StartConsumeUserUpdate(ctx, errCh)
 	if err != nil {
 		log.Errorf("failed consumer: %v", err)
 	}
 
 	p.commandCh = payloadCh
+	p.userUpdateCh = userUpdateCh
 
 	p.startOnce.Do(func() {
 		go p.start(ctx)
@@ -52,6 +55,9 @@ func (p *Processor) start(ctx context.Context) func() {
 		case command := <-p.commandCh:
 			fmt.Println(fmt.Sprintf("command: %#v", command))
 			p.executeCommand(ctx, command)
+		case user := <-p.userUpdateCh:
+			fmt.Println(fmt.Sprintf("command: %#v", user))
+			p.updateUser(ctx, user)
 		case <-ctx.Done():
 			log.Infof("Contex faired! Stopping processor service...")
 			break
@@ -62,7 +68,26 @@ func (p *Processor) start(ctx context.Context) func() {
 func (p *Processor) executeCommand(ctx context.Context, command domain.Order) {
 	switch command.Status {
 	case domain.Success, domain.Canceled:
-		p.storageProv.Create(ctx, command)
+		user, err := p.storageProv.GetUserByID(ctx, command.UserID)
+		if err != nil {
+			log.Errorf("execute command: %s, with orrder: %v", err, command)
+		}
+		if user == nil {
+			log.Errorf("execute command: %s, with orrder: %v", err, command)
+		}
+
+		message := fmt.Sprintf("Order %d %s", command.ID, command.Status)
+
+		p.storageProv.Create(ctx, domain.Notification{
+			Mail:    user.Mail,
+			Message: message,
+		})
 	default:
+	}
+}
+
+func (p *Processor) updateUser(ctx context.Context, user domain.User) {
+	if err := p.storageProv.UpdateUserInfo(ctx, user); err != nil {
+		log.Errorf("failed update user: %s", err)
 	}
 }

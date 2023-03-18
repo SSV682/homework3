@@ -110,7 +110,6 @@ func (s *sqlProvider) DeleteUser(ctx context.Context, id string) error {
 }
 
 func (s *sqlProvider) UpdateUser(ctx context.Context, id string, user *models.User) error {
-
 	q := queryUpdateBuilder.
 		Update(usersTable).
 		Set(usernameColumn, user.Username).

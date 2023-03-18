@@ -50,7 +50,7 @@ func (h *handler) ListNotification(ctx echo.Context) error {
 	for _, v := range orders {
 		result = append(result, &ResponseNotification{
 			ID:      v.ID,
-			UserID:  v.UserID,
+			Mail:    v.Mail,
 			Message: v.Message,
 		})
 	}

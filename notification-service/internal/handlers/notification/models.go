@@ -23,7 +23,7 @@ type ResponseCreated struct {
 
 type ResponseNotification struct {
 	ID      int64  `json:"id"`
-	UserID  string `json:"user_id"`
+	Mail    string `json:"email"`
 	Message string `json:"message"`
 }
 

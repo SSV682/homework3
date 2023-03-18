@@ -31,12 +31,12 @@ type Order struct {
 	Status     string          `json:"status"`
 }
 
-type RequestCommand struct {
+type BillingRequestCommand struct {
 	CommandType string `json:"command_type"`
 	Order       Order  `json:"order"`
 }
 
-func (c *RequestCommand) ToModel() (domain.RequestCommand, error) {
+func (c *BillingRequestCommand) ToModel() (domain.RequestCommand, error) {
 	ct := domain.ToCommandType(c.CommandType)
 	if ct == domain.Unknown {
 		return domain.RequestCommand{}, errors.New("bad command")
@@ -49,5 +49,22 @@ func (c *RequestCommand) ToModel() (domain.RequestCommand, error) {
 			TotalPrice: c.Order.TotalPrice,
 			UserID:     c.Order.UserID,
 		},
+	}, nil
+}
+
+type UserRequestCommand struct {
+	UserID string `json:"user_id"`
+	Mail   string `json:"mail"`
+}
+
+func (c *UserRequestCommand) ToModel() (domain.Account, error) {
+	userID, err := uuid.FromBytes([]byte(c.UserID))
+	if err != nil {
+		return domain.Account{}, err
+	}
+
+	return domain.Account{
+		UserID: userID,
+		Amount: 0,
 	}, nil
 }

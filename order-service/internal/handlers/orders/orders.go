@@ -38,7 +38,7 @@ func (h *handler) CreateOrder(ctx echo.Context) error {
 	//	return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
 	//}
 
-	userID := "503c3602-5c51-4848-b332-ead24b4e0621"
+	userID := "00c9f1d1-9c12-44af-a1cf-7aafbff8b711"
 
 	idempotenceKey := ctx.Request().Header.Get(idempotenceKeyHeaderName)
 	log.Info(idempotenceKey)

@@ -12,7 +12,7 @@ import (
 	"time"
 	"user-service/internal/config"
 	"user-service/internal/handlers"
-	"user-service/internal/provider/rc"
+	"user-service/internal/provider/kafka"
 	"user-service/internal/provider/sql"
 	"user-service/internal/services/user"
 )
@@ -35,9 +35,20 @@ func NewApp(configPath string) *App {
 
 	handler := echo.New()
 
+	producerConfig := kafka.ProducerConfig{
+		Brokers: cfg.Kafka.BrokerAddresses,
+	}
+
 	sqlProv := sql.NewSQLProvider(pool)
-	clientProv := rc.NewClientProvider("http://"+cfg.BillingService.Host+":"+cfg.BillingService.Port, "/api/v1/account/")
-	userService := user.NewUserService(sqlProv, clientProv)
+	brokerProv := kafka.NewBrokerProducer(producerConfig)
+	userServiceConfig := user.ServiceConfig{
+		SqlProv:               sqlProv,
+		BrokerProv:            brokerProv,
+		BillingTopicName:      cfg.Topics.BillingTopic,
+		NotificationTopicName: cfg.Topics.NotificationTopic,
+	}
+
+	userService := user.NewUserService(userServiceConfig)
 
 	rs := handlers.NewRegisterServices(userService)
 

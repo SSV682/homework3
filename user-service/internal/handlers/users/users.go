@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"user-service/internal/services"
 )
@@ -34,6 +35,7 @@ func (h *handler) CreateUser(ctx echo.Context) error {
 
 	cct := ctx.Request().Context()
 
+	log.Debug("create user")
 	id, err := h.service.CreateUser(cct, user)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})

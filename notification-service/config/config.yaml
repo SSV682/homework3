@@ -30,7 +30,6 @@ kafka:
 
 topics:
   notification_topic: notification_topic
-  delivery_topic: delivery_topic
   system_bus: system_bus
 
 timeout:

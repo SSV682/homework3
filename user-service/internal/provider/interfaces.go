@@ -15,3 +15,7 @@ type SqlUserProvider interface {
 type ClientProvider interface {
 	CreateAccount(userID string) error
 }
+
+type BrokerProducerProvider interface {
+	SendCommand(ctx context.Context, user models.User, topicsName []string) error
+}

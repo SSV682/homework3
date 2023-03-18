@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 const groupID = "eventGroupStore"
@@ -18,9 +19,12 @@ type BrokerConsumer struct {
 func NewBrokerConsumer(brokers []string, topic string) *BrokerConsumer {
 	client := &BrokerConsumer{}
 	client.reader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers: brokers,
-		GroupID: groupID,
-		Topic:   topic,
+		Brokers:          brokers,
+		GroupID:          groupID,
+		Topic:            topic,
+		QueueCapacity:    100,
+		SessionTimeout:   1 * time.Minute,
+		RebalanceTimeout: 20 * time.Second,
 	})
 	return client
 }

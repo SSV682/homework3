@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "userservice.fullname" . }}
+  name: init-kafka
 spec:
   template:
     metadata:
@@ -11,114 +11,59 @@ spec:
       restartPolicy: OnFailure
       initContainers:
         - name: check-kafka-ready
-          image: docker.io/bitnami/kafka:3.4.0-debian-11-r6
-          args:
-                - -ec
-                - |                                                                                                                                                                                                 
-                  wait-for-port \                                                                                                                                                                                    
-                    --host=kafka \                                                                                                                                                                                   
-                    --state=inuse \                                                                                                                                                                                  
-                    --timeout=240 \
-                    9092;                                                                                                                                                                                            
-                  echo "Kafka is available";                                                                                                                                                                         
+          image: docker.io/bitnami/kafka:3.4.0-debian-11-r11
           command:
             - /bin/bash
+          args:
+            - "-ec"
+            - |
+              echo "Waiting wake up kafka";
+              wait-for-port --host=kafka --timeout=120 9092;
+              echo "Kafka is available";
       containers:
         - name: post-wake-up-job
-          image: docker.io/bitnami/kafka:3.4.0-debian-11-r6
+          image: docker.io/bitnami/kafka:3.4.0-debian-11-r11
           env:
             - name: BITNAMI_DEBUG
               value: "false"
             - name: KAFKA_SERVICE
               value: kafka:9092
-          args:
-           - -ec
-           - |
-            echo "Configuring environment"
-             . /opt/bitnami/scripts/libkafka.sh
-             export CLIENT_CONF="${CLIENT_CONF:-/opt/bitnami/kafka/config/client.properties}"
-             if [ ! -f "$CLIENT_CONF" ]; then
-               touch $CLIENT_CONF
-
-               kafka_common_conf_set "$CLIENT_CONF" security.protocol "PLAINTEXT"
-             fi
-
-             echo "Running pre-provisioning script if any given"
-
-             kafka_provisioning_commands=(
-               "/opt/bitnami/kafka/bin/kafka-topics.sh \
-                   --create \
-                   --if-not-exists \
-                   --bootstrap-server ${KAFKA_SERVICE} \
-                   --replication-factor 1 \
-                   --partitions 1 \
-                   --command-config ${CLIENT_CONF} \
-                   --topic billing-topic"
-               "/opt/bitnami/kafka/bin/kafka-topics.sh \
-                   --create \
-                   --if-not-exists \
-                   --bootstrap-server ${KAFKA_SERVICE} \
-                   --replication-factor 1 \
-                   --partitions 1 \
-                   --command-config ${CLIENT_CONF} \
-                   --topic stock-topic"
-               "/opt/bitnami/kafka/bin/kafka-topics.sh \
-                   --create \
-                   --if-not-exists \
-                   --bootstrap-server ${KAFKA_SERVICE} \
-                   --replication-factor 1 \
-                   --partitions 1 \
-                   --command-config ${CLIENT_CONF} \
-                   --topic stock-topic"
-               "/opt/bitnami/kafka/bin/kafka-topics.sh \
-                   --create \
-                   --if-not-exists \
-                   --bootstrap-server ${KAFKA_SERVICE} \
-                   --replication-factor 1 \
-                   --partitions 1 \
-                   --command-config ${CLIENT_CONF} \
-                   --topic delivery-topic"
-               "/opt/bitnami/kafka/bin/kafka-topics.sh \
-                   --create \
-                   --if-not-exists \
-                   --bootstrap-server ${KAFKA_SERVICE} \
-                   --replication-factor 1 \
-                   --partitions 1 \
-                   --command-config ${CLIENT_CONF} \
-                   --topic order-topic"
-               "/opt/bitnami/kafka/bin/kafka-topics.sh \
-                   --create \
-                   --if-not-exists \
-                   --bootstrap-server ${KAFKA_SERVICE} \
-                   --replication-factor 1 \
-                   --partitions 1 \
-                   --command-config ${CLIENT_CONF} \
-                   --topic system-bus"
-               "/opt/bitnami/kafka/bin/kafka-topics.sh \
-                   --create \
-                   --if-not-exists \
-                   --bootstrap-server ${KAFKA_SERVICE} \
-                   --replication-factor 1 \
-                   --partitions 1 \
-                   --command-config ${CLIENT_CONF} \
-                   --topic notification-topic"
-             )
-
-             echo "Starting provisioning"
-             for ((index=0; index < ${#kafka_provisioning_commands[@]}; index+=1))
-             do
-               for j in $(seq ${index} $((${index}+1-1)))
-               do
-                   ${kafka_provisioning_commands[j]} & # Async command
-               done
-               wait  # Wait the end of the jobs
-             done
-
-             echo "Running post-provisioning script if any given"
-             echo "Provisioning succeeded"
           command:
             - /bin/bash
+          args:
+            - "-ec"
+            - |
+              echo "Configuring environment"
+              . /opt/bitnami/scripts/libkafka.sh
+              export CLIENT_CONF="${CLIENT_CONF:-/opt/bitnami/kafka/config/client.properties}"
+              if [ ! -f "$CLIENT_CONF" ]; then
+                touch $CLIENT_CONF
 
-            
+                kafka_common_conf_set "$CLIENT_CONF" security.protocol "PLAINTEXT"
+              fi
 
+              echo "Running pre-provisioning script if any given"
 
+              kafka_provisioning_commands=(
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1  --topic billing-topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic stock-topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic delivery-topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic order-topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic billing-topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic billing-topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic billing-topic"
+              )
+
+              echo "Starting provisioning"
+              for ((index=0; index < ${#kafka_provisioning_commands[@]}; index+=1))
+              do
+                for j in $(seq ${index} $((${index}+1-1)))
+                do
+                    ${kafka_provisioning_commands[j]} & # Async command
+                done
+                wait  # Wait the end of the jobs
+              done
+
+              echo "Running post-provisioning script if any given"
+              echo "Provisioning succeeded"
+  backoffLimit: 0

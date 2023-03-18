@@ -46,6 +46,12 @@ func (client *BrokerProducer) SendCommand(ctx context.Context, command domain.Co
 
 	err = client.w.WriteMessages(ctx, kafka.Message{
 		Value: marshaledMessage,
+		Headers: []kafka.Header{
+			{
+				Key:   "publisher",
+				Value: []byte("order_service"),
+			},
+		},
 		Topic: command.Topic,
 	})
 	if err != nil {

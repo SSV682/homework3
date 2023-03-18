@@ -33,13 +33,11 @@ func (c *BrokerConsumer) read(ctx context.Context) ([]byte, error) {
 	return msg.Value, nil
 }
 
-func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.Order, <-chan error, error) {
+func (c *BrokerConsumer) StartConsume(ctx context.Context, errCh chan error) (<-chan domain.Order, error) {
 	payloadCh := make(chan domain.Order)
-	errCh := make(chan error)
 
 	go func() {
 		defer close(payloadCh)
-		defer close(errCh)
 
 		for {
 			select {
@@ -71,7 +69,46 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.Order,
 		}
 	}()
 
-	return payloadCh, errCh, nil
+	return payloadCh, nil
+}
+
+func (c *BrokerConsumer) StartConsumeUserUpdate(ctx context.Context, errCh chan error) (<-chan domain.User, error) {
+	payloadCh := make(chan domain.User)
+
+	go func() {
+		defer close(payloadCh)
+
+		for {
+			select {
+			case <-ctx.Done():
+				log.Debug("Got context done! Closing consumer...")
+
+				if err := c.reader.Close(); err != nil {
+					errCh <- fmt.Errorf("consumer close: %v", err)
+				}
+				return
+
+			default:
+				message, err := c.consumeContext(ctx)
+				if err != nil {
+					errCh <- fmt.Errorf("consume message: %v", err)
+					continue
+				}
+
+				var command User
+
+				if err = json.Unmarshal(message, &command); err != nil {
+					errCh <- fmt.Errorf("unmarshal message: %v", err)
+					continue
+				}
+
+				c := command.ToModel()
+				payloadCh <- c
+			}
+		}
+	}()
+
+	return payloadCh, nil
 }
 
 func (c *BrokerConsumer) consumeContext(ctx context.Context) ([]byte, error) {

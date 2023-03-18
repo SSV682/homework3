@@ -29,8 +29,12 @@ auth_service:
   port: 8000
   endpoint: "/api/v1/keys"
 
+kafka:
+  brokers:
+    - 'kafka'
+  sasl:
+    username: alice        # env: KAFKA_USER
+    password: alice-secret # env: KAFKA_PASSWORD
 
-billing_service:
-  host: 'billingService'
-  port: 8000
-  endpoint: "/api/v1/account/"
+topics:
+  notification_topic: notification_topic

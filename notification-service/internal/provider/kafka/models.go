@@ -16,5 +16,16 @@ func (c *Order) ToModel() domain.Order {
 		UserID: c.UserID,
 		Status: domain.Status(c.Status),
 	}
+}
 
+type User struct {
+	UserID string `json:"user_id"`
+	Mail   string `json:"mail"`
+}
+
+func (u *User) ToModel() domain.User {
+	return domain.User{
+		ID:   u.UserID,
+		Mail: u.Mail,
+	}
 }

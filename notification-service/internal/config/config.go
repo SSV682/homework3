@@ -112,7 +112,8 @@ type KafkaConfig struct {
 }
 
 type Topics struct {
-	SystemBus string `yaml:"system_bus" env-default:"system_bus"`
+	SystemBus         string `yaml:"system_bus" env-default:"system_bus"`
+	NotificationTopic string `yaml:"notification_topic" env-default:"notification_topic"`
 }
 
 func ReadConfig(filePath string) (Config, error) {

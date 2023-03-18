@@ -24,6 +24,7 @@ type Config struct {
 type Processor struct {
 	startOnce           sync.Once
 	commandCh           <-chan domain.RequestCommand
+	commandUserCh       <-chan domain.Account
 	orderServiceTopic   string
 	systemBusTopic      string
 	storageProv         provider.StorageProvider
@@ -41,12 +42,13 @@ func NewProcessor(cfg Config) *Processor {
 }
 
 func (p *Processor) Run(ctx context.Context) {
-	payloadCh, _, err := p.commandConsumerProv.StartConsume(ctx)
+	payloadCh, payloadUserCh, _, err := p.commandConsumerProv.StartConsume(ctx)
 	if err != nil {
 		log.Errorf("failed consumer: %v", err)
 	}
 
 	p.commandCh = payloadCh
+	p.commandUserCh = payloadUserCh
 
 	p.startOnce.Do(func() {
 		go p.start(ctx)
@@ -59,6 +61,11 @@ func (p *Processor) start(ctx context.Context) func() {
 		select {
 		case command := <-p.commandCh:
 			p.executeCommand(ctx, command)
+		case command := <-p.commandUserCh:
+			err := p.storageProv.CreateAccount(ctx, command.UserID)
+			if err != nil {
+				log.Errorf("failed create account: %v", err)
+			}
 		case <-ctx.Done():
 			log.Infof("Contex faired! Stopping processor service...")
 			break

@@ -30,6 +30,11 @@ type Order struct {
 
 type Notification struct {
 	ID      int64
-	UserID  string
+	Mail    string
 	Message string
+}
+
+type User struct {
+	ID   string
+	Mail string
 }

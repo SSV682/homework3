@@ -7,24 +7,20 @@ import (
 )
 
 type Config struct {
-	App            AppConfig      `yaml:"app" json:"app"`
-	HTTP           HTTPConfig     `yaml:"http" json:"HTTP"`
-	Log            LogConfig      `yaml:"logger" json:"log"`
-	Databases      DatabaseConfig `yaml:"databases" json:"databases"`
-	Timeout        TimeoutConfig  `yaml:"timeout" json:"timeout"`
-	AuthService    AuthService    `yaml:"auth_service"`
-	BillingService BillingService `yaml:"billing_service"`
+	App         AppConfig      `yaml:"app" json:"app"`
+	HTTP        HTTPConfig     `yaml:"http" json:"HTTP"`
+	Log         LogConfig      `yaml:"logger" json:"log"`
+	Databases   DatabaseConfig `yaml:"databases" json:"databases"`
+	Timeout     TimeoutConfig  `yaml:"timeout" json:"timeout"`
+	AuthService AuthService    `yaml:"auth_service"`
+	Topics      Topics         `yaml:"topics" json:"topics"`
+	Kafka       KafkaConfig    `yaml:"kafka" json:"kafka" env-prefix:"KAFKA_"`
 }
 
 type AuthService struct {
 	Host     string `yaml:"host" env:"AUTH_HOST"`
 	Port     string `yaml:"port" env:"AUTH_PORT"`
 	Endpoint string `yaml:"endpoint" env:"AUTH_ENDPOINT"`
-}
-
-type BillingService struct {
-	Host string `yaml:"host" env:"BILLING_HOST"`
-	Port string `yaml:"port" env:"BILLING_PORT"`
 }
 
 type AppConfig struct {
@@ -108,6 +104,23 @@ type SQLConfig struct {
 
 type DatabaseConfig struct {
 	Postgres SQLConfig `yaml:"postgres" env-prefix:"POSTGRES_"`
+}
+
+type KafkaConfig struct {
+	// BrokerAddresses initial list of brokers as a list of broker host in host:port format.
+	BrokerAddresses []string `yaml:"brokers"  env:"BROKER" env-required:"true"`
+	SASL            struct {
+		Username string `yaml:"username" env:"USER" env-required:"true"`
+		Password string `yaml:"password" env:"PASSWORD"`
+	} `yaml:"sasl"`
+	SSL struct {
+		CALocation string `yaml:"ca-location"`
+	} `yaml:"ssl"`
+}
+
+type Topics struct {
+	NotificationTopic string `yaml:"notification_topic" env-default:"notification_topic"`
+	BillingTopic      string `yaml:"billing_topic" env-default:"billing_topic"`
 }
 
 func ReadConfig(filePath string) (Config, error) {

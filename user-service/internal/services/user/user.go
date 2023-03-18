@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
@@ -10,15 +9,26 @@ import (
 	"user-service/internal/provider"
 )
 
-type userService struct {
-	sqlProv    provider.SqlUserProvider
-	clientProv provider.ClientProvider
+type ServiceConfig struct {
+	SqlProv               provider.SqlUserProvider
+	BrokerProv            provider.BrokerProducerProvider
+	BillingTopicName      string
+	NotificationTopicName string
 }
 
-func NewUserService(s provider.SqlUserProvider, c provider.ClientProvider) *userService {
+type userService struct {
+	sqlProv               provider.SqlUserProvider
+	brokerProv            provider.BrokerProducerProvider
+	billingTopicName      string
+	notificationTopicName string
+}
+
+func NewUserService(cfg ServiceConfig) *userService {
 	return &userService{
-		sqlProv:    s,
-		clientProv: c,
+		sqlProv:               cfg.SqlProv,
+		brokerProv:            cfg.BrokerProv,
+		billingTopicName:      cfg.BillingTopicName,
+		notificationTopicName: cfg.NotificationTopicName,
 	}
 }
 
@@ -31,23 +41,21 @@ func (s *userService) CreateUser(ctx context.Context, user *models.User) (string
 
 	user.Password = string(hashedPassword)
 
+	log.Debugf("user: %#v", user)
+
 	i, err := s.sqlProv.CreateUser(ctx, user)
 	if err != nil {
 		return "", err
 	}
 
-	err = s.clientProv.CreateAccount(i)
-	if err == nil {
-		log.Errorf("couldnt create account: %s", err)
-		return i, nil
-	}
+	user.ID = i
 
-	err = s.sqlProv.DeleteUser(ctx, i)
+	err = s.brokerProv.SendCommand(ctx, *user, []string{s.billingTopicName, s.notificationTopicName})
 	if err != nil {
-		log.Errorf("couldnt delete user: %s", err)
+		return "", fmt.Errorf("couldnt create account: %s", err)
 	}
 
-	return "", errors.New("")
+	return i, nil
 
 }
 
@@ -74,6 +82,11 @@ func (s *userService) UpdateUser(ctx context.Context, userID string, user *model
 	}
 
 	user.Password = string(hashedPassword)
+
+	err = s.brokerProv.SendCommand(ctx, *user, []string{s.notificationTopicName})
+	if err != nil {
+		log.Errorf("couldnt create account: %s", err)
+	}
 
 	if err := s.sqlProv.UpdateUser(ctx, userID, user); err != nil {
 		return err

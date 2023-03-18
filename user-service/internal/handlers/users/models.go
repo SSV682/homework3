@@ -22,7 +22,7 @@ type Element struct {
 
 func (e *Element) ToModel() *models.User {
 	return &models.User{
-		Id:        e.ID,
+		ID:        e.ID,
 		Username:  e.Username,
 		Firstname: e.Firstname,
 		Lastname:  e.Lastname,
@@ -34,7 +34,7 @@ func (e *Element) ToModel() *models.User {
 
 func ToElement(m *models.User) Element {
 	return Element{
-		ID:        m.Id,
+		ID:        m.ID,
 		Username:  m.Username,
 		Firstname: m.Firstname,
 		Lastname:  m.Lastname,

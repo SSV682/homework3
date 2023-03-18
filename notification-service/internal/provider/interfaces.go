@@ -6,10 +6,13 @@ import (
 )
 
 type StorageProvider interface {
-	Create(ctx context.Context, p domain.Order) error
+	Create(ctx context.Context, p domain.Notification) error
 	List(ctx context.Context) ([]*domain.Notification, error)
+	UpdateUserInfo(ctx context.Context, user domain.User) error
+	GetUserByID(ctx context.Context, id string) (*domain.User, error)
 }
 
 type BrokerConsumerProvider interface {
-	StartConsume(ctx context.Context) (<-chan domain.Order, <-chan error, error)
+	StartConsume(ctx context.Context, errCh chan error) (<-chan domain.Order, error)
+	StartConsumeUserUpdate(ctx context.Context, errCh chan error) (<-chan domain.User, error)
 }

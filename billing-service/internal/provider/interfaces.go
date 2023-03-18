@@ -18,7 +18,7 @@ type StorageProvider interface {
 }
 
 type BrokerConsumerProvider interface {
-	StartConsume(ctx context.Context) (<-chan domain.RequestCommand, <-chan error, error)
+	StartConsume(ctx context.Context) (<-chan domain.RequestCommand, <-chan domain.Account, <-chan error, error)
 }
 
 type BrokerProducerProvider interface {

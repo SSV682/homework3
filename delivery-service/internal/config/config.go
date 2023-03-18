@@ -112,7 +112,7 @@ type KafkaConfig struct {
 }
 
 type Topics struct {
-	DeliveryTopic string `yaml:"stock_topic" env-default:"delivery_topic"`
+	DeliveryTopic string `yaml:"delivery_topic" env-default:"delivery_topic"`
 	OrderTopic    string `yaml:"order_topic" env-default:"order_topic"`
 	SystemBus     string `yaml:"system_bus" env-default:"system_bus"`
 }
