@@ -35,9 +35,9 @@ spec:
             host: userservice.userservice.svc.cluster.local
     - match:
         - uri:
-            prefix: "/orders/"
+            prefix: "/orders"
       rewrite:
-        uri: "/api/v1/orders/"
+        uri: "/api/v1/orders"
       route:
         - destination:
             port:
@@ -45,9 +45,9 @@ spec:
             host: userservice-orderservice.userservice.svc.cluster.local
     - match:
         - uri:
-            prefix: "/products/"
+            prefix: "/products"
       rewrite:
-        uri: "/api/v1/products/"
+        uri: "/api/v1/products"
       route:
         - destination:
             port:
@@ -55,9 +55,9 @@ spec:
             host: userservice-stockservice.userservice.svc.cluster.local
     - match:
         - uri:
-            prefix: "/account/"
+            prefix: "/account"
       rewrite:
-        uri: "/api/v1/account/"
+        uri: "/api/v1/account"
       route:
         - destination:
             port:
@@ -65,9 +65,9 @@ spec:
             host: userservice-billingservice.userservice.svc.cluster.local
     - match:
         - uri:
-            prefix: "/deliveries/"
+            prefix: "/deliveries"
       rewrite:
-        uri: "/api/v1/deliveries/"
+        uri: "/api/v1/deliveries"
       route:
         - destination:
             port:
@@ -75,9 +75,9 @@ spec:
             host: userservice-deliveriesservice.userservice.svc.cluster.local
     - match:
         - uri:
-            prefix: "/notifications/"
+            prefix: "/notifications"
       rewrite:
-        uri: "/api/v1/notifications/"
+        uri: "/api/v1/notifications"
       route:
         - destination:
             port:

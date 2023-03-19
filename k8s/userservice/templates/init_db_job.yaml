@@ -100,9 +100,9 @@ spec:
 
               CREATE TABLE IF NOT EXISTS user_service.notification
               (
-              id                      serial                              PRIMARY KEY,
-              user_id                 varchar                             NOT NULL,
-              message                 varchar                             NOT NULL
+                id                      serial                              PRIMARY KEY,
+                mail                    varchar                             NOT NULL,
+                message                 varchar                             NOT NULL
               );
 
               CREATE TABLE IF NOT EXISTS user_service.user_info
