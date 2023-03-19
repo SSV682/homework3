@@ -12,6 +12,11 @@ import (
 
 const groupID = "eventGroupStore"
 
+const (
+	billingServiceName = "billing_service"
+	orderServiceName   = "order_service"
+)
+
 type BrokerConsumer struct {
 	reader *kafka.Reader
 }
@@ -71,20 +76,22 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.Reques
 				}
 
 				switch messageType {
-				case "billing_service":
-					println("yeee billing service")
+				case billingServiceName:
+					println("yeee order_service")
 					command, err := getUserCommand(message)
 					if err != nil {
-						println("error")
 						println(err)
 						continue
 					}
+					println(fmt.Sprintf("command: %#v", command))
 					payloadUserCh <- command
-				case "order_service":
+				case orderServiceName:
+					println("yeee order_service")
 					command, err := getBillingCommand(message)
 					if err != nil {
 						continue
 					}
+					println(fmt.Sprintf("command: %#v", command))
 					payloadCh <- command
 				default:
 				}
@@ -117,13 +124,11 @@ func getUserCommand(message []byte) (domain.Account, error) {
 		fmt.Printf("%s", err)
 		return domain.Account{}, fmt.Errorf("unmarshal message: %v", err)
 	}
-	println("marshaled")
 
 	c, err := command.ToModel()
 	if err != nil {
 		return domain.Account{}, fmt.Errorf("unmarshal message: %v", err)
 	}
-	println("to model")
 
 	return c, nil
 }

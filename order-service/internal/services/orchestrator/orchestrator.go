@@ -46,7 +46,6 @@ func NewOrchestrator(cfg Config) *Orchestrator {
 }
 
 func (o *Orchestrator) Register(order *domain.Order) {
-	log.Infof("register sage for order: %v", order)
 	saga := domain.NewSaga(order, o.billingServiceTopic, o.stockServiceTopic, o.deliveryServiceTopic)
 	o.sagas.Register(order.ID, saga)
 }
@@ -86,8 +85,6 @@ func (o *Orchestrator) executeCommand(ctx context.Context, command domain.OrderC
 	}
 
 	step := saga.NextState(command)
-
-	log.Infof("step: %v", step)
 
 	switch step.Action {
 	case domain.NextStep, domain.Retry:

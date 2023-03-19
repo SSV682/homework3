@@ -31,7 +31,7 @@ redis:
 
 kafka:
   brokers:
-    - 'kafka'
+    - kafka
   sasl:
     username: alice        # env: KAFKA_USER
     password: alice-secret # env: KAFKA_PASSWORD
