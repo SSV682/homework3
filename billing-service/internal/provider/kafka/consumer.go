@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const groupID = "eventGroupStore"
+const groupID = "billingGroupStore"
 
 const (
 	billingServiceName = "billing_service"

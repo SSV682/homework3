@@ -36,8 +36,8 @@ func NewApp(configPath string) *App {
 	handler := echo.New()
 
 	sqlProv := sql.NewSQLProvider(pool)
-	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.SystemBus)
-	userConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.NotificationTopic)
+	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.SystemBus, "eventSystemBusGroup")
+	userConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.NotificationTopic, "eventNotificationGroup")
 
 	processorConfig := notification.Config{
 		StorageProv:         sqlProv,

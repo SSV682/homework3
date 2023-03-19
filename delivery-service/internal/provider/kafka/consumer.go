@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const groupID = "eventGroupStore"
+const groupID = "deliveryGroupStore"
 
 type BrokerConsumer struct {
 	reader *kafka.Reader

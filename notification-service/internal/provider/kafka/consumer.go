@@ -9,13 +9,11 @@ import (
 	domain "notification-service/internal/domain/models"
 )
 
-const groupID = "eventGroupStore"
-
 type BrokerConsumer struct {
 	reader *kafka.Reader
 }
 
-func NewBrokerConsumer(brokers []string, topic string) *BrokerConsumer {
+func NewBrokerConsumer(brokers []string, topic, groupID string) *BrokerConsumer {
 	client := &BrokerConsumer{}
 	client.reader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers: brokers,

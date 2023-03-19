@@ -9,7 +9,7 @@ import (
 	domain "stock-service/internal/domain/models"
 )
 
-const groupID = "eventGroupStore"
+const groupID = "stockGroupStore"
 
 type BrokerConsumer struct {
 	reader *kafka.Reader
@@ -54,6 +54,7 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.Reques
 			default:
 				message, err := c.consumeContext(ctx)
 				if err != nil {
+					println(err)
 					errCh <- fmt.Errorf("consume message: %v", err)
 					continue
 				}
