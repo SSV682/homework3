@@ -42,6 +42,21 @@ spec:
             - '-c'
             - >
               until pg_isready -h $POSTGRES_HOST -p $POSTGRES_PORT; do echo waiting for database; sleep 2; done;
+        - name: check-kafka-ready
+          image: docker.io/bitnami/kafka:3.4.0-debian-11-r11
+          env:
+            - name: KAFKA_HOST
+              value: {{ .Values.kafka.fullnameOverride | quote }}
+            - name: KAFKA_PORT
+              value: {{ printf "%d" ( .Values.kafka.service.ports.client | int ) | quote }}
+          command:
+            - /bin/bash
+          args:
+            - "-ec"
+            - |
+              echo "Waiting wake up kafka";
+              wait-for-port --host=$KAFKA_HOST --timeout=180 $KAFKA_PORT;
+              echo "Kafka is available";
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

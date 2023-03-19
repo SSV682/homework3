@@ -27,6 +27,29 @@ spec:
       serviceAccountName: {{ include "billingservice.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: check-db-ready
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          command:
+            - sh
+            - '-c'
+            - >
+              until pg_isready -h postgres -p 5432; do echo waiting for database; sleep 2; done;
+        - name: check-kafka-ready
+          image: docker.io/bitnami/kafka:3.4.0-debian-11-r11
+          command:
+            - /bin/bash
+          args:
+            - "-ec"
+            - |
+              echo "start sleep"
+              sleep 30;
+
+              echo "Waiting wake up kafka";
+              wait-for-port --host=kafka --timeout=180 9092;
+              echo "Kafka is available";
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

@@ -18,7 +18,7 @@ spec:
             - "-ec"
             - |
               echo "Waiting wake up kafka";
-              wait-for-port --host=kafka --timeout=120 9092;
+              wait-for-port --host=kafka --timeout=180 9092;
               echo "Kafka is available";
       containers:
         - name: post-wake-up-job
