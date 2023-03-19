@@ -44,8 +44,6 @@ func NewApp(configPath string) *App {
 	commandConsumerProv := kafka.NewBrokerConsumer(cfg.Kafka.BrokerAddresses, cfg.Topics.BillingTopic)
 
 	processorConfig := billing.Config{
-		OrderServiceTopic:   cfg.Topics.OrderTopic,
-		SystemBusTopic:      cfg.Topics.SystemBus,
 		StorageProv:         sqlProv,
 		CommandConsumerProv: commandConsumerProv,
 	}

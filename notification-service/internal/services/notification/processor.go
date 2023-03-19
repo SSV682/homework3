@@ -53,10 +53,8 @@ func (p *Processor) start(ctx context.Context) func() {
 	for {
 		select {
 		case command := <-p.commandCh:
-			fmt.Println(fmt.Sprintf("command: %#v", command))
 			p.executeCommand(ctx, command)
 		case user := <-p.userUpdateCh:
-			fmt.Println(fmt.Sprintf("command: %#v", user))
 			p.updateUser(ctx, user)
 		case <-ctx.Done():
 			log.Infof("Contex faired! Stopping processor service...")

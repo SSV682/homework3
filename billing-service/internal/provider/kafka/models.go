@@ -58,7 +58,7 @@ type UserRequestCommand struct {
 }
 
 func (c *UserRequestCommand) ToModel() (domain.Account, error) {
-	userID, err := uuid.FromBytes([]byte(c.UserID))
+	userID, err := uuid.Parse(c.UserID)
 	if err != nil {
 		return domain.Account{}, err
 	}

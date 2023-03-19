@@ -27,18 +27,17 @@ func NewBrokerConsumer(brokers []string, topic string) *BrokerConsumer {
 	return client
 }
 
-func (c *BrokerConsumer) read(ctx context.Context) (*kafka.Message, error) {
+func (c *BrokerConsumer) read(ctx context.Context) ([]byte, []kafka.Header, error) {
 	msg, err := c.reader.ReadMessage(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return &msg, nil
+	return msg.Value, msg.Headers, nil
 }
 
 func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.RequestCommand, <-chan domain.Account, <-chan error, error) {
 	payloadCh := make(chan domain.RequestCommand)
 	payloadUserCh := make(chan domain.Account)
-
 	errCh := make(chan error)
 
 	go func() {
@@ -57,17 +56,15 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.Reques
 				return
 
 			default:
-				message, err := c.consumeContext(ctx)
+				message, headers, err := c.consumeContext(ctx)
 				if err != nil {
 					fmt.Println(err)
 					errCh <- fmt.Errorf("consume message: %v", err)
 					continue
 				}
 
-				fmt.Printf("message: %#v", message)
 				var messageType string
-				for _, v := range message.Headers {
-					fmt.Printf("key: %s", v.Key)
+				for _, v := range headers {
 					if v.Key == "publisher" {
 						messageType = string(v.Value)
 					}
@@ -75,24 +72,22 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.Reques
 
 				switch messageType {
 				case "billing_service":
-					command, err := getBillingCommand(message.Value)
+					println("yeee billing service")
+					command, err := getUserCommand(message)
 					if err != nil {
+						println("error")
+						println(err)
 						continue
 					}
-					fmt.Printf("message come")
-					payloadCh <- *command
+					payloadUserCh <- command
 				case "order_service":
-					getUserCommand(message.Value)
-					command, err := getUserCommand(message.Value)
+					command, err := getBillingCommand(message)
 					if err != nil {
 						continue
 					}
-					payloadUserCh <- *command
+					payloadCh <- command
 				default:
-
 				}
-
-				return
 			}
 		}
 	}()
@@ -100,52 +95,56 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.Reques
 	return payloadCh, payloadUserCh, errCh, nil
 }
 
-func getBillingCommand(message []byte) (*domain.RequestCommand, error) {
+func getBillingCommand(message []byte) (domain.RequestCommand, error) {
 	var command BillingRequestCommand
 
 	if err := json.Unmarshal(message, &command); err != nil {
-		return nil, fmt.Errorf("unmarshal message: %v", err)
+		return domain.RequestCommand{}, fmt.Errorf("unmarshal message: %v", err)
 	}
 
 	c, err := command.ToModel()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal message: %v", err)
+		return domain.RequestCommand{}, fmt.Errorf("unmarshal message: %v", err)
 	}
 
-	return &c, nil
+	return c, nil
 }
 
-func getUserCommand(message []byte) (*domain.Account, error) {
+func getUserCommand(message []byte) (domain.Account, error) {
 	var command UserRequestCommand
 
 	if err := json.Unmarshal(message, &command); err != nil {
-		return nil, fmt.Errorf("unmarshal message: %v", err)
+		fmt.Printf("%s", err)
+		return domain.Account{}, fmt.Errorf("unmarshal message: %v", err)
 	}
+	println("marshaled")
 
 	c, err := command.ToModel()
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal message: %v", err)
+		return domain.Account{}, fmt.Errorf("unmarshal message: %v", err)
 	}
+	println("to model")
 
-	return &c, nil
+	return c, nil
 }
 
-func (c *BrokerConsumer) consumeContext(ctx context.Context) (*kafka.Message, error) {
+func (c *BrokerConsumer) consumeContext(ctx context.Context) ([]byte, []kafka.Header, error) {
 	for {
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return nil, nil, ctx.Err()
 		default:
-			msg, err := c.read(ctx)
+			msg, headers, err := c.read(ctx)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
-
-			if msg.Value == nil {
+			fmt.Println(msg)
+			fmt.Println(headers)
+			if msg == nil {
 				continue
 			}
 
-			return msg, nil
+			return msg, headers, nil
 		}
 	}
 }

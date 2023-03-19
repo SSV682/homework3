@@ -15,7 +15,6 @@ const (
 )
 
 type Config struct {
-	OrderServiceTopic   string
 	SystemBusTopic      string
 	StorageProv         provider.StorageProvider
 	CommandConsumerProv provider.BrokerConsumerProvider
@@ -25,8 +24,6 @@ type Processor struct {
 	startOnce           sync.Once
 	commandCh           <-chan domain.RequestCommand
 	commandUserCh       <-chan domain.Account
-	orderServiceTopic   string
-	systemBusTopic      string
 	storageProv         provider.StorageProvider
 	commandConsumerProv provider.BrokerConsumerProvider
 	commandProducerProv provider.BrokerProducerProvider
@@ -34,8 +31,6 @@ type Processor struct {
 
 func NewProcessor(cfg Config) *Processor {
 	return &Processor{
-		orderServiceTopic:   cfg.OrderServiceTopic,
-		systemBusTopic:      cfg.SystemBusTopic,
 		storageProv:         cfg.StorageProv,
 		commandConsumerProv: cfg.CommandConsumerProv,
 	}
@@ -60,8 +55,10 @@ func (p *Processor) start(ctx context.Context) func() {
 	for {
 		select {
 		case command := <-p.commandCh:
+			log.Debugf("command: %#v", command)
 			p.executeCommand(ctx, command)
 		case command := <-p.commandUserCh:
+			log.Debugf("command: %#v", command)
 			err := p.storageProv.CreateAccount(ctx, command.UserID)
 			if err != nil {
 				log.Errorf("failed create account: %v", err)
