@@ -28,17 +28,15 @@ func NewHandler(s services.OrderService) *handler {
 }
 
 func (h *handler) CreateOrder(ctx echo.Context) error {
-	//payload := ctx.Request().Header.Get(tokenHeaderName)
-	//if payload == "" {
-	//	return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
-	//}
-	//
-	//userID, err := getUserID(payload)
-	//if err != nil {
-	//	return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
-	//}
+	payload := ctx.Request().Header.Get(tokenHeaderName)
+	if payload == "" {
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
+	}
 
-	userID := "00c9f1d1-9c12-44af-a1cf-7aafbff8b711"
+	userID, err := getUserID(payload)
+	if err != nil {
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
+	}
 
 	idempotenceKey := ctx.Request().Header.Get(idempotenceKeyHeaderName)
 	log.Info(idempotenceKey)
@@ -48,7 +46,7 @@ func (h *handler) CreateOrder(ctx echo.Context) error {
 
 	var body CreateOrderRequest
 
-	err := ctx.Bind(&body)
+	err = ctx.Bind(&body)
 	if err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
 	}
