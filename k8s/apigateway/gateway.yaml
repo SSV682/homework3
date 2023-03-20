@@ -83,16 +83,6 @@ spec:
             port:
               number: 80
             host: userservice-notificationservice.userservice.svc.cluster.local
-    - match:
-        - uri:
-            prefix: "/orders"
-      rewrite:
-        uri: "/api/v1/orders"
-      route:
-        - destination:
-            port:
-              number: 80
-            host: userservice-orderservice.userservice.svc.cluster.local
     - name: "user-whitelisted"
       match:
         - uri:

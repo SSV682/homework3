@@ -50,6 +50,8 @@ spec:
               echo "Waiting wake up kafka";
               wait-for-port --host=kafka --timeout=180 9092;
               echo "Kafka is available";
+
+              sleep 180;
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

@@ -61,8 +61,9 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context, errCh chan error) (<-
 					continue
 				}
 
-				c := command.ToModel()
-				payloadCh <- c
+				m := command.ToModel()
+				println(fmt.Sprintf("command: %#v", m))
+				payloadCh <- m
 			}
 		}
 	}()
