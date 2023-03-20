@@ -45,13 +45,13 @@ spec:
               echo "Running pre-provisioning script if any given"
 
               kafka_provisioning_commands=(
-                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic billing_topic"
-                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic stock_topic"
-                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic delivery_topic"
-                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic order_topic"
-                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic billing_topic"
-                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic billing_topic"
-                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server ${KAFKA_SERVICE} --replication-factor 1 --partitions 1 --topic billing_topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic billing_topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic stock_topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic delivery_topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic order_topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic billing_topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic billing_topic"
+                "/opt/bitnami/kafka/bin/kafka-topics.sh --create --if-not-exists --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic billing_topic"
               )
 
               echo "Starting provisioning"
