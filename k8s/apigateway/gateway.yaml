@@ -158,10 +158,10 @@ spec:
           values: [ "http://userservice-authservice.userservice.svc.cluster.local" ]
     - from:
         - source:
-            notRequestPrincipals: [ "*" ] # Запрещаем доступ к остальным ресурсам для запросов без JWT
+            requestPrincipals: [ "*" ] # Запрещаем доступ к остальным ресурсам для запросов без JWT
       to:
         - operation:
-            paths: ["/orders*", "/user*"]
+            notPaths: ["/signup*", "/auth*", "/login*", "/products*", "/deliveries*", "/notifications*", "/account*"]
 
 ---
 apiVersion: security.istio.io/v1beta1
