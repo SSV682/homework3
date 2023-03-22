@@ -1,0 +1,2038 @@
+{
+	"info": {
+		"_postman_id": "defdd808-b273-4603-adc4-834ed3c81912",
+		"name": "Homework 10",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Sign up user request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\")",
+							"pm.environment.set(\"username1\", userName);",
+							"",
+							"",
+							"let password = pm.variables.replaceIn(\"{{$randomPassword}}\")",
+							"pm.environment.set(\"password1\", password);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"userID\", jsonData.id);",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"pm.test(\"response body to have field 'id'\", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id');",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Username\": \"{{username1}}\",\n    \"Firstname\": \"{{$randomFirstName}}\",\n    \"Lastname\": \"{{$randomLastName}}\",\n    \"Email\": \"{{$randomEmail}}\",\n    \"Phone\": \"{{$randomPhoneNumber}}\",\n    \"Password\": \"{{password1}}\"\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/signup",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"accessToken\", jsonData.accessToken);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzE5NTMwMjMsImlkX3VzZXIiOjJ9.2D2bYNSLkwcKGpfzRt12fa3irBCHKItrEgpBZSS7jc8",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "x",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "// {\n//     \"Username\": \"johndoe\",\n//     \"Firstname\": \"John\",\n//     \"Lastname\": \"Doe\",\n//     \"Email\": \"bestjohn@doe.com\",\n//     \"Phone\": \"+71002003040\",\n//     \"Password\": \"password\"\n// }\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/login?username={{username1}}&password={{password1}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"login"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "{{username1}}"
+						},
+						{
+							"key": "password",
+							"value": "{{password1}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get user info",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"pm.test('should be a json response', function() {",
+							"    pm.response.to.be.json;",
+							"})",
+							"pm.test(\"response body to have all field \", function() {",
+							"    pm.expect(pm.response.json()).to.have.all.keys('id','username','password', 'firstname', 'lastname', 'phone','email');",
+							"})",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/user",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"productID\", jsonData.id);",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"quantity\": 100,\n    \"name\": \"apple\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/products",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Fill account",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){},5000)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"{{userID}}\",\n    \"amount\": 30000.0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"account"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){},5000)",
+							"",
+							"let requestID = pm.variables.replaceIn(\"{{$randomUUID}}\")",
+							"pm.environment.set(\"x-request-id\", requestID);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"orderID\", jsonData.id);",
+							"",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 1000.0,\n    \"delivery_at\": \"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": {{productID}},\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        }\n    ],\n    \"address\": {\n        \"city\": \"Moscow\",\n        \"street\": \"Yasnaya, 17\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get order 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){},20000)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"order status success\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).eql(\"success\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/{{orderID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"{{orderID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check account after order 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"check estimated amount\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).eql(29000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account/{{userID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"account",
+						"{{userID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notification order 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"message = `Order ${pm.environment.get(\"orderID\")} success`",
+							"pm.test(\"Contains notification\", function(){",
+							"    pm.expect(_isContains(jsonData.results, \"message\", message)).to.be.true;",
+							"});",
+							"",
+							"function _isContains(json, keyname, value) {",
+							"    return Object.keys(json).some(key => {",
+							"        return typeof json[key] === 'object' ?",
+							"        _isContains(json[key], keyname, value) : key === keyname && json[key] === value;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "b5aaf6c2-ca52-4a75-b8c0-b03af815b853",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\":1000.0,\n    \"delivery_at\":\"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        },\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"banana\"\n        }\n    ],\n    \"address\":{\n        \"city\":\"Moscow\",\n        \"street\":\"Yasnaya, 17\"    \n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let requestID = pm.variables.replaceIn(\"{{$randomUUID}}\")",
+							"pm.environment.set(\"x-request-id\", requestID);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"orderID\", jsonData.id);",
+							"",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 1000.0,\n    \"delivery_at\": \"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": {{productID}},\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        }\n    ],\n    \"address\": {\n        \"city\": \"Moscow\",\n        \"street\": \"Yasnaya, 17\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get order 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){},20000)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"order status success\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).eql(\"success\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/{{orderID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"{{orderID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check account after order 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"check estimated amount\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).eql(28000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account/{{userID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"account",
+						"{{userID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notification order 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"message = `Order ${pm.environment.get(\"orderID\")} success`",
+							"pm.test(\"Contains notification\", function(){",
+							"    pm.expect(_isContains(jsonData.results, \"message\", message)).to.be.true;",
+							"});",
+							"",
+							"function _isContains(json, keyname, value) {",
+							"    return Object.keys(json).some(key => {",
+							"        return typeof json[key] === 'object' ?",
+							"        _isContains(json[key], keyname, value) : key === keyname && json[key] === value;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "b5aaf6c2-ca52-4a75-b8c0-b03af815b853",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\":1000.0,\n    \"delivery_at\":\"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        },\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"banana\"\n        }\n    ],\n    \"address\":{\n        \"city\":\"Moscow\",\n        \"street\":\"Yasnaya, 17\"    \n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order 3",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let requestID = pm.variables.replaceIn(\"{{$randomUUID}}\")",
+							"pm.environment.set(\"x-request-id\", requestID);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"orderID\", jsonData.id);",
+							"",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 1000.0,\n    \"delivery_at\": \"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": {{productID}},\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        }\n    ],\n    \"address\": {\n        \"city\": \"Moscow\",\n        \"street\": \"Yasnaya, 17\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get order 3",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){},20000)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"order status success\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).eql(\"success\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/{{orderID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"{{orderID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check account after order 3",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"check estimated amount\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).eql(27000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account/{{userID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"account",
+						"{{userID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notification order 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"message = `Order ${pm.environment.get(\"orderID\")} success`",
+							"pm.test(\"Contains notification\", function(){",
+							"    pm.expect(_isContains(jsonData.results, \"message\", message)).to.be.true;",
+							"});",
+							"",
+							"function _isContains(json, keyname, value) {",
+							"    return Object.keys(json).some(key => {",
+							"        return typeof json[key] === 'object' ?",
+							"        _isContains(json[key], keyname, value) : key === keyname && json[key] === value;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "b5aaf6c2-ca52-4a75-b8c0-b03af815b853",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\":1000.0,\n    \"delivery_at\":\"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        },\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"banana\"\n        }\n    ],\n    \"address\":{\n        \"city\":\"Moscow\",\n        \"street\":\"Yasnaya, 17\"    \n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order with fail delivery",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let requestID = pm.variables.replaceIn(\"{{$randomUUID}}\")",
+							"pm.environment.set(\"x-request-id\", requestID);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"orderID\", jsonData.id);",
+							"",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 1000.0,\n    \"delivery_at\": \"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": {{productID}},\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        }\n    ],\n    \"address\": {\n        \"city\": \"Moscow\",\n        \"street\": \"Yasnaya, 17\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get canceled order 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){},20000)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"order status canceled\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).eql(\"canceled\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/{{orderID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"{{orderID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check account after canceled order 1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"check estimated amount\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).eql(27000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account/{{userID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"account",
+						"{{userID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notification order 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"message = `Order ${pm.environment.get(\"orderID\")} canceled`",
+							"pm.test(\"Contains notification\", function(){",
+							"    pm.expect(_isContains(jsonData.results, \"message\", message)).to.be.true;",
+							"});",
+							"",
+							"function _isContains(json, keyname, value) {",
+							"    return Object.keys(json).some(key => {",
+							"        return typeof json[key] === 'object' ?",
+							"        _isContains(json[key], keyname, value) : key === keyname && json[key] === value;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "b5aaf6c2-ca52-4a75-b8c0-b03af815b853",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\":1000.0,\n    \"delivery_at\":\"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        },\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"banana\"\n        }\n    ],\n    \"address\":{\n        \"city\":\"Moscow\",\n        \"street\":\"Yasnaya, 17\"    \n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order with fial stock",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let requestID = pm.variables.replaceIn(\"{{$randomUUID}}\")",
+							"pm.environment.set(\"x-request-id\", requestID);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"orderID\", jsonData.id);",
+							"",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 1000.0,\n    \"delivery_at\": \"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": {{productID}},\n            \"quantity\": 100,\n            \"name\": \"apple\"\n        }\n    ],\n    \"address\": {\n        \"city\": \"Moscow\",\n        \"street\": \"Yasnaya, 17\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get canceled order 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){},20000)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"order status canceled\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).eql(\"canceled\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/{{orderID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"{{orderID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check account after canceled order 2",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"check estimated amount\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).eql(27000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account/{{userID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"account",
+						"{{userID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notification order 5",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"message = `Order ${pm.environment.get(\"orderID\")} canceled`",
+							"pm.test(\"Contains notification\", function(){",
+							"    pm.expect(_isContains(jsonData.results, \"message\", message)).to.be.true;",
+							"});",
+							"",
+							"function _isContains(json, keyname, value) {",
+							"    return Object.keys(json).some(key => {",
+							"        return typeof json[key] === 'object' ?",
+							"        _isContains(json[key], keyname, value) : key === keyname && json[key] === value;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "b5aaf6c2-ca52-4a75-b8c0-b03af815b853",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\":1000.0,\n    \"delivery_at\":\"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        },\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"banana\"\n        }\n    ],\n    \"address\":{\n        \"city\":\"Moscow\",\n        \"street\":\"Yasnaya, 17\"    \n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order with fail payment",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let requestID = pm.variables.replaceIn(\"{{$randomUUID}}\")",
+							"pm.environment.set(\"x-request-id\", requestID);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"pm.environment.set(\"orderID\", jsonData.id);",
+							"",
+							"",
+							"pm.test('status to be 201', function() {",
+							"    pm.response.to.have.status(201);",
+							"})",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\": 30000.0,\n    \"delivery_at\": \"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": {{productID}},\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        }\n    ],\n    \"address\": {\n        \"city\": \"Moscow\",\n        \"street\": \"Yasnaya, 17\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get canceleder order 3",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){},20000)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"order status canceled\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).eql(\"canceled\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/{{orderID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"{{orderID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check account after canceled order 3",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"check estimated amount\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.amount).eql(27000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "{{x-request-id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account/{{userID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"account",
+						"{{userID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Notification order 6",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"tests[\"[INFO] Request: \" + JSON.stringify(request)] = true;",
+							"tests[\"[INFO] Response: \" + responseBody] = true;",
+							"",
+							"pm.test('status to be 200', function() {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"message = `Order ${pm.environment.get(\"orderID\")} canceled`",
+							"pm.test(\"Contains notification\", function(){",
+							"    pm.expect(_isContains(jsonData.results, \"message\", message)).to.be.true;",
+							"});",
+							"",
+							"function _isContains(json, keyname, value) {",
+							"    return Object.keys(json).some(key => {",
+							"        return typeof json[key] === 'object' ?",
+							"        _isContains(json[key], keyname, value) : key === keyname && json[key] === value;",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Request-ID",
+						"value": "b5aaf6c2-ca52-4a75-b8c0-b03af815b853",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"total_price\":1000.0,\n    \"delivery_at\":\"2023-03-19T00:00:00Z\",\n    \"products\": [\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"apple\"\n        },\n        {\n            \"id\": 1,\n            \"quantity\": 1,\n            \"name\": \"banana\"\n        }\n    ],\n    \"address\":{\n        \"city\":\"Moscow\",\n        \"street\":\"Yasnaya, 17\"    \n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/notifications",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

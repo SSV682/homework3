@@ -120,32 +120,40 @@ spec:
   rules:
     - to:
         - operation:
+            methods: [ "GET", "DELETE", "POST" ]
+            paths: [ "/orders*" ]
+    - to:
+        - operation:
             methods: ["POST"]
             paths: ["/signup*"]
+    - to:
         - operation:
             methods: ["POST"]
             paths: [ "/auth*" ]
+    - to:
         - operation:
             methods: [ "POST" ]
             paths: [ "/login*" ]
+    - to:
         - operation:
             methods: [ "GET", "PATCH", "POST" ]
             paths: [ "/products*" ]
+    - to:
         - operation:
             methods: [ "GET", "POST" ]
             paths: [ "/deliveries*" ]
+    - to:
         - operation:
             methods: [ "GET" ]
             paths: [ "/notifications*" ]
+    - to:
         - operation:
             methods: [ "GET", "POST" ]
             paths: [ "/account*" ]
+    - to:
         - operation:
             methods: ["GET", "DELETE", "PATCH"]
             paths: ["/user*"]
-        - operation:
-            methods: [ "GET", "DELETE", "POST" ]
-            paths: [ "/orders*" ]
       when:
         - key: request.auth.claims[iss] # Разрешаем доступ к /user запросам, с JWT токеном внутри которого есть наш издатель
           values: ["http://userservice-authservice.userservice.svc.cluster.local"]
@@ -161,7 +169,7 @@ spec:
             requestPrincipals: [ "*" ] # Запрещаем доступ к остальным ресурсам для запросов без JWT
       to:
         - operation:
-            notPaths: ["/signup*", "/auth*", "/login*", "/products*", "/deliveries*", "/notifications*", "/account*"]
+            notPaths: ["/auth*", "/user*","/signup*","/login*","/products*", "/deliveries*" , "/notifications*" ,"/account*" ]
 
 ---
 apiVersion: security.istio.io/v1beta1
