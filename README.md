@@ -235,12 +235,17 @@ kubectl apply -f ./k8s/apigateway/metallb.yaml
 
 ### REST
 
+![rest](https://user-images.githubusercontent.com/16625234/227317324-f40d1d3e-f784-4277-abbe-3667ce7acc33.jpg)
+
 
 ### EventNotification
+
+![in](https://user-images.githubusercontent.com/16625234/227317475-6663763d-2676-4650-936b-6ee002e428a3.jpg)
 
 
 ### EventCollaboration
 
+![saga](https://user-images.githubusercontent.com/16625234/227317423-458eea19-e523-4550-8eaf-2d30bc487bab.jpg)
 
 
 ## Схема взаимодействия сервисов
