@@ -250,7 +250,7 @@ kubectl apply -f ./k8s/apigateway/metallb.yaml
 
 ## Схема взаимодействия сервисов
 
-<img src="/Users/stanislavshilkin/Downloads/schema.jpg"/>
+![schema](https://user-images.githubusercontent.com/16625234/227317967-63467d21-a818-4c06-8a1e-e467a4e82b78.jpg)
 
 ## Пользовательские сценарии работы
 
