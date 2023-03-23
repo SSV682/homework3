@@ -32,7 +32,7 @@ paths:
                 $ref: '#/components/schemas/Order'
         '409':
           description: Недостаточно средств для создания заказа
-  /payments/withdrawals:
+  /account/withdraw:
     put:
       summary: Снятие суммы на со счета пользователя
       operationId: withdrawMoney
@@ -49,10 +49,10 @@ paths:
         $ref: '#/components/requestBodies/Payment'
       responses:
         '201':
-          description: Деньги успешно сняты со счета
+          description: Деньги сняты со счета
         '409':
           description: Недостаточное количество средств
-  /payments/replenishments:
+  /account/fill:
     put:
       summary: Пополнение счета пользователя
       operationId: replenishMoney
@@ -69,10 +69,10 @@ paths:
         $ref: '#/components/requestBodies/Payment'
       responses:
         '201':
-          description: Деньги успешно зачислены на счет
+          description: Деньги зачислены на счет
   /notifications:
     put:
-      summary: Отправка уведомления
+      summary: Уведомления
       operationId: sendNotification
       tags:
         - notification

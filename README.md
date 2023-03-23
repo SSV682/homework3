@@ -235,20 +235,17 @@ kubectl apply -f ./k8s/apigateway/metallb.yaml
 
 ### REST
 
-![](/Users/stanislavshilkin/Downloads/rest.jpg)
 
 ### EventNotification
 
-![](/Users/stanislavshilkin/Downloads/in.jpg)
 
 ### EventCollaboration
 
-![](/Users/stanislavshilkin/Downloads/saga.jpg)
 
 
 ## Схема взаимодействия сервисов
 
-![](/Users/stanislavshilkin/Downloads/schema.jpg)
+<img src="/Users/stanislavshilkin/Downloads/schema.jpg"/>
 
 ## Пользовательские сценарии работы
 
