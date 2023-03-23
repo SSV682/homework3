@@ -1,0 +1,238 @@
+openapi: 3.0.0
+info:
+  title: CreateOrder
+  version: 0.3.0
+tags:
+  - name: order
+    description: Сервис заказов
+  - name: billing
+    description: Сервис биллинга
+  - name: notification
+    description: Сервис уведомлений
+  - name: user
+    description: Сервис пользователей
+security:
+  - cookieAuth: []
+paths:
+  /orders:
+    post:
+      summary: Cоздание заказа
+      description: Создание заказа. После создание заказа отправляется письмо на email
+      operationId: createOrder
+      tags:
+        - order
+      requestBody:
+        $ref: '#/components/requestBodies/Order'
+      responses:
+        '201':
+          description: Заказ успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '409':
+          description: Недостаточно средств для создания заказа
+  /payments/withdrawals:
+    put:
+      summary: Снятие суммы на со счета пользователя
+      operationId: withdrawMoney
+      tags:
+        - billing
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/Payment'
+      responses:
+        '201':
+          description: Деньги успешно сняты со счета
+        '409':
+          description: Недостаточное количество средств
+  /payments/replenishments:
+    put:
+      summary: Пополнение счета пользователя
+      operationId: replenishMoney
+      tags:
+        - billing
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/Payment'
+      responses:
+        '201':
+          description: Деньги успешно зачислены на счет
+  /notifications:
+    put:
+      summary: Отправка уведомления
+      operationId: sendNotification
+      tags:
+        - notification
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/Notification'
+      responses:
+        '201':
+          description: Уведомление успешно создано
+    get:
+      summary: Получение уведомлений
+      operationId: getUserNotification
+      tags:
+        - notification
+      parameters:
+        - in: query
+          name: userID
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пользователя
+      responses:
+        '200':
+          description: Уведомления пользователя
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+  /users/{userID}:
+    get:
+      summary: Получение информации о пользователе
+      operationId: getUserProfile
+      tags:
+        - user
+      parameters:
+        - in: path
+          name: userID
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        '200':
+          description: Профиль пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session_id
+  schemas:
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userID:
+          type: string
+          format: uuid
+        total_price:
+          type: integer
+          format: int64
+      required:
+        - userID
+        - total_price
+    Payment:
+      type: object
+      properties:
+        userID:
+          type: string
+          format: uuid
+        amount:
+          type: integer
+          format: int64
+      required:
+        - userID
+        - amount
+    User:
+      type: object
+      properties:
+        userID:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        password:
+          type: string
+      required:
+        - userID
+        - firstName
+        - lastName
+        - email
+        - phone
+        - password
+    Notification:
+      type: object
+      properties:
+        message:
+          type: string
+        email:
+          type: string
+          format: email
+  requestBodies:
+    Order:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+          example:
+            sample-user:
+              summary: Пример заказ
+              value:
+                userID: '503c3602-5c51-4848-b332-ead24b4e062'
+                total_price: 1000.0
+      description: Order with price 1000.0
+      required: true
+    Payment:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Payment'
+          example:
+            sample-payment:
+              summary: Пример платежа
+              value:
+                userID: '503c3602-5c51-4848-b332-ead24b4e062'
+                price: 1000.0
+    Notification:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Notification'
+          example:
+            sample-notification:
+              summary: Пример уведомления
+              value:
+                message: 'Order 1 success'
+                userID: '503c3602-5c51-4848-b332-ead24b4e062'

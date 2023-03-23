@@ -230,3 +230,26 @@ kubectl apply -f ./k8s/apigateway/metallb.yaml
 
 ## Работа с заказами
 Для создания заказа используется ключ идемпотентности, который требуется передать в заголовке запроса с именем X-Request-ID в формате uuid.
+
+## Варианты реализации
+
+### REST
+
+![](/Users/stanislavshilkin/Downloads/rest.jpg)
+
+### EventNotification
+
+![](/Users/stanislavshilkin/Downloads/in.jpg)
+
+### EventCollaboration
+
+![](/Users/stanislavshilkin/Downloads/saga.jpg)
+
+
+## Схема взаимодействия сервисов
+
+![](/Users/stanislavshilkin/Downloads/schema.jpg)
+
+## Пользовательские сценарии работы
+
+#### Регистрация пользователя в системе
