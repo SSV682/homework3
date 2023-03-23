@@ -3,13 +3,13 @@ info:
   title: CreateOrder
   version: 0.3.0
 tags:
-  - name: order
+  - name: orderservice
     description: Сервис заказов
-  - name: billing
+  - name: billingservice
     description: Сервис биллинга
-  - name: notification
+  - name: notificationservice
     description: Сервис уведомлений
-  - name: user
+  - name: userservice
     description: Сервис пользователей
 security:
   - cookieAuth: []
@@ -17,7 +17,7 @@ paths:
   /orders:
     post:
       summary: Cоздание заказа
-      description: Создание заказа. После создание заказа отправляется письмо на email
+      description: Создание заказа и отправка сообщения на email
       operationId: createOrder
       tags:
         - order
@@ -33,7 +33,7 @@ paths:
         '409':
           description: Недостаточно средств для создания заказа
   /account/withdraw:
-    put:
+    post:
       summary: Снятие суммы на со счета пользователя
       operationId: withdrawMoney
       tags:
@@ -53,7 +53,7 @@ paths:
         '409':
           description: Недостаточное количество средств
   /account/fill:
-    put:
+    post:
       summary: Пополнение счета пользователя
       operationId: replenishMoney
       tags:
@@ -71,18 +71,11 @@ paths:
         '201':
           description: Деньги зачислены на счет
   /notifications:
-    put:
+    post:
       summary: Уведомления
       operationId: sendNotification
       tags:
         - notification
-      parameters:
-        - in: header
-          name: Idempotency-Key
-          schema:
-            type: string
-            format: uuid
-          required: true
       requestBody:
         $ref: '#/components/requestBodies/Notification'
       responses:
@@ -207,11 +200,8 @@ components:
           schema:
             $ref: '#/components/schemas/User'
           example:
-            sample-user:
-              summary: Пример заказ
-              value:
-                userID: '503c3602-5c51-4848-b332-ead24b4e062'
-                total_price: 1000.0
+            userID: '503c3602-5c51-4848-b332-ead24b4e062'
+            total_price: 1000.0
       description: Order with price 1000.0
       required: true
     Payment:
@@ -220,19 +210,13 @@ components:
           schema:
             $ref: '#/components/schemas/Payment'
           example:
-            sample-payment:
-              summary: Пример платежа
-              value:
-                userID: '503c3602-5c51-4848-b332-ead24b4e062'
-                price: 1000.0
+            userID: '503c3602-5c51-4848-b332-ead24b4e062'
+            price: 1000.0
     Notification:
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Notification'
           example:
-            sample-notification:
-              summary: Пример уведомления
-              value:
-                message: 'Order 1 success'
-                userID: '503c3602-5c51-4848-b332-ead24b4e062'
+            message: 'Order 1 success'
+            userID: '503c3602-5c51-4848-b332-ead24b4e062'
