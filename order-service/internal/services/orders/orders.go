@@ -72,7 +72,7 @@ func (o *orderService) Create(ctx context.Context, request *dto.OrderRequestDTO)
 func (o *orderService) Detail(ctx context.Context, orderID int64, userID string) (*domain.Order, error) {
 	res, err := o.storProv.DetailOrder(ctx, orderID, userID)
 	if err != nil {
-		return nil, fmt.Errorf("detail: %v", err)
+		return nil, fmt.Errorf("detail: %w", err)
 	}
 
 	return res, nil
@@ -107,7 +107,7 @@ func (o *orderService) Update(ctx context.Context, orderID int64, userID string,
 func (o *orderService) Cancel(ctx context.Context, orderID int64, userID string) error {
 	order, err := o.storProv.DetailOrder(ctx, orderID, userID)
 	if err != nil {
-		return fmt.Errorf("detail order: %v", err)
+		return fmt.Errorf("detail order: %w", err)
 	}
 
 	o.orchestrator.Register(order)

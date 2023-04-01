@@ -138,6 +138,9 @@ func (s *sqlOrderProvider) DetailOrder(ctx context.Context, id int64, userID str
 	var row OrderRow
 
 	if err = s.pool.GetContext(ctx, &row, query, args...); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrOrderNotFound
+		}
 		return nil, fmt.Errorf(executeQuery, err)
 	}
 

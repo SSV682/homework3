@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -98,7 +99,12 @@ func (h *handler) DetailOrder(ctx echo.Context) error {
 
 	order, err := h.service.Detail(ccx, int64(id), userID)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		switch {
+		case errors.Is(err, domain.ErrOrderNotFound):
+			return ctx.JSON(http.StatusNotFound, ResponseError{Message: err.Error()})
+		default:
+			return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		}
 	}
 
 	return ctx.JSON(http.StatusOK, ResponseOrder{
@@ -213,7 +219,12 @@ func (h *handler) CancelOrder(ctx echo.Context) error {
 
 	err = h.service.Cancel(cct, int64(id), userID)
 	if err != nil {
-		return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		switch {
+		case errors.Is(err, domain.ErrOrderNotFound):
+			return ctx.JSON(http.StatusNotFound, ResponseError{Message: err.Error()})
+		default:
+			return ctx.JSON(http.StatusInternalServerError, ResponseError{Message: err.Error()})
+		}
 	}
 
 	return ctx.JSON(http.StatusAccepted, ResponseCreated{ID: int64(id)})
