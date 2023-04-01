@@ -8,7 +8,6 @@ import (
 	"github.com/elgris/sqrl"
 	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
-	log "github.com/sirupsen/logrus"
 	"order-service/internal/domain/dto"
 	"order-service/internal/domain/models"
 	"strings"
@@ -258,10 +257,8 @@ func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64,
 
 	order, err := getOrderByID(ctx, tx, id)
 	if err != nil {
-		return nil, fmt.Errorf("get order by id for update: %w", err)
+		return nil, fmt.Errorf("get order: %w", err)
 	}
-
-	log.Infof("get then update order: %v", order)
 
 	ok, err := fn(order)
 	if err != nil {
@@ -271,7 +268,6 @@ func (s *sqlOrderProvider) GetOrderByIDThenUpdate(ctx context.Context, id int64,
 	if !ok {
 		return order, nil
 	}
-	log.Infof("ok order: %v", order)
 
 	if err = s.update(ctx, tx, order); err != nil {
 		return nil, err

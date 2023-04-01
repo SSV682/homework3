@@ -17,20 +17,21 @@ func getUserID(payload string) (string, error) {
 	if payload != "" {
 		data, err := base64.StdEncoding.DecodeString(payload)
 		if err != nil {
-			return "", fmt.Errorf("couldnt decode payload: %s", err)
+			return "", fmt.Errorf("decode payload: %s", err)
 		}
 
 		var claims CustomClaims
 
 		err = json.Unmarshal(data, &claims)
 		if err != nil {
-			return "", fmt.Errorf("couldnt unmarshal payload: %s", err)
+			return "", fmt.Errorf("unmarshal payload: %s", err)
 		}
 
 		if claims.IDUser != "" {
 			return claims.IDUser, nil
 		}
 	}
+
 	return "", fmt.Errorf("payload is empty")
 }
 

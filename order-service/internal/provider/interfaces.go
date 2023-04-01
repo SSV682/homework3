@@ -6,7 +6,7 @@ import (
 	"order-service/internal/domain/models"
 )
 
-type OrderProvider interface {
+type StorageProvider interface {
 	CreateOrder(ctx context.Context, order *domain.Order) (int64, error)
 	DetailOrder(ctx context.Context, id int64, userID string) (*domain.Order, error)
 	GetOrderByID(ctx context.Context, id int64) (*domain.Order, error)
@@ -16,7 +16,7 @@ type OrderProvider interface {
 	GetOrderByIDThenUpdate(ctx context.Context, id int64, fn domain.IntermediateOrderFunc) (*domain.Order, error)
 }
 
-type RedisProvider interface {
+type TempStorageProvider interface {
 	Write(ctx context.Context, key string, value int64) error
 	Exist(ctx context.Context, key string) (bool, error)
 	Read(ctx context.Context, key string) (int64, error)

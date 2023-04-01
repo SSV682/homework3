@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	domain "order-service/internal/domain/models"
 	"order-service/internal/handlers/health"
 	"order-service/internal/handlers/orders"
 	"order-service/internal/services"
@@ -19,39 +20,42 @@ const (
 )
 
 const (
-	VersionApi     = "/v1"
-	orderIDPathArg = "order_id"
+	VersionName = "/v1"
+	ApiName     = "/api"
 )
 
 type RegisterServices struct {
-	s services.OrderService
+	service   services.OrderService
+	validator domain.Validator
 }
 
-func NewRegisterServices(service services.OrderService) *RegisterServices {
-	return &RegisterServices{s: service}
+func NewRegisterServices(service services.OrderService, validator domain.Validator) *RegisterServices {
+	return &RegisterServices{
+		service:   service,
+		validator: validator,
+	}
 }
 
 func RegisterHandlers(e *echo.Echo, rs *RegisterServices) error {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	h := orders.NewHandler(rs.s)
+	h := orders.NewHandler(rs.service, rs.validator)
 	hh := health.NewHealth()
 
 	e.GET(metricsEndpointName, echo.WrapHandler(promhttp.Handler()))
 	e.GET(healthEndpointName, hh.Health)
 
-	api := e.Group("/api")
-	stableGroups := api.Group(VersionApi)
+	api := e.Group(ApiName)
+	stableGroups := api.Group(VersionName).Group(ordersEndpointName)
 	{
-		orders := stableGroups.Group(ordersEndpointName)
-		{
-			orders.POST(ListURL, h.CreateOrder)
-			orders.GET(DetailOrderURL, h.DetailOrder)
-			orders.GET(ListURL, h.ListOrder)
-			orders.DELETE(DetailOrderURL, h.DeleteOrder)
-			orders.PUT(CancelURL, h.CancelOrder)
-		}
+		stableGroups.POST(ListURL, h.CreateOrder)
+		stableGroups.GET(DetailOrderURL, h.DetailOrder)
+		stableGroups.GET(ListURL, h.ListOrder)
+		stableGroups.DELETE(DetailOrderURL, h.DeleteOrder)
+		stableGroups.PUT(CancelURL, h.CancelOrder)
+
 	}
+
 	return nil
 }

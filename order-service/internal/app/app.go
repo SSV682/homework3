@@ -2,10 +2,13 @@ package app
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"order-service/internal/config"
 	domain "order-service/internal/domain/models"
 	"order-service/internal/handlers"
@@ -14,11 +17,11 @@ import (
 	"order-service/internal/provider/sql"
 	"order-service/internal/services/orchestrator"
 	"order-service/internal/services/orders"
-	updater "order-service/internal/services/updater"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	"order-service/internal/services/updater"
+
+	validator "github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
+	log "github.com/sirupsen/logrus"
 )
 
 type App struct {
@@ -79,7 +82,9 @@ func NewApp(configPath string) *App {
 	u := updater.NewUpdater(updaterCfg)
 	u.Run(context.Background())
 
-	rs := handlers.NewRegisterServices(orderService)
+	validInst := validator.New()
+	rs := handlers.NewRegisterServices(orderService, validInst)
+
 	err = handlers.RegisterHandlers(handler, rs)
 	if err != nil {
 		log.Fatalf("Failed to register handlers: %v", err)

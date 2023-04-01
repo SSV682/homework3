@@ -3,9 +3,9 @@ package orders
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"order-service/internal/domain/dto"
+	domain "order-service/internal/domain/models"
 	"order-service/internal/services"
 	"strconv"
 	"time"
@@ -20,35 +20,41 @@ const (
 )
 
 type handler struct {
-	service services.OrderService
+	service   services.OrderService
+	validInst domain.Validator
 }
 
-func NewHandler(s services.OrderService) *handler {
-	return &handler{service: s}
+func NewHandler(s services.OrderService, v domain.Validator) *handler {
+	return &handler{
+		service:   s,
+		validInst: v,
+	}
 }
 
 func (h *handler) CreateOrder(ctx echo.Context) error {
 	payload := ctx.Request().Header.Get(tokenHeaderName)
 	if payload == "" {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "cast x-jwt-token"})
 	}
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("get userID: %s", err).Error()})
 	}
 
 	idempotenceKey := ctx.Request().Header.Get(idempotenceKeyHeaderName)
-	log.Info(idempotenceKey)
 	if idempotenceKey == "" {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't find x-request-id"})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "find x-request-id"})
 	}
 
 	var body CreateOrderRequest
 
-	err = ctx.Bind(&body)
-	if err != nil {
+	if err = ctx.Bind(&body); err != nil {
 		return ctx.JSON(http.StatusUnprocessableEntity, ResponseError{Message: err.Error()})
+	}
+
+	if err = h.validInst.Struct(body); err != nil {
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
 	}
 
 	orderDTO := dto.OrderRequestDTO{
@@ -74,18 +80,18 @@ func (h *handler) CreateOrder(ctx echo.Context) error {
 func (h *handler) DetailOrder(ctx echo.Context) error {
 	payload := ctx.Request().Header.Get(tokenHeaderName)
 	if payload == "" {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "cast x-jwt-token"})
 	}
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("get userID: %s", err).Error()})
 	}
 
 	orderID := ctx.Param(orderIDPathArg)
 	id, err := strconv.Atoi(orderID)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("bad id parametr %v", err).Error()})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("id parametr %v", err).Error()})
 	}
 
 	ccx := ctx.Request().Context()
@@ -107,12 +113,12 @@ func (h *handler) DetailOrder(ctx echo.Context) error {
 func (h *handler) ListOrder(ctx echo.Context) error {
 	payload := ctx.Request().Header.Get(tokenHeaderName)
 	if payload == "" {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "cast x-jwt-token"})
 	}
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("get userID: %s", err).Error()})
 	}
 
 	filter := dto.FilterOrderDTO{}
@@ -120,12 +126,12 @@ func (h *handler) ListOrder(ctx echo.Context) error {
 
 	limit, err := queryParamsToUInt64(ctx.QueryParam(limitQueryParam), 10)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("wrong limit parameter: %v", err).Error()})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("limit parameter: %v", err).Error()})
 	}
 
 	offset, err := queryParamsToUInt64(ctx.QueryParam(offsetQueryParam), 0)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("wrong offst parameter: %v", err).Error()})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("offset parameter: %v", err).Error()})
 	}
 
 	filter.Limit = limit
@@ -161,18 +167,18 @@ func (h *handler) ListOrder(ctx echo.Context) error {
 func (h *handler) DeleteOrder(ctx echo.Context) error {
 	payload := ctx.Request().Header.Get(tokenHeaderName)
 	if payload == "" {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "couldn't cast x-jwt-token"})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: "cast x-jwt-token"})
 	}
 
 	userID, err := getUserID(payload)
 	if err != nil {
-		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("couldn't get userID: %s", err).Error()})
+		return ctx.JSON(http.StatusUnauthorized, ResponseError{Message: fmt.Errorf("get userID: %s", err).Error()})
 	}
 
 	orderID := ctx.Param(orderIDPathArg)
 	id, err := strconv.Atoi(orderID)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("bad id parametr %v", err).Error()})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("id parameter %v", err).Error()})
 	}
 
 	ccx := ctx.Request().Context()
@@ -200,7 +206,7 @@ func (h *handler) CancelOrder(ctx echo.Context) error {
 	orderID := ctx.Param(orderIDPathArg)
 	id, err := strconv.Atoi(orderID)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("bad id parametr %v", err).Error()})
+		return ctx.JSON(http.StatusBadRequest, ResponseError{Message: fmt.Errorf("id parametr %v", err).Error()})
 	}
 
 	cct := ctx.Request().Context()

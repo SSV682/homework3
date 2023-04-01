@@ -6,10 +6,10 @@ import (
 )
 
 type CreateOrderRequest struct {
-	TotalPrice float64         `json:"total_price"`
-	Products   json.RawMessage `json:"products"`
-	Address    json.RawMessage `json:"address"`
-	DeliveryAt time.Time       `json:"delivery_at"`
+	TotalPrice float64         `json:"total_price" validate:"required,gt=0"`
+	Products   json.RawMessage `json:"products" validate:"required"`
+	Address    json.RawMessage `json:"address" validate:"required"`
+	DeliveryAt time.Time       `json:"delivery_at" validate:"required"`
 }
 
 type ResponseError struct {

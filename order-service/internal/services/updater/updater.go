@@ -11,7 +11,7 @@ import (
 type Config struct {
 	CommandCh           <-chan domain.OrderCommand
 	SystemBusTopic      string
-	StorageProv         provider.OrderProvider
+	StorageProv         provider.StorageProvider
 	CommandProducerProv provider.BrokerProducerProvider
 }
 
@@ -19,7 +19,7 @@ type Updater struct {
 	startOnce           sync.Once
 	commandCh           <-chan domain.OrderCommand
 	systemBusTopic      string
-	storageProv         provider.OrderProvider
+	storageProv         provider.StorageProvider
 	messageProducerProv provider.BrokerProducerProvider
 }
 
@@ -42,7 +42,7 @@ func (u *Updater) start(ctx context.Context) {
 	for command := range u.commandCh {
 		order, err := u.storageProv.GetOrderByIDThenUpdate(ctx, command.OrderID, UpdateOrderStatusFunc(command.Status))
 		if err != nil {
-			log.Errorf("update status failed: %v", err)
+			log.Errorf("get then update: %v", err)
 		}
 
 		err = u.messageProducerProv.SendMessage(ctx, domain.Message{
@@ -50,7 +50,7 @@ func (u *Updater) start(ctx context.Context) {
 			Order: *order,
 		})
 		if err != nil {
-			log.Errorf("send message to sysbus failed: %v", err)
+			log.Errorf("send message: %v", err)
 		}
 	}
 }
@@ -58,7 +58,7 @@ func (u *Updater) start(ctx context.Context) {
 func UpdateOrderStatusFunc(status domain.Status) domain.IntermediateOrderFunc {
 	return func(o *domain.Order) (bool, error) {
 		o.SetStatus(status)
-		log.Debugf("set order %d, status: %v", o.ID, status)
+
 		return true, nil
 	}
 }

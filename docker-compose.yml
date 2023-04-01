@@ -10,9 +10,6 @@ services:
       - POSTGRES_NAME=homework
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-#    volumes:
-#      - db:/var/lib/postgresql/data
-#      - ./migrations/db/20221015205029_migration.up.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - home_net
 

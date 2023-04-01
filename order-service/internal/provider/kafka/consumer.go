@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	log "github.com/sirupsen/logrus"
+
 	domain "order-service/internal/domain/models"
 )
 
@@ -65,7 +66,6 @@ func (c *BrokerConsumer) StartConsume(ctx context.Context) (<-chan domain.OrderC
 					continue
 				}
 
-				println(fmt.Sprintf("command: %#v", command))
 				payloadCh <- command.ToDTO()
 			}
 		}

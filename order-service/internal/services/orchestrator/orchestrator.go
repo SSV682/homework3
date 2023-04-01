@@ -53,7 +53,7 @@ func (o *Orchestrator) Register(order *domain.Order) {
 func (o *Orchestrator) Run(ctx context.Context) {
 	payloadCh, _, err := o.commandConsumerProv.StartConsume(ctx)
 	if err != nil {
-		log.Errorf("failed consumer: %v", err)
+		log.Errorf(" connect consumer: %v", err)
 	}
 
 	o.commandSourceCh = payloadCh
@@ -68,7 +68,7 @@ func (o *Orchestrator) start(ctx context.Context) {
 		select {
 		case msg := <-o.commandCh: //создать, отменить
 			o.executeCommand(ctx, msg)
-		case msg := <-o.commandSourceCh: //подтверждение или отмена оплаты, подтверждение или отмена доставки
+		case msg := <-o.commandSourceCh: //подтверждение или отмена
 			o.executeCommand(ctx, msg)
 		case <-ctx.Done():
 			close(o.UpdateCh)
@@ -96,7 +96,6 @@ func (o *Orchestrator) executeCommand(ctx context.Context, command domain.OrderC
 			OrderID: command.OrderID,
 			Status:  step.Status,
 		}
-
 	case domain.End:
 		o.UpdateCh <- domain.OrderCommand{
 			OrderID: command.OrderID,
